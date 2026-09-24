@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from django.contrib.auth import get_user_model, password_validation
-from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
 from django.utils import timezone
@@ -12,6 +11,8 @@ from django.utils.http import urlsafe_base64_decode
 
 from apps.accounts import notices
 from apps.accounts.audit import AccountAudit
+from apps.accounts.services import setup_links
+from apps.accounts.services.tokens import TokenService
 from apps.common.exceptions import InvalidInput, PermissionDenied
 from apps.common.services.audit import AuditService
 
@@ -34,6 +35,8 @@ class PasswordService:
         user.set_password(password)
         user.password_changed_at = timezone.now()
         user.save(update_fields=["password", "password_changed_at", "updated_at"])
+        # Every session opened with the previous password ends here.
+        TokenService.revoke_all(user=user)
 
     @staticmethod
     def request_reset(*, email: str) -> None:
@@ -55,7 +58,7 @@ class PasswordService:
         except (TypeError, ValueError, OverflowError):
             raise _invalid_link() from None
         user = User.objects.filter(pk=user_id, is_active=True, is_technical_account=False).first()
-        if user is None or not default_token_generator.check_token(user, token):
+        if user is None or not setup_links.is_valid(user, token):
             raise _invalid_link()
         first_activation = not user.has_usable_password()
         PasswordService.apply_new_password(user, password)

@@ -33,6 +33,7 @@ from apps.accounts.services.passwords import normalize_email
 from apps.accounts.services.providers import ProviderProfileService
 from apps.accounts.services.registration import OwnedUnit, RentedUnit
 from apps.accounts.services.roles import RoleService
+from apps.accounts.services.tokens import TokenService
 from apps.common.db import apply_changes, translate_integrity_errors
 from apps.common.exceptions import (
     BusinessRuleViolation,
@@ -321,6 +322,7 @@ class AccountService:
         ):
             assignments.revoke_all(actor=actor, user=user, reason="account_deactivated")
         PushTokenService.deactivate_all(user=user, reason="account_deactivated")
+        TokenService.revoke_all(user=user)
         AuditService.record(
             actor=actor,
             action=AccountAudit.DEACTIVATED,

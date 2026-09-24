@@ -10,6 +10,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from apps.accounts import serializers as s
 from apps.accounts.services.passwords import PasswordService
 from apps.accounts.services.session import SessionService
+from apps.accounts.services.tokens import TokenService
 from apps.common.views import ApiMixin
 
 
@@ -41,6 +42,23 @@ class LoginView(AuthThrottleMixin, TokenObtainPairView):
 @extend_schema(tags=["Auth"])
 class RefreshView(AuthThrottleMixin, TokenRefreshView):
     pass
+
+
+@extend_schema(tags=["Auth"])
+class LogoutView(AuthThrottleMixin, ApiMixin, APIView):
+    """Ends the session: the refresh token can no longer be used.
+
+    Open to an expired access token: signing out must always work.
+    """
+
+    permission_classes = [AllowAny]
+    authentication_classes: list = []
+
+    @extend_schema(request=s.LogoutSerializer, responses={204: None})
+    def post(self, request):
+        data = self.parse(s.LogoutSerializer)
+        TokenService.sign_out(refresh_token=data["refresh"])
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @extend_schema(tags=["Auth"])

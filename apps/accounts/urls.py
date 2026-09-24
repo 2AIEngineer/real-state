@@ -24,6 +24,7 @@ register_converter(AccountRefConverter, "account")
 urlpatterns = [
     path("auth/token/", auth.LoginView.as_view(), name="auth-token"),
     path("auth/token/refresh/", auth.RefreshView.as_view(), name="auth-token-refresh"),
+    path("auth/logout/", auth.LogoutView.as_view(), name="auth-logout"),
     path(
         "auth/password/reset/", auth.PasswordResetRequestView.as_view(), name="auth-password-reset"
     ),

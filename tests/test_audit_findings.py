@@ -42,7 +42,6 @@ def test_a_foreign_syndicat_header_is_rejected(api, world):
     assert response.status_code in (400, 404)
 
 
-@pytest.mark.xfail(strict=True, reason="AUDIT S4: tokens outlive a password change")
 def test_a_password_change_revokes_existing_tokens(world):
     world.tenant.set_password("Old-Passw0rd!x")
     world.tenant.save()
@@ -62,7 +61,6 @@ def test_a_password_change_revokes_existing_tokens(world):
     assert response.status_code == 401
 
 
-@pytest.mark.xfail(strict=True, reason="AUDIT S4: rotated refresh tokens stay valid")
 def test_a_rotated_refresh_token_cannot_be_reused(world):
     world.tenant.set_password("Old-Passw0rd!x")
     world.tenant.save()
@@ -92,3 +90,31 @@ def test_the_auth_throttle_ignores_a_spoofed_forwarded_for(world):
     }
 
     assert 429 in codes
+
+
+def _login(user, password="Old-Passw0rd!x"):
+    user.set_password(password)
+    user.save()
+    body = {"email": user.email, "password": password}
+    return APIClient().post("/api/v1/auth/token/", body).json()["credentials"]
+
+
+def test_an_access_token_dies_with_the_password(world):
+    access = _login(world.tenant)["access_token"]
+    PasswordService.change_password(
+        actor=world.tenant,
+        user=world.tenant,
+        current_password="Old-Passw0rd!x",
+        new_password="N3w-Passw0rd!zz",
+    )
+    client = APIClient()
+    client.credentials(HTTP_AUTHORIZATION=f"Bearer {access}")
+
+    assert client.get("/api/v1/users/me/").status_code == 401
+
+
+def test_signing_out_ends_the_session(world):
+    refresh = _login(world.tenant)["refresh_token"]
+
+    assert APIClient().post("/api/v1/auth/logout/", {"refresh": refresh}).status_code == 204
+    assert APIClient().post("/api/v1/auth/token/refresh/", {"refresh": refresh}).status_code == 401

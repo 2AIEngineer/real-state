@@ -5,25 +5,15 @@ These are transactional messages: they bypass the notification preferences.
 
 from __future__ import annotations
 
-from django.conf import settings
-from django.contrib.auth.tokens import default_token_generator
-from django.utils.encoding import force_bytes
-from django.utils.http import urlsafe_base64_encode
-
 from apps.accounts.enums import StructuralRole
+from apps.accounts.services import setup_links
 from apps.notifications.models import NotificationCategory, Severity
 from apps.notifications.services import NotificationIntent, NotificationService
 
 
-def _password_setup_link(user) -> str:
-    uid = urlsafe_base64_encode(force_bytes(user.pk))
-    token = default_token_generator.make_token(user)
-    return f"{settings.SITE_URL}/auth/set-password?uid={uid}&token={token}"
-
-
 def password_setup(user, *, first_time: bool) -> None:
     """The e-mail with the link to choose a password: an invitation or a reset."""
-    hours = settings.PASSWORD_RESET_TIMEOUT // 3600
+    hours = setup_links.lifetime_seconds(user) // 3600
     NotificationService.notify(
         NotificationIntent(
             event_type="account.invited" if first_time else "account.password_reset_requested",
@@ -40,7 +30,7 @@ def password_setup(user, *, first_time: bool) -> None:
                 "Si vous n'en êtes pas à l'origine, ignorez ce message."
             ),
             to=[user],
-            email_lines=[f"Lien (valable {hours} h) : {_password_setup_link(user)}"],
+            email_lines=[f"Lien (valable {hours} h) : {setup_links.build(user)}"],
             include_platform_admins=False,
             transactional=True,
             channels=frozenset({"email"}),

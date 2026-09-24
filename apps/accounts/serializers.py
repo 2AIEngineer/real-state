@@ -24,6 +24,10 @@ class LoginSerializer(TokenObtainPairSerializer):
         return super().validate(attrs)
 
 
+class LogoutSerializer(serializers.Serializer):
+    refresh = serializers.CharField()
+
+
 class UserSerializer(serializers.ModelSerializer):
     full_name = serializers.CharField(source="get_full_name", read_only=True)
     is_activated = serializers.SerializerMethodField()

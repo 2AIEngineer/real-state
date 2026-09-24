@@ -8,6 +8,7 @@ pytestmark = pytest.mark.django_db
 PUBLIC = {
     "auth-token",
     "auth-token-refresh",
+    "auth-logout",
     "auth-password-reset",
     "auth-password-set",
     "schema",

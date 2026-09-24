@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
     "drf_spectacular",
     "corsheaders",
     # Shared kernel: base models, attachments, audit journal
@@ -136,7 +137,9 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
+# An invitation waits days for its first use; a reset of an account in use does not.
 PASSWORD_RESET_TIMEOUT = int(env("PASSWORD_RESET_TIMEOUT", str(60 * 60 * 72)))
+PASSWORD_RESET_LINK_TIMEOUT = int(env("PASSWORD_RESET_LINK_TIMEOUT", str(60 * 60 * 2)))
 
 LANGUAGE_CODE = "fr"
 LANGUAGES = [("fr", "Français"), ("en", "English")]
@@ -213,6 +216,10 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=int(env("JWT_ACCESS_MINUTES", "30"))),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=int(env("JWT_REFRESH_DAYS", "14"))),
     "ROTATE_REFRESH_TOKENS": True,
+    # A rotated refresh token cannot be used twice (see apps.accounts.services.tokens).
+    "BLACKLIST_AFTER_ROTATION": True,
+    # Access tokens die with the password they were issued under.
+    "CHECK_REVOKE_TOKEN": True,
     "UPDATE_LAST_LOGIN": True,
     "AUTH_HEADER_TYPES": ("Bearer",),
     "SIGNING_KEY": env("JWT_SIGNING_KEY", SECRET_KEY),
