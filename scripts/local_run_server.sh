@@ -1,0 +1,2 @@
+#!/bin/bash
+uv run python manage.py runserver

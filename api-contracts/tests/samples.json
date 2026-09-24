@@ -1,0 +1,2202 @@
+{
+ "samples": [
+  {
+   "method": "GET",
+   "path": "/api/v1/amenities/",
+   "status": 200,
+   "body": {
+    "count": 1,
+    "next": null,
+    "previous": null,
+    "results": [
+     {
+      "id": 594,
+      "property": 12228,
+      "building": null,
+      "name": "Gym",
+      "description": "",
+      "location": "",
+      "rules": "",
+      "booking_mode": "EXCLUSIVE",
+      "capacity": 1,
+      "requires_approval": false,
+      "opening_time": null,
+      "closing_time": null,
+      "min_duration_minutes": 30,
+      "max_duration_minutes": 180,
+      "max_advance_days": 60,
+      "fee": "0.00",
+      "security_fee": "0.00",
+      "hourly_price": "0.00",
+      "is_active": true,
+      "images": [],
+      "created_at": "2026-09-24T19:27:06.710429Z",
+      "updated_at": "2026-09-24T19:27:06.710435Z"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/amenities/{amenity_id}/",
+   "status": 200,
+   "body": {
+    "id": 594,
+    "property": 12228,
+    "building": null,
+    "name": "Gym",
+    "description": "",
+    "location": "",
+    "rules": "",
+    "booking_mode": "EXCLUSIVE",
+    "capacity": 1,
+    "requires_approval": false,
+    "opening_time": null,
+    "closing_time": null,
+    "min_duration_minutes": 30,
+    "max_duration_minutes": 180,
+    "max_advance_days": 60,
+    "fee": "0.00",
+    "security_fee": "0.00",
+    "hourly_price": "0.00",
+    "is_active": true,
+    "images": [],
+    "created_at": "2026-09-24T19:27:06.710429Z",
+    "updated_at": "2026-09-24T19:27:06.710435Z"
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/amenities/{amenity_id}/schedule/",
+   "status": 200,
+   "body": [
+    {
+     "start_datetime": "2026-09-25T10:00:00Z",
+     "end_datetime": "2026-09-25T11:00:00Z",
+     "status": "CONFIRMED",
+     "party_size": 1
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/announcements/",
+   "status": 200,
+   "body": {
+    "count": 1,
+    "next": null,
+    "previous": null,
+    "results": [
+     {
+      "id": 408,
+      "property": 12228,
+      "building": null,
+      "title": "Water cut",
+      "body": "Tomorrow.",
+      "category": "maintenance",
+      "priority": "normal",
+      "target_roles": [
+       "tenant"
+      ],
+      "published_at": "2026-09-24T19:27:06.677793Z",
+      "expires_at": null,
+      "created_by": {
+       "id": 115289,
+       "full_name": "First9 Last9",
+       "email": "manager@example.test"
+      },
+      "files": [
+       {
+        "id": 1899,
+        "entity_type": "announcement",
+        "entity_id": 408,
+        "url": "http://testserver/media/attachments/announcement/2026/09/e260a311c4570acb900255207621ddf5.pdf",
+        "original_filename": "doc.pdf",
+        "mime_type": "application/pdf",
+        "size": 45,
+        "checksum_sha256": "5a838678058f6de375e8635b5f2fea47a4e5f07cb1a882a44b10f39abc6f34ff",
+        "position": 0,
+        "uploaded_by": 115289,
+        "created_at": "2026-09-24T19:27:06.680911Z"
+       }
+      ],
+      "created_at": "2026-09-24T19:27:06.677996Z",
+      "updated_at": "2026-09-24T19:27:06.678002Z"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/announcements/{announcement_id}/",
+   "status": 200,
+   "body": {
+    "id": 408,
+    "property": 12228,
+    "building": null,
+    "title": "Water cut",
+    "body": "Tomorrow.",
+    "category": "maintenance",
+    "priority": "normal",
+    "target_roles": [
+     "tenant"
+    ],
+    "published_at": "2026-09-24T19:27:06.677793Z",
+    "expires_at": null,
+    "created_by": {
+     "id": 115289,
+     "full_name": "First9 Last9",
+     "email": "manager@example.test"
+    },
+    "files": [
+     {
+      "id": 1899,
+      "entity_type": "announcement",
+      "entity_id": 408,
+      "url": "http://testserver/media/attachments/announcement/2026/09/e260a311c4570acb900255207621ddf5.pdf",
+      "original_filename": "doc.pdf",
+      "mime_type": "application/pdf",
+      "size": 45,
+      "checksum_sha256": "5a838678058f6de375e8635b5f2fea47a4e5f07cb1a882a44b10f39abc6f34ff",
+      "position": 0,
+      "uploaded_by": 115289,
+      "created_at": "2026-09-24T19:27:06.680911Z"
+     }
+    ],
+    "created_at": "2026-09-24T19:27:06.677996Z",
+    "updated_at": "2026-09-24T19:27:06.678002Z"
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/bookings/",
+   "status": 200,
+   "body": {
+    "count": 1,
+    "next": null,
+    "previous": null,
+    "results": [
+     {
+      "id": 467,
+      "amenity": 594,
+      "amenity_name": "Gym",
+      "booker": {
+       "id": 115294,
+       "full_name": "First14 Last14",
+       "email": "tenant@example.test"
+      },
+      "start_datetime": "2026-09-25T10:00:00Z",
+      "end_datetime": "2026-09-25T11:00:00Z",
+      "status": "CONFIRMED",
+      "party_size": 1,
+      "booker_note": "",
+      "decision_note": "",
+      "decided_at": null,
+      "cancelled_at": null,
+      "cancellation_reason": "",
+      "created_at": "2026-09-24T19:27:06.716509Z"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/bookings/{booking_id}/",
+   "status": 200,
+   "body": {
+    "id": 467,
+    "amenity": 594,
+    "amenity_name": "Gym",
+    "booker": {
+     "id": 115294,
+     "full_name": "First14 Last14",
+     "email": "tenant@example.test"
+    },
+    "start_datetime": "2026-09-25T10:00:00Z",
+    "end_datetime": "2026-09-25T11:00:00Z",
+    "status": "CONFIRMED",
+    "party_size": 1,
+    "booker_note": "",
+    "decision_note": "",
+    "decided_at": null,
+    "cancelled_at": null,
+    "cancellation_reason": "",
+    "created_at": "2026-09-24T19:27:06.716509Z"
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/buildings/{building_id}/",
+   "status": 200,
+   "body": {
+    "id": 22679,
+    "property": 12228,
+    "name": "Bloc A",
+    "address": "",
+    "floors_count": null,
+    "description": "",
+    "units_count": 1,
+    "created_at": "2026-09-24T19:27:06.604123Z",
+    "updated_at": "2026-09-24T19:27:06.604135Z"
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/buildings/{building_id}/units/",
+   "status": 200,
+   "body": {
+    "count": 1,
+    "next": null,
+    "previous": null,
+    "results": [
+     {
+      "id": 22568,
+      "building": 22679,
+      "property": 12228,
+      "number": "A101",
+      "label": "",
+      "floor": null,
+      "unit_type": "apartment",
+      "area_sqm": null,
+      "rooms_count": null,
+      "notes": "",
+      "created_at": "2026-09-24T19:27:06.607331Z",
+      "updated_at": "2026-09-24T19:27:06.607344Z"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/chat/rooms/",
+   "status": 200,
+   "body": {
+    "count": 1,
+    "next": null,
+    "previous": null,
+    "results": [
+     {
+      "id": 387,
+      "property": 12228,
+      "context_type": "service_request",
+      "context_id": 797,
+      "last_message_at": "2026-09-24T19:27:06.771977Z",
+      "unread_count": 1,
+      "created_at": "2026-09-24T19:27:06.770358Z"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/chat/rooms/{room_id}/",
+   "status": 200,
+   "body": {
+    "id": 387,
+    "property": 12228,
+    "context_type": "service_request",
+    "context_id": 797,
+    "last_message_at": "2026-09-24T19:27:06.771977Z",
+    "unread_count": 1,
+    "created_at": "2026-09-24T19:27:06.770358Z"
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/chat/rooms/{room_id}/messages/",
+   "status": 200,
+   "body": {
+    "count": 1,
+    "next": null,
+    "previous": null,
+    "results": [
+     {
+      "id": 418,
+      "chat_room": 387,
+      "sender": {
+       "id": 115294,
+       "full_name": "First14 Last14",
+       "email": "tenant@example.test"
+      },
+      "body": "Still leaking",
+      "media": null,
+      "created_at": "2026-09-24T19:27:06.771977Z",
+      "edited_at": null
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/events/",
+   "status": 200,
+   "body": {
+    "count": 1,
+    "next": null,
+    "previous": null,
+    "results": [
+     {
+      "id": 183,
+      "property": 12228,
+      "building": null,
+      "title": "BBQ",
+      "description": "",
+      "location": "",
+      "start_at": "2026-09-27T19:27:06.676702Z",
+      "end_at": "2026-09-27T22:27:06.676702Z",
+      "status": "SCHEDULED",
+      "target_roles": [
+       "owner",
+       "tenant"
+      ],
+      "cancelled_at": null,
+      "cancellation_reason": "",
+      "completed_at": null,
+      "created_by": {
+       "id": 115289,
+       "full_name": "First9 Last9",
+       "email": "manager@example.test"
+      },
+      "files": [],
+      "created_at": "2026-09-24T19:27:06.696294Z",
+      "updated_at": "2026-09-24T19:27:06.696299Z"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/events/{event_id}/",
+   "status": 200,
+   "body": {
+    "id": 183,
+    "property": 12228,
+    "building": null,
+    "title": "BBQ",
+    "description": "",
+    "location": "",
+    "start_at": "2026-09-27T19:27:06.676702Z",
+    "end_at": "2026-09-27T22:27:06.676702Z",
+    "status": "SCHEDULED",
+    "target_roles": [
+     "owner",
+     "tenant"
+    ],
+    "cancelled_at": null,
+    "cancellation_reason": "",
+    "completed_at": null,
+    "created_by": {
+     "id": 115289,
+     "full_name": "First9 Last9",
+     "email": "manager@example.test"
+    },
+    "files": [],
+    "created_at": "2026-09-24T19:27:06.696294Z",
+    "updated_at": "2026-09-24T19:27:06.696299Z"
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/lease-members/{member_id}/",
+   "status": 200,
+   "body": {
+    "id": 22888,
+    "lease": 11533,
+    "user": {
+     "id": 115294,
+     "full_name": "First14 Last14",
+     "email": "tenant@example.test"
+    },
+    "joined_at": "2026-08-25",
+    "left_at": null,
+    "is_active": true,
+    "is_signatory": true,
+    "emergency_contact_name": "",
+    "emergency_contact_phone": "",
+    "emergency_contact_relation": "",
+    "vehicles_info": [],
+    "pets_info": [],
+    "proof_of_identity": null,
+    "proof_of_address": null,
+    "created_at": "2026-09-24T19:27:06.659474Z",
+    "updated_at": "2026-09-24T19:27:06.659481Z"
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/leases/",
+   "status": 200,
+   "body": {
+    "count": 1,
+    "next": null,
+    "previous": null,
+    "results": [
+     {
+      "id": 11533,
+      "unit": 22568,
+      "property": 12228,
+      "start_date": "2026-08-25",
+      "end_date": null,
+      "status": "ACTIVE",
+      "contract_reference": null,
+      "notes": "",
+      "terminated_on": null,
+      "termination_reason": "",
+      "cancelled_at": null,
+      "cancellation_reason": "",
+      "members": [
+       {
+        "id": 22888,
+        "lease": 11533,
+        "user": {
+         "id": 115294,
+         "full_name": "First14 Last14",
+         "email": "tenant@example.test"
+        },
+        "joined_at": "2026-08-25",
+        "left_at": null,
+        "is_active": true,
+        "is_signatory": true,
+        "emergency_contact_name": "",
+        "emergency_contact_phone": "",
+        "emergency_contact_relation": "",
+        "vehicles_info": [],
+        "pets_info": [],
+        "proof_of_identity": null,
+        "proof_of_address": null,
+        "created_at": "2026-09-24T19:27:06.659474Z",
+        "updated_at": "2026-09-24T19:27:06.659481Z"
+       },
+       {
+        "id": 22889,
+        "lease": 11533,
+        "user": {
+         "id": 115295,
+         "full_name": "First15 Last15",
+         "email": "cotenant@example.test"
+        },
+        "joined_at": "2026-08-25",
+        "left_at": null,
+        "is_active": true,
+        "is_signatory": false,
+        "emergency_contact_name": "",
+        "emergency_contact_phone": "",
+        "emergency_contact_relation": "",
+        "vehicles_info": [],
+        "pets_info": [],
+        "proof_of_identity": null,
+        "proof_of_address": null,
+        "created_at": "2026-09-24T19:27:06.660315Z",
+        "updated_at": "2026-09-24T19:27:06.660321Z"
+       }
+      ],
+      "created_at": "2026-09-24T19:27:06.658098Z",
+      "updated_at": "2026-09-24T19:27:06.658104Z"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/leases/{lease_id}/",
+   "status": 200,
+   "body": {
+    "id": 11533,
+    "unit": 22568,
+    "property": 12228,
+    "start_date": "2026-08-25",
+    "end_date": null,
+    "status": "ACTIVE",
+    "contract_reference": null,
+    "notes": "",
+    "terminated_on": null,
+    "termination_reason": "",
+    "cancelled_at": null,
+    "cancellation_reason": "",
+    "members": [
+     {
+      "id": 22888,
+      "lease": 11533,
+      "user": {
+       "id": 115294,
+       "full_name": "First14 Last14",
+       "email": "tenant@example.test"
+      },
+      "joined_at": "2026-08-25",
+      "left_at": null,
+      "is_active": true,
+      "is_signatory": true,
+      "emergency_contact_name": "",
+      "emergency_contact_phone": "",
+      "emergency_contact_relation": "",
+      "vehicles_info": [],
+      "pets_info": [],
+      "proof_of_identity": null,
+      "proof_of_address": null,
+      "created_at": "2026-09-24T19:27:06.659474Z",
+      "updated_at": "2026-09-24T19:27:06.659481Z"
+     },
+     {
+      "id": 22889,
+      "lease": 11533,
+      "user": {
+       "id": 115295,
+       "full_name": "First15 Last15",
+       "email": "cotenant@example.test"
+      },
+      "joined_at": "2026-08-25",
+      "left_at": null,
+      "is_active": true,
+      "is_signatory": false,
+      "emergency_contact_name": "",
+      "emergency_contact_phone": "",
+      "emergency_contact_relation": "",
+      "vehicles_info": [],
+      "pets_info": [],
+      "proof_of_identity": null,
+      "proof_of_address": null,
+      "created_at": "2026-09-24T19:27:06.660315Z",
+      "updated_at": "2026-09-24T19:27:06.660321Z"
+     }
+    ],
+    "created_at": "2026-09-24T19:27:06.658098Z",
+    "updated_at": "2026-09-24T19:27:06.658104Z"
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/leases/{lease_id}/lease-component-states/",
+   "status": 200,
+   "body": {
+    "count": 0,
+    "next": null,
+    "previous": null,
+    "results": []
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/library/documents/",
+   "status": 200,
+   "body": {
+    "count": 1,
+    "next": null,
+    "previous": null,
+    "results": [
+     {
+      "id": 59,
+      "property": 12228,
+      "folder": 1385,
+      "title": "Bylaws",
+      "description": "",
+      "target_roles": [
+       "owner"
+      ],
+      "file": {
+       "id": 1901,
+       "entity_type": "library_document",
+       "entity_id": 59,
+       "url": "http://testserver/media/attachments/library_document/2026/09/f56312b693963e27f752bd5993c31f4c.pdf",
+       "original_filename": "doc.pdf",
+       "mime_type": "application/pdf",
+       "size": 45,
+       "checksum_sha256": "5a838678058f6de375e8635b5f2fea47a4e5f07cb1a882a44b10f39abc6f34ff",
+       "position": 0,
+       "uploaded_by": 115289,
+       "created_at": "2026-09-24T19:27:06.834902Z"
+      },
+      "created_by": {
+       "id": 115289,
+       "full_name": "First9 Last9",
+       "email": "manager@example.test"
+      },
+      "created_at": "2026-09-24T19:27:06.832092Z",
+      "updated_at": "2026-09-24T19:27:06.832100Z"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/library/documents/{document_id}/",
+   "status": 200,
+   "body": {
+    "id": 59,
+    "property": 12228,
+    "folder": 1385,
+    "title": "Bylaws",
+    "description": "",
+    "target_roles": [
+     "owner"
+    ],
+    "file": {
+     "id": 1901,
+     "entity_type": "library_document",
+     "entity_id": 59,
+     "url": "http://testserver/media/attachments/library_document/2026/09/f56312b693963e27f752bd5993c31f4c.pdf",
+     "original_filename": "doc.pdf",
+     "mime_type": "application/pdf",
+     "size": 45,
+     "checksum_sha256": "5a838678058f6de375e8635b5f2fea47a4e5f07cb1a882a44b10f39abc6f34ff",
+     "position": 0,
+     "uploaded_by": 115289,
+     "created_at": "2026-09-24T19:27:06.834902Z"
+    },
+    "created_by": {
+     "id": 115289,
+     "full_name": "First9 Last9",
+     "email": "manager@example.test"
+    },
+    "created_at": "2026-09-24T19:27:06.832092Z",
+    "updated_at": "2026-09-24T19:27:06.832100Z"
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/library/folders/",
+   "status": 200,
+   "body": {
+    "count": 1,
+    "next": null,
+    "previous": null,
+    "results": [
+     {
+      "id": 1385,
+      "property": 12228,
+      "parent_folder": null,
+      "en_name": "Rules",
+      "fr_name": "R\u00e8gles",
+      "description": "",
+      "is_system": false,
+      "subfolders_count": 0,
+      "created_at": "2026-09-24T19:27:06.828637Z"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/library/folders/{folder_id}/",
+   "status": 200,
+   "body": {
+    "id": 1385,
+    "property": 12228,
+    "parent_folder": null,
+    "en_name": "Rules",
+    "fr_name": "R\u00e8gles",
+    "description": "",
+    "is_system": false,
+    "subfolders_count": 0,
+    "created_at": "2026-09-24T19:27:06.828637Z"
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/marketplace/listings/",
+   "status": 200,
+   "body": {
+    "count": 1,
+    "next": null,
+    "previous": null,
+    "results": [
+     {
+      "id": 236,
+      "seller": {
+       "id": 115294,
+       "full_name": "First14 Last14",
+       "email": "tenant@example.test"
+      },
+      "property": 12228,
+      "category": "various_offer",
+      "title": "Bike",
+      "description": "Good",
+      "price": "50.00",
+      "currency": "MAD",
+      "is_negotiable": false,
+      "location": "",
+      "contact_phone": "",
+      "contact_email": "",
+      "status": "PUBLISHED",
+      "published_at": "2026-09-24T19:27:06.846939Z",
+      "closed_at": null,
+      "images": [
+       {
+        "id": 1902,
+        "entity_type": "marketplace_listing",
+        "entity_id": 236,
+        "url": "http://testserver/media/attachments/marketplace_listing/2026/09/df1720b0a0c5675465a40868c88e4e22.png",
+        "original_filename": "photo.png",
+        "mime_type": "image/png",
+        "size": 67,
+        "checksum_sha256": "d0afbaf740ad2d35e78e6238ae16b5b17bdfd8d2b26351fc66bc2dfdf8e59f9f",
+        "position": 0,
+        "uploaded_by": 115294,
+        "created_at": "2026-09-24T19:27:06.849388Z"
+       }
+      ],
+      "created_at": "2026-09-24T19:27:06.847154Z",
+      "updated_at": "2026-09-24T19:27:06.847160Z"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/marketplace/listings/{listing_id}/",
+   "status": 200,
+   "body": {
+    "id": 236,
+    "seller": {
+     "id": 115294,
+     "full_name": "First14 Last14",
+     "email": "tenant@example.test"
+    },
+    "property": 12228,
+    "category": "various_offer",
+    "title": "Bike",
+    "description": "Good",
+    "price": "50.00",
+    "currency": "MAD",
+    "is_negotiable": false,
+    "location": "",
+    "contact_phone": "",
+    "contact_email": "",
+    "status": "PUBLISHED",
+    "published_at": "2026-09-24T19:27:06.846939Z",
+    "closed_at": null,
+    "images": [
+     {
+      "id": 1902,
+      "entity_type": "marketplace_listing",
+      "entity_id": 236,
+      "url": "http://testserver/media/attachments/marketplace_listing/2026/09/df1720b0a0c5675465a40868c88e4e22.png",
+      "original_filename": "photo.png",
+      "mime_type": "image/png",
+      "size": 67,
+      "checksum_sha256": "d0afbaf740ad2d35e78e6238ae16b5b17bdfd8d2b26351fc66bc2dfdf8e59f9f",
+      "position": 0,
+      "uploaded_by": 115294,
+      "created_at": "2026-09-24T19:27:06.849388Z"
+     }
+    ],
+    "created_at": "2026-09-24T19:27:06.847154Z",
+    "updated_at": "2026-09-24T19:27:06.847160Z"
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/notifications/",
+   "status": 200,
+   "body": {
+    "count": 12,
+    "next": null,
+    "previous": null,
+    "results": [
+     {
+      "id": 109369,
+      "category": "store",
+      "notification_type": "store.order_created",
+      "severity": "INFO",
+      "title": "Nouvelle commande #218 \u2014 Residence 4",
+      "body": "First14 Last14 a pass\u00e9 une commande de 9.00 (1 article(s)).",
+      "data": {
+       "order_id": 218,
+       "property_id": 12228
+      },
+      "target_type": "store.order",
+      "object_id": 218,
+      "is_read": false,
+      "read_at": null,
+      "created_at": "2026-09-24T19:27:06.874060Z"
+     },
+     {
+      "id": 109368,
+      "category": "marketplace",
+      "notification_type": "marketplace.listing_created",
+      "severity": "INFO",
+      "title": "Nouvelle annonce \u2014 Residence 4",
+      "body": "\u00ab Bike \u00bb \u2014 50.00 MAD",
+      "data": {
+       "listing_id": 236
+      },
+      "target_type": "marketplace.marketplacelisting",
+      "object_id": 236,
+      "is_read": false,
+      "read_at": null,
+      "created_at": "2026-09-24T19:27:06.857058Z"
+     },
+     {
+      "id": 109365,
+      "category": "library",
+      "notification_type": "library.document_published",
+      "severity": "INFO",
+      "title": "Nouveau document \u2014 Residence 4",
+      "body": "Le document \u00ab Bylaws \u00bb a \u00e9t\u00e9 ajout\u00e9 \u00e0 la biblioth\u00e8que (R\u00e8gles).",
+      "data": {
+       "document_id": 59,
+       "property_id": 12228
+      },
+      "target_type": "library.librarydocument",
+      "object_id": 59,
+      "is_read": false,
+      "read_at": null,
+      "created_at": "2026-09-24T19:27:06.842024Z"
+     },
+     {
+      "id": 109362,
+      "category": "short_term_rental",
+      "notification_type": "short_term_rental.created",
+      "severity": "INFO",
+      "title": "Nouvelle location courte dur\u00e9e \u2014 lot A101",
+      "body": "First14 Last14 a d\u00e9clar\u00e9 une location courte dur\u00e9e du 26/09/2026 au 28/09/2026 (1 occupant(s)).",
+      "data": {
+       "unit_id": 22568,
+       "short_term_rental_id": 340
+      },
+      "target_type": "short_term_rental.shorttermrental",
+      "object_id": 340,
+      "is_read": false,
+      "read_at": null,
+      "created_at": "2026-09-24T19:27:06.818223Z"
+     },
+     {
+      "id": 109356,
+      "category": "visitor",
+      "notification_type": "visitor.arrived",
+      "severity": "INFO",
+      "title": "Visiteur \u2014 lot A101",
+      "body": "Sam Lee est arriv\u00e9(e) \u00e0 19:27.",
+      "data": {
+       "unit_id": 22568,
+       "visitor_id": 181
+      },
+      "target_type": "visitors.visitor",
+      "object_id": 181,
+      "is_read": false,
+      "read_at": null,
+      "created_at": "2026-09-24T19:27:06.801569Z"
+     },
+     {
+      "id": 109350,
+      "category": "chat",
+      "notification_type": "chat.message",
+      "severity": "INFO",
+      "title": "Nouveau message \u2014 demande #797",
+      "body": "First14 Last14 : Still leaking",
+      "data": {
+       "context_id": 797,
+       "chat_room_id": 387,
+       "context_type": "service_request"
+      },
+      "target_type": "chat.chatmessage",
+      "object_id": 418,
+      "is_read": false,
+      "read_at": null,
+      "created_at": "2026-09-24T19:27:06.785920Z"
+     },
+     {
+      "id": 109348,
+      "category": "service_request",
+      "notification_type": "service_request.in_progress",
+      "severity": "INFO",
+      "title": "Demande #797 prise en charge",
+      "body": "Un intervenant a \u00e9t\u00e9 assign\u00e9 \u00e0 votre demande.",
+      "data": {
+       "property_id": 12228,
+       "service_request_id": 797
+      },
+      "target_type": "service_requests.servicerequest",
+      "object_id": 797,
+      "is_read": false,
+      "read_at": null,
+      "created_at": "2026-09-24T19:27:06.764403Z"
+     },
+     {
+      "id": 109346,
+      "category": "service_request",
+      "notification_type": "service_request.assigned",
+      "severity": "INFO",
+      "title": "Intervention assign\u00e9e \u2014 demande #797",
+      "body": "\u00ab Leak \u00bb \u2014 lot A101",
+      "data": {
+       "property_id": 12228,
+       "service_request_id": 797
+      },
+      "target_type": "service_requests.servicerequest",
+      "object_id": 797,
+      "is_read": false,
+      "read_at": null,
+      "created_at": "2026-09-24T19:27:06.758337Z"
+     },
+     {
+      "id": 109343,
+      "category": "service_request",
+      "notification_type": "service_request.created",
+      "severity": "INFO",
+      "title": "Demande #797 enregistr\u00e9e",
+      "body": "\u00ab Leak \u00bb a \u00e9t\u00e9 transmise \u00e0 la gestion de Residence 4.",
+      "data": {
+       "property_id": 12228,
+       "service_request_id": 797
+      },
+      "target_type": "service_requests.servicerequest",
+      "object_id": 797,
+      "is_read": false,
+      "read_at": null,
+      "created_at": "2026-09-24T19:27:06.738597Z"
+     },
+     {
+      "id": 109339,
+      "category": "booking",
+      "notification_type": "booking.created",
+      "severity": "INFO",
+      "title": "R\u00e9servation #467 \u2014 Gym",
+      "body": "25/09/2026 10:00 \u2192 25/09/2026 11:00. Confirm\u00e9e.",
+      "data": {
+       "amenity_id": 594,
+       "booking_id": 467
+      },
+      "target_type": "amenities.booking",
+      "object_id": 467,
+      "is_read": false,
+      "read_at": null,
+      "created_at": "2026-09-24T19:27:06.723285Z"
+     },
+     {
+      "id": 109336,
+      "category": "event",
+      "notification_type": "event.created",
+      "severity": "INFO",
+      "title": "[Residence 4] Nouvel \u00e9v\u00e9nement : BBQ",
+      "body": "Le 27/09/2026 \u00e0 19:27",
+      "data": {
+       "event_id": 183,
+       "property_id": 12228
+      },
+      "target_type": "events.event",
+      "object_id": 183,
+      "is_read": false,
+      "read_at": null,
+      "created_at": "2026-09-24T19:27:06.706676Z"
+     },
+     {
+      "id": 109332,
+      "category": "announcement",
+      "notification_type": "announcement.created",
+      "severity": "INFO",
+      "title": "[Residence 4] Water cut",
+      "body": "Tomorrow.",
+      "data": {
+       "property_id": 12228,
+       "announcement_id": 408
+      },
+      "target_type": "announcements.announcement",
+      "object_id": 408,
+      "is_read": false,
+      "read_at": null,
+      "created_at": "2026-09-24T19:27:06.692524Z"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/notifications/preferences/",
+   "status": 200,
+   "body": {
+    "enabled_push": true,
+    "enabled_email": true,
+    "service_request_enabled": true,
+    "announcements_enabled": true,
+    "events_enabled": true,
+    "bookings_enabled": true,
+    "store_enabled": true,
+    "library_enabled": true,
+    "short_term_rental_enabled": true,
+    "surveys_enabled": true,
+    "marketplace_enabled": true,
+    "visitors_enabled": true,
+    "chat_enabled": true
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/notifications/unread-count/",
+   "status": 200,
+   "body": {
+    "unread": 12
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/promoters/",
+   "status": 200,
+   "body": {
+    "count": 1,
+    "next": null,
+    "previous": null,
+    "results": [
+     {
+      "id": 12362,
+      "name": "Promoter 3",
+      "legal_name": "",
+      "registration_number": "",
+      "contact_email": "",
+      "contact_phone": "",
+      "address": "",
+      "representative_user": {
+       "id": 115288,
+       "full_name": "Promoter 3",
+       "email": "promoter3@example.test"
+      },
+      "created_at": "2026-09-24T19:27:06.601227Z",
+      "updated_at": "2026-09-24T19:27:06.601238Z"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/promoters/{promoter_id}/",
+   "status": 200,
+   "body": {
+    "id": 12362,
+    "name": "Promoter 3",
+    "legal_name": "",
+    "registration_number": "",
+    "contact_email": "",
+    "contact_phone": "",
+    "address": "",
+    "representative_user": {
+     "id": 115288,
+     "full_name": "Promoter 3",
+     "email": "promoter3@example.test"
+    },
+    "created_at": "2026-09-24T19:27:06.601227Z",
+    "updated_at": "2026-09-24T19:27:06.601238Z"
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/properties/",
+   "status": 200,
+   "body": {
+    "count": 1,
+    "next": null,
+    "previous": null,
+    "results": [
+     {
+      "id": 12228,
+      "syndicat": 12024,
+      "promoter": 12362,
+      "name": "Residence 4",
+      "description": "",
+      "address": "",
+      "city": "",
+      "country": "",
+      "contact_email": "",
+      "contact_phone": "",
+      "is_active": true,
+      "features": {
+       "service_request": true,
+       "announcements": true,
+       "events": true,
+       "amenities": true,
+       "store": true,
+       "library": true,
+       "short_term_rental": true,
+       "surveys": true,
+       "marketplace": true,
+       "visitor": true,
+       "chat": true
+      },
+      "logo": null,
+      "created_at": "2026-09-24T19:27:06.602651Z",
+      "updated_at": "2026-09-24T19:27:06.602662Z"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/properties/{property_id}/",
+   "status": 200,
+   "body": {
+    "id": 12228,
+    "syndicat": 12024,
+    "promoter": 12362,
+    "name": "Residence 4",
+    "description": "",
+    "address": "",
+    "city": "",
+    "country": "",
+    "contact_email": "",
+    "contact_phone": "",
+    "is_active": true,
+    "features": {
+     "service_request": true,
+     "announcements": true,
+     "events": true,
+     "amenities": true,
+     "store": true,
+     "library": true,
+     "short_term_rental": true,
+     "surveys": true,
+     "marketplace": true,
+     "visitor": true,
+     "chat": true
+    },
+    "logo": null,
+    "created_at": "2026-09-24T19:27:06.602651Z",
+    "updated_at": "2026-09-24T19:27:06.602662Z"
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/properties/{property_id}/buildings/",
+   "status": 200,
+   "body": {
+    "count": 2,
+    "next": null,
+    "previous": null,
+    "results": [
+     {
+      "id": 22679,
+      "property": 12228,
+      "name": "Bloc A",
+      "address": "",
+      "floors_count": null,
+      "description": "",
+      "units_count": 1,
+      "created_at": "2026-09-24T19:27:06.604123Z",
+      "updated_at": "2026-09-24T19:27:06.604135Z"
+     },
+     {
+      "id": 22680,
+      "property": 12228,
+      "name": "Bloc B",
+      "address": "",
+      "floors_count": null,
+      "description": "",
+      "units_count": 1,
+      "created_at": "2026-09-24T19:27:06.605372Z",
+      "updated_at": "2026-09-24T19:27:06.605384Z"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/properties/{property_id}/statistics/",
+   "status": 200,
+   "body": {
+    "buildings": 2,
+    "units": 2,
+    "units_leased": 1,
+    "units_held_by_promoter": 1
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/service-requests/",
+   "status": 200,
+   "body": {
+    "count": 1,
+    "next": null,
+    "previous": null,
+    "results": [
+     {
+      "id": 797,
+      "property": 12228,
+      "unit": 22568,
+      "requester": {
+       "id": 115294,
+       "full_name": "First14 Last14",
+       "email": "tenant@example.test"
+      },
+      "title": "Leak",
+      "description": "Kitchen sink",
+      "category": "plumbing",
+      "priority": "MEDIUM",
+      "status": "IN_PROGRESS",
+      "current_round": 1,
+      "resolved_at": null,
+      "closed_at": null,
+      "cancelled_at": null,
+      "cancellation_reason": "",
+      "files": [
+       {
+        "id": 1900,
+        "entity_type": "service_request",
+        "entity_id": 797,
+        "url": "http://testserver/media/attachments/service_request/2026/09/9380551d2e5de2060bba8b315a16d3f9.png",
+        "original_filename": "photo.png",
+        "mime_type": "image/png",
+        "size": 67,
+        "checksum_sha256": "d0afbaf740ad2d35e78e6238ae16b5b17bdfd8d2b26351fc66bc2dfdf8e59f9f",
+        "position": 0,
+        "uploaded_by": 115294,
+        "created_at": "2026-09-24T19:27:06.731854Z"
+       }
+      ],
+      "created_at": "2026-09-24T19:27:06.729140Z",
+      "updated_at": "2026-09-24T19:27:06.746759Z"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/service-requests/{request_id}/",
+   "status": 200,
+   "body": {
+    "id": 797,
+    "property": 12228,
+    "unit": 22568,
+    "requester": {
+     "id": 115294,
+     "full_name": "First14 Last14",
+     "email": "tenant@example.test"
+    },
+    "title": "Leak",
+    "description": "Kitchen sink",
+    "category": "plumbing",
+    "priority": "MEDIUM",
+    "status": "IN_PROGRESS",
+    "current_round": 1,
+    "resolved_at": null,
+    "closed_at": null,
+    "cancelled_at": null,
+    "cancellation_reason": "",
+    "files": [
+     {
+      "id": 1900,
+      "entity_type": "service_request",
+      "entity_id": 797,
+      "url": "http://testserver/media/attachments/service_request/2026/09/9380551d2e5de2060bba8b315a16d3f9.png",
+      "original_filename": "photo.png",
+      "mime_type": "image/png",
+      "size": 67,
+      "checksum_sha256": "d0afbaf740ad2d35e78e6238ae16b5b17bdfd8d2b26351fc66bc2dfdf8e59f9f",
+      "position": 0,
+      "uploaded_by": 115294,
+      "created_at": "2026-09-24T19:27:06.731854Z"
+     }
+    ],
+    "created_at": "2026-09-24T19:27:06.729140Z",
+    "updated_at": "2026-09-24T19:27:06.746759Z"
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/service-requests/{request_id}/assignments/",
+   "status": 200,
+   "body": [
+    {
+     "id": 349,
+     "resolver": {
+      "id": 115292,
+      "full_name": "First12 Last12",
+      "email": "maintenance@example.test"
+     },
+     "resolution_round": 1,
+     "assigned_by": 115289,
+     "is_resolved": false,
+     "resolved_at": null,
+     "resolution_note": "",
+     "resolution_media": [],
+     "requester_notice": null,
+     "requester_rating": null,
+     "requester_comment": "",
+     "feedback_at": null,
+     "created_at": "2026-09-24T19:27:06.746160Z"
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/short-term-rentals/",
+   "status": 200,
+   "body": {
+    "count": 1,
+    "next": null,
+    "previous": null,
+    "results": [
+     {
+      "id": 340,
+      "unit": 22568,
+      "initiated_by": {
+       "id": 115294,
+       "full_name": "First14 Last14",
+       "email": "tenant@example.test"
+      },
+      "initiator_capacity": "TENANT",
+      "lease": 11533,
+      "checkin_date": "2026-09-26",
+      "checkout_date": "2026-09-28",
+      "status": "SCHEDULED",
+      "primary_member": 514,
+      "members": [
+       {
+        "id": 514,
+        "short_term_rental": 340,
+        "first_name": "Ana",
+        "last_name": "Diaz",
+        "gender": "UNDISCLOSED",
+        "date_of_birth": null,
+        "nationality": "",
+        "id_document_number": "",
+        "phone": "",
+        "email": "",
+        "id_card": null,
+        "created_at": "2026-09-24T19:27:06.810324Z"
+       }
+      ],
+      "notes": "",
+      "checked_in_at": null,
+      "completed_at": null,
+      "cancelled_at": null,
+      "cancellation_reason": "",
+      "created_at": "2026-09-24T19:27:06.808943Z"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/short-term-rentals/{short_term_rental_id}/",
+   "status": 200,
+   "body": {
+    "id": 340,
+    "unit": 22568,
+    "initiated_by": {
+     "id": 115294,
+     "full_name": "First14 Last14",
+     "email": "tenant@example.test"
+    },
+    "initiator_capacity": "TENANT",
+    "lease": 11533,
+    "checkin_date": "2026-09-26",
+    "checkout_date": "2026-09-28",
+    "status": "SCHEDULED",
+    "primary_member": 514,
+    "members": [
+     {
+      "id": 514,
+      "short_term_rental": 340,
+      "first_name": "Ana",
+      "last_name": "Diaz",
+      "gender": "UNDISCLOSED",
+      "date_of_birth": null,
+      "nationality": "",
+      "id_document_number": "",
+      "phone": "",
+      "email": "",
+      "id_card": null,
+      "created_at": "2026-09-24T19:27:06.810324Z"
+     }
+    ],
+    "notes": "",
+    "checked_in_at": null,
+    "completed_at": null,
+    "cancelled_at": null,
+    "cancellation_reason": "",
+    "created_at": "2026-09-24T19:27:06.808943Z"
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/short-term-rentals/{short_term_rental_id}/members/",
+   "status": 200,
+   "body": [
+    {
+     "id": 514,
+     "short_term_rental": 340,
+     "first_name": "Ana",
+     "last_name": "Diaz",
+     "gender": "UNDISCLOSED",
+     "date_of_birth": null,
+     "nationality": "",
+     "id_document_number": "",
+     "phone": "",
+     "email": "",
+     "id_card": null,
+     "created_at": "2026-09-24T19:27:06.810324Z"
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/store/orders/",
+   "status": 200,
+   "body": {
+    "count": 1,
+    "next": null,
+    "previous": null,
+    "results": [
+     {
+      "id": 218,
+      "property": 12228,
+      "unit": 22568,
+      "orderer": {
+       "id": 115294,
+       "full_name": "First14 Last14",
+       "email": "tenant@example.test"
+      },
+      "status": "PENDING",
+      "total_amount": "9.00",
+      "delivery_instructions": "",
+      "customer_note": "",
+      "staff_note": "",
+      "items": [
+       {
+        "id": 246,
+        "product": 340,
+        "product_name": "Water pack",
+        "unit_price": "4.50",
+        "quantity": 2,
+        "line_total": "9.00"
+       }
+      ],
+      "confirmed_at": null,
+      "delivered_at": null,
+      "cancelled_at": null,
+      "cancellation_reason": "",
+      "created_at": "2026-09-24T19:27:06.867312Z"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/store/orders/{order_id}/",
+   "status": 200,
+   "body": {
+    "id": 218,
+    "property": 12228,
+    "unit": 22568,
+    "orderer": {
+     "id": 115294,
+     "full_name": "First14 Last14",
+     "email": "tenant@example.test"
+    },
+    "status": "PENDING",
+    "total_amount": "9.00",
+    "delivery_instructions": "",
+    "customer_note": "",
+    "staff_note": "",
+    "items": [
+     {
+      "id": 246,
+      "product": 340,
+      "product_name": "Water pack",
+      "unit_price": "4.50",
+      "quantity": 2,
+      "line_total": "9.00"
+     }
+    ],
+    "confirmed_at": null,
+    "delivered_at": null,
+    "cancelled_at": null,
+    "cancellation_reason": "",
+    "created_at": "2026-09-24T19:27:06.867312Z"
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/store/products/",
+   "status": 200,
+   "body": {
+    "count": 1,
+    "next": null,
+    "previous": null,
+    "results": [
+     {
+      "id": 340,
+      "property": 12228,
+      "name": "Water pack",
+      "description": "",
+      "category": "",
+      "sku": "",
+      "price": "4.50",
+      "stock_quantity": 8,
+      "is_active": true,
+      "images": [],
+      "created_at": "2026-09-24T19:27:06.860398Z",
+      "updated_at": "2026-09-24T19:27:06.869382Z"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/store/products/{product_id}/",
+   "status": 200,
+   "body": {
+    "id": 340,
+    "property": 12228,
+    "name": "Water pack",
+    "description": "",
+    "category": "",
+    "sku": "",
+    "price": "4.50",
+    "stock_quantity": 8,
+    "is_active": true,
+    "images": [],
+    "created_at": "2026-09-24T19:27:06.860398Z",
+    "updated_at": "2026-09-24T19:27:06.869382Z"
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/surveys/",
+   "status": 200,
+   "body": {
+    "count": 1,
+    "next": null,
+    "previous": null,
+    "results": [
+     {
+      "id": 331,
+      "property": 12228,
+      "title": "Lobby",
+      "description": "",
+      "target_roles": [
+       "owner"
+      ],
+      "status": "DRAFT",
+      "closes_at": null,
+      "published_at": null,
+      "closed_at": null,
+      "questions": [
+       {
+        "id": 499,
+        "text": "Repaint the lobby?",
+        "position": 0,
+        "options": [
+         {
+          "id": 1165,
+          "text": "Yes",
+          "position": 0
+         },
+         {
+          "id": 1166,
+          "text": "No",
+          "position": 1
+         }
+        ]
+       }
+      ],
+      "files": [],
+      "has_answered": false,
+      "created_at": "2026-09-24T19:27:06.822496Z",
+      "updated_at": "2026-09-24T19:27:06.822502Z"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/surveys/{survey_id}/",
+   "status": 200,
+   "body": {
+    "id": 331,
+    "property": 12228,
+    "title": "Lobby",
+    "description": "",
+    "target_roles": [
+     "owner"
+    ],
+    "status": "DRAFT",
+    "closes_at": null,
+    "published_at": null,
+    "closed_at": null,
+    "questions": [
+     {
+      "id": 499,
+      "text": "Repaint the lobby?",
+      "position": 0,
+      "options": [
+       {
+        "id": 1165,
+        "text": "Yes",
+        "position": 0
+       },
+       {
+        "id": 1166,
+        "text": "No",
+        "position": 1
+       }
+      ]
+     }
+    ],
+    "files": [],
+    "has_answered": false,
+    "created_at": "2026-09-24T19:27:06.822496Z",
+    "updated_at": "2026-09-24T19:27:06.822502Z"
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/surveys/{survey_id}/results/",
+   "status": 200,
+   "body": {
+    "survey_id": 331,
+    "participants": 0,
+    "recipients": 0,
+    "questions": [
+     {
+      "id": 499,
+      "text": "Repaint the lobby?",
+      "options": [
+       {
+        "id": 1165,
+        "text": "Yes",
+        "votes": 0
+       },
+       {
+        "id": 1166,
+        "text": "No",
+        "votes": 0
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/syndicats/",
+   "status": 200,
+   "body": {
+    "count": 1,
+    "next": null,
+    "previous": null,
+    "results": [
+     {
+      "id": 12024,
+      "name": "Syndicat 2",
+      "legal_name": "",
+      "registration_number": "",
+      "contact_email": "",
+      "contact_phone": "",
+      "address": "",
+      "city": "",
+      "country": "",
+      "is_active": true,
+      "logo": null,
+      "created_at": "2026-09-24T19:27:06.598789Z",
+      "updated_at": "2026-09-24T19:27:06.598805Z"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/syndicats/{syndicat_id}/",
+   "status": 200,
+   "body": {
+    "id": 12024,
+    "name": "Syndicat 2",
+    "legal_name": "",
+    "registration_number": "",
+    "contact_email": "",
+    "contact_phone": "",
+    "address": "",
+    "city": "",
+    "country": "",
+    "is_active": true,
+    "logo": null,
+    "created_at": "2026-09-24T19:27:06.598789Z",
+    "updated_at": "2026-09-24T19:27:06.598805Z"
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/ui-config/properties/",
+   "status": 200,
+   "body": [
+    {
+     "id": 12228,
+     "syndicat": 12024,
+     "name": "Residence 4",
+     "city": "",
+     "country": "",
+     "logo": null,
+     "features": {
+      "service_request": true,
+      "announcements": true,
+      "events": true,
+      "amenities": true,
+      "store": true,
+      "library": true,
+      "short_term_rental": true,
+      "surveys": true,
+      "marketplace": true,
+      "visitor": true,
+      "chat": true
+     }
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/ui-config/syndicats/",
+   "status": 200,
+   "body": [
+    {
+     "id": 12024,
+     "name": "Syndicat 2",
+     "city": "",
+     "country": "",
+     "logo": null,
+     "accessible_properties_count": 1
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/units/{unit_id}/",
+   "status": 200,
+   "body": {
+    "id": 22568,
+    "building": 22679,
+    "property": 12228,
+    "number": "A101",
+    "label": "",
+    "floor": null,
+    "unit_type": "apartment",
+    "area_sqm": null,
+    "rooms_count": null,
+    "notes": "",
+    "created_at": "2026-09-24T19:27:06.607331Z",
+    "updated_at": "2026-09-24T19:27:06.607344Z"
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/units/{unit_id}/ownerships/",
+   "status": 200,
+   "body": {
+    "count": 2,
+    "next": null,
+    "previous": null,
+    "results": [
+     {
+      "id": 34204,
+      "unit": 22568,
+      "owner": {
+       "id": 115293,
+       "full_name": "First13 Last13",
+       "email": "owner@example.test"
+      },
+      "ownership_share": "100.00",
+      "start_date": "2026-09-24",
+      "end_date": null,
+      "status": "ACTIVE",
+      "is_promoter_default": false,
+      "end_reason": "",
+      "acquisition_reference": "",
+      "created_at": "2026-09-24T19:27:06.633312Z"
+     },
+     {
+      "id": 34202,
+      "unit": 22568,
+      "owner": {
+       "id": 115288,
+       "full_name": "Promoter 3",
+       "email": "promoter3@example.test"
+      },
+      "ownership_share": "100.00",
+      "start_date": "2026-09-24",
+      "end_date": "2026-09-24",
+      "status": "TERMINATED",
+      "is_promoter_default": true,
+      "end_reason": "SALE",
+      "acquisition_reference": "",
+      "created_at": "2026-09-24T19:27:06.609537Z"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/units/mine/",
+   "status": 200,
+   "body": {
+    "count": 0,
+    "next": null,
+    "previous": null,
+    "results": []
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/users/",
+   "status": 200,
+   "body": {
+    "count": 7,
+    "next": null,
+    "previous": null,
+    "results": [
+     {
+      "id": 115290,
+      "email": "syndic@example.test",
+      "first_name": "First10",
+      "last_name": "Last10",
+      "full_name": "First10 Last10",
+      "phone": "",
+      "gender": "UNDISCLOSED",
+      "preferred_language": "fr",
+      "role": "syndic",
+      "is_active": true,
+      "is_activated": true,
+      "date_joined": "2026-09-24T19:27:06.619279Z",
+      "last_login": null,
+      "deactivated_at": null
+     },
+     {
+      "id": 115291,
+      "email": "security@example.test",
+      "first_name": "First11",
+      "last_name": "Last11",
+      "full_name": "First11 Last11",
+      "phone": "",
+      "gender": "UNDISCLOSED",
+      "preferred_language": "fr",
+      "role": "security",
+      "is_active": true,
+      "is_activated": true,
+      "date_joined": "2026-09-24T19:27:06.621745Z",
+      "last_login": null,
+      "deactivated_at": null
+     },
+     {
+      "id": 115292,
+      "email": "maintenance@example.test",
+      "first_name": "First12",
+      "last_name": "Last12",
+      "full_name": "First12 Last12",
+      "phone": "",
+      "gender": "UNDISCLOSED",
+      "preferred_language": "fr",
+      "role": "maintenance",
+      "is_active": true,
+      "is_activated": true,
+      "date_joined": "2026-09-24T19:27:06.624138Z",
+      "last_login": null,
+      "deactivated_at": null
+     },
+     {
+      "id": 115293,
+      "email": "owner@example.test",
+      "first_name": "First13",
+      "last_name": "Last13",
+      "full_name": "First13 Last13",
+      "phone": "",
+      "gender": "UNDISCLOSED",
+      "preferred_language": "fr",
+      "role": "standard",
+      "is_active": true,
+      "is_activated": true,
+      "date_joined": "2026-09-24T19:27:06.625922Z",
+      "last_login": null,
+      "deactivated_at": null
+     },
+     {
+      "id": 115294,
+      "email": "tenant@example.test",
+      "first_name": "First14",
+      "last_name": "Last14",
+      "full_name": "First14 Last14",
+      "phone": "",
+      "gender": "UNDISCLOSED",
+      "preferred_language": "fr",
+      "role": "standard",
+      "is_active": true,
+      "is_activated": true,
+      "date_joined": "2026-09-24T19:27:06.655161Z",
+      "last_login": null,
+      "deactivated_at": null
+     },
+     {
+      "id": 115295,
+      "email": "cotenant@example.test",
+      "first_name": "First15",
+      "last_name": "Last15",
+      "full_name": "First15 Last15",
+      "phone": "",
+      "gender": "UNDISCLOSED",
+      "preferred_language": "fr",
+      "role": "standard",
+      "is_active": true,
+      "is_activated": true,
+      "date_joined": "2026-09-24T19:27:06.655859Z",
+      "last_login": null,
+      "deactivated_at": null
+     },
+     {
+      "id": 115289,
+      "email": "manager@example.test",
+      "first_name": "First9",
+      "last_name": "Last9",
+      "full_name": "First9 Last9",
+      "phone": "",
+      "gender": "UNDISCLOSED",
+      "preferred_language": "fr",
+      "role": "manager",
+      "is_active": true,
+      "is_activated": true,
+      "date_joined": "2026-09-24T19:27:06.616631Z",
+      "last_login": null,
+      "deactivated_at": null
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/users/{user_id}/",
+   "status": 200,
+   "body": {
+    "id": 115294,
+    "email": "tenant@example.test",
+    "first_name": "First14",
+    "last_name": "Last14",
+    "full_name": "First14 Last14",
+    "phone": "",
+    "gender": "UNDISCLOSED",
+    "preferred_language": "fr",
+    "role": "standard",
+    "is_active": true,
+    "is_activated": true,
+    "date_joined": "2026-09-24T19:27:06.655161Z",
+    "last_login": null,
+    "deactivated_at": null
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/users/{user_id}/building-assignments/",
+   "status": 200,
+   "body": []
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/users/{user_id}/property-assignments/",
+   "status": 200,
+   "body": []
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/users/{user_id}/syndicat-assignments/",
+   "status": 200,
+   "body": []
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/visitors/",
+   "status": 200,
+   "body": {
+    "count": 1,
+    "next": null,
+    "previous": null,
+    "results": [
+     {
+      "id": 181,
+      "property": 12228,
+      "unit": 22568,
+      "first_name": "Sam",
+      "last_name": "Lee",
+      "phone": "",
+      "visit_reason": "",
+      "vehicle_plate": "",
+      "status": "ARRIVED",
+      "arrived_at": "2026-09-24T19:27:06.793715Z",
+      "left_at": null,
+      "denial_reason": "",
+      "notes": "",
+      "registered_by": {
+       "id": 115291,
+       "full_name": "First11 Last11",
+       "email": "security@example.test"
+      },
+      "id_card": null,
+      "created_at": "2026-09-24T19:27:06.793916Z"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/visitors/{visitor_id}/",
+   "status": 200,
+   "body": {
+    "id": 181,
+    "property": 12228,
+    "unit": 22568,
+    "first_name": "Sam",
+    "last_name": "Lee",
+    "phone": "",
+    "visit_reason": "",
+    "vehicle_plate": "",
+    "status": "ARRIVED",
+    "arrived_at": "2026-09-24T19:27:06.793715Z",
+    "left_at": null,
+    "denial_reason": "",
+    "notes": "",
+    "registered_by": {
+     "id": 115291,
+     "full_name": "First11 Last11",
+     "email": "security@example.test"
+    },
+    "id_card": null,
+    "created_at": "2026-09-24T19:27:06.793916Z"
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/work-orders/",
+   "status": 200,
+   "body": {
+    "count": 1,
+    "next": null,
+    "previous": null,
+    "results": [
+     {
+      "id": 209,
+      "property": 12228,
+      "building": null,
+      "unit": null,
+      "service_request": null,
+      "title": "Repaint hall",
+      "description": "",
+      "category": "corrective",
+      "priority": "MEDIUM",
+      "status": "OPEN",
+      "assignee": null,
+      "scheduled_start": null,
+      "scheduled_end": null,
+      "due_date": null,
+      "started_at": null,
+      "completed_at": null,
+      "completion_note": "",
+      "cancelled_at": null,
+      "cancellation_reason": "",
+      "files": [],
+      "created_by": 115289,
+      "created_at": "2026-09-24T19:27:06.790218Z",
+      "updated_at": "2026-09-24T19:27:06.790226Z"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/work-orders/{work_order_id}/",
+   "status": 200,
+   "body": {
+    "id": 209,
+    "property": 12228,
+    "building": null,
+    "unit": null,
+    "service_request": null,
+    "title": "Repaint hall",
+    "description": "",
+    "category": "corrective",
+    "priority": "MEDIUM",
+    "status": "OPEN",
+    "assignee": null,
+    "scheduled_start": null,
+    "scheduled_end": null,
+    "due_date": null,
+    "started_at": null,
+    "completed_at": null,
+    "completion_note": "",
+    "cancelled_at": null,
+    "cancellation_reason": "",
+    "files": [],
+    "created_by": 115289,
+    "created_at": "2026-09-24T19:27:06.790218Z",
+    "updated_at": "2026-09-24T19:27:06.790226Z"
+   }
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/auth/token/",
+   "status": 200,
+   "body": {
+    "credentials": {
+     "access_token": "<redacted>",
+     "refresh_token": "<redacted>"
+    },
+    "ui_config": {
+     "app_mode": null,
+     "step": null,
+     "syndicat": {
+      "id": null,
+      "name": null,
+      "logo_url": null
+     },
+     "property": {
+      "id": null,
+      "name": null,
+      "logo_url": null,
+      "features": {
+       "include_service_request": false,
+       "include_announcements": false,
+       "include_events": false,
+       "include_amenities": false,
+       "include_store": false,
+       "include_library": false,
+       "include_short_term_rental": false,
+       "include_surveys": false,
+       "include_marketplace": false,
+       "include_visitor": false,
+       "include_chat": false
+      }
+     }
+    },
+    "user": {
+     "id": 115294,
+     "email": "tenant@example.test",
+     "first_name": "First14",
+     "last_name": "Last14",
+     "full_name": "First14 Last14",
+     "phone": "",
+     "gender": "UNDISCLOSED",
+     "preferred_language": "fr",
+     "role": {
+      "label": "Standard account",
+      "is_admin": false,
+      "is_syndic": false,
+      "is_manager": false,
+      "is_provider": false,
+      "is_security": false,
+      "is_cleaning": false,
+      "is_standard": true,
+      "is_maintenance": false
+     },
+     "assets": {
+      "user_status": {
+       "is_owner": false,
+       "is_tenant": true
+      },
+      "ownerships": [],
+      "tenancies": [
+       {
+        "lease_id": 11533,
+        "unit_id": 22568,
+        "unit_number": "A101",
+        "is_signatory": true
+       }
+      ]
+     }
+    }
+   }
+  }
+ ],
+ "skipped": [
+  "/api/v1/users/{user_id}/provider-profile/ -> 404"
+ ]
+}

@@ -1,0 +1,16 @@
+{% autoescape off %}{{ title }}
+{% if greeting_name %}
+Bonjour {{ greeting_name }},
+{% endif %}
+{{ body }}
+{% for line in lines %}{{ line }}
+{% endfor %}{% if action_url %}
+Ouvrir dans {{ brand.NAME }} : {{ action_url }}
+{% endif %}
+--
+Tableau de bord : {{ brand.DASHBOARD_URL }}
+Site web : {{ brand.WEBSITE_URL }}
+
+Vous recevez ce message car vous êtes concerné(e) par cette information. Vos préférences de notification sont modifiables dans l'application.
+© {{ year }} {{ brand.NAME }}. Tous droits réservés.
+{% endautoescape %}

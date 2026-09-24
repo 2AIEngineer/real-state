@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>{{ title }}</title>
+</head>
+<body style="margin:0;padding:0;background:#eef1f4;font-family:Helvetica,Arial,sans-serif;color:#1f2933;">
+  {# Preview line shown by mail clients next to the subject. #}
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;">{{ body|truncatechars:120 }}</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eef1f4;padding:24px 12px;">
+    <tr><td align="center">
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;border-collapse:separate;">
+
+        {# Header: the logo has white lettering, it needs a dark background. #}
+        <tr><td align="left" style="background:#111418;border-radius:10px 10px 0 0;padding:22px 32px;">
+          <a href="{{ brand.WEBSITE_URL }}" style="text-decoration:none;">
+            <img src="{{ brand.LOGO_URL }}" width="210" alt="{{ brand.NAME }}" style="display:block;width:210px;max-width:100%;height:auto;border:0;color:#ffffff;font-size:22px;font-weight:bold;">
+          </a>
+        </td></tr>
+        <tr><td style="background:#3fd0c9;height:4px;line-height:4px;font-size:0;">&nbsp;</td></tr>
+
+        {# Message #}
+        <tr><td style="background:#ffffff;padding:32px 32px 8px 32px;">
+          <h1 style="margin:0 0 18px 0;font-size:21px;line-height:1.35;color:#111418;">{{ title }}</h1>
+          {% if greeting_name %}<p style="margin:0 0 14px 0;font-size:15px;line-height:1.6;">Bonjour {{ greeting_name }},</p>{% endif %}
+          <p style="margin:0 0 14px 0;font-size:15px;line-height:1.6;">{{ body|linebreaksbr }}</p>
+          {% for line in lines %}<p style="margin:0 0 10px 0;font-size:15px;line-height:1.6;">{{ line }}</p>{% endfor %}
+        </td></tr>
+        {% if action_url %}
+        <tr><td style="background:#ffffff;padding:12px 32px 32px 32px;">
+          <a href="{{ action_url }}" style="display:inline-block;background:#3fd0c9;color:#111418;font-size:15px;font-weight:bold;text-decoration:none;padding:12px 22px;border-radius:6px;">Ouvrir dans {{ brand.NAME }}</a>
+          <p style="margin:14px 0 0 0;font-size:12px;line-height:1.5;color:#6b7280;">Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur :<br><a href="{{ action_url }}" style="color:#0f766e;word-break:break-all;">{{ action_url }}</a></p>
+        </td></tr>
+        {% else %}
+        <tr><td style="background:#ffffff;height:24px;line-height:24px;font-size:0;">&nbsp;</td></tr>
+        {% endif %}
+
+        {# Footer #}
+        <tr><td style="background:#f8fafb;border-top:1px solid #e5e7eb;border-radius:0 0 10px 10px;padding:22px 32px;font-size:12px;line-height:1.6;color:#6b7280;">
+          <p style="margin:0 0 10px 0;">
+            <a href="{{ brand.DASHBOARD_URL }}" style="color:#0f766e;font-weight:bold;text-decoration:none;">Accéder au tableau de bord</a>
+            &nbsp;&middot;&nbsp;
+            <a href="{{ brand.WEBSITE_URL }}" style="color:#0f766e;font-weight:bold;text-decoration:none;">Découvrir {{ brand.NAME }}</a>
+          </p>
+          <p style="margin:0 0 10px 0;">Vous recevez ce message car vous êtes concerné(e) par cette information. Vos préférences de notification sont modifiables dans l'application.</p>
+          <p style="margin:0;">&copy; {{ year }} {{ brand.NAME }}. Tous droits réservés.</p>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>

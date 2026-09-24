@@ -1,0 +1,105 @@
+from django.urls import path
+
+from apps.properties.views import (
+    buildings,
+    ownership,
+    promoters,
+    properties,
+    syndicats,
+    ui_config,
+    units,
+)
+
+urlpatterns = [
+    path(
+        "ui-config/syndicats/",
+        ui_config.UIConfigSyndicatsView.as_view(),
+        name="ui-config-syndicats",
+    ),
+    path(
+        "ui-config/properties/",
+        ui_config.UIConfigPropertiesView.as_view(),
+        name="ui-config-properties",
+    ),
+    path(
+        "properties/<int:property_id>/statistics/",
+        ui_config.PropertyStatisticsView.as_view(),
+        name="property-statistics",
+    ),
+    path("syndicats/", syndicats.SyndicatListView.as_view(), name="syndicat-list"),
+    path(
+        "syndicats/<int:syndicat_id>/",
+        syndicats.SyndicatDetailView.as_view(),
+        name="syndicat-detail",
+    ),
+    path(
+        "syndicats/<int:syndicat_id>/logo/",
+        syndicats.SyndicatLogoView.as_view(),
+        name="syndicat-logo",
+    ),
+    path("promoters/", promoters.PromoterListView.as_view(), name="promoter-list"),
+    path(
+        "promoters/<int:promoter_id>/",
+        promoters.PromoterDetailView.as_view(),
+        name="promoter-detail",
+    ),
+    path("properties/", properties.PropertyListView.as_view(), name="property-list"),
+    path(
+        "properties/<int:property_id>/",
+        properties.PropertyDetailView.as_view(),
+        name="property-detail",
+    ),
+    path(
+        "properties/<int:property_id>/features/",
+        properties.PropertyFeaturesView.as_view(),
+        name="property-features",
+    ),
+    path(
+        "properties/<int:property_id>/promoter/",
+        properties.PropertyPromoterView.as_view(),
+        name="property-promoter",
+    ),
+    path(
+        "properties/<int:property_id>/logo/",
+        properties.PropertyLogoView.as_view(),
+        name="property-logo",
+    ),
+    path(
+        "properties/<int:property_id>/buildings/",
+        buildings.BuildingListView.as_view(),
+        name="building-list",
+    ),
+    path(
+        "buildings/<int:building_id>/",
+        buildings.BuildingDetailView.as_view(),
+        name="building-detail",
+    ),
+    path("buildings/<int:building_id>/units/", units.UnitListView.as_view(), name="unit-list"),
+    path("units/mine/", units.MyUnitsView.as_view(), name="unit-mine"),
+    path("units/<int:unit_id>/", units.UnitDetailView.as_view(), name="unit-detail"),
+    path(
+        "units/<int:unit_id>/ownerships/",
+        ownership.OwnershipListView.as_view(),
+        name="ownership-list",
+    ),
+    path(
+        "units/<int:unit_id>/ownerships/transfer/",
+        ownership.OwnershipTransferView.as_view(),
+        name="ownership-transfer",
+    ),
+    path(
+        "units/<int:unit_id>/ownerships/co-owners/",
+        ownership.CoOwnerView.as_view(),
+        name="ownership-co-owner",
+    ),
+    path(
+        "ownerships/<int:ownership_id>/",
+        ownership.OwnershipDetailView.as_view(),
+        name="ownership-detail",
+    ),
+    path(
+        "ownerships/<int:ownership_id>/end/",
+        ownership.OwnershipEndView.as_view(),
+        name="ownership-end",
+    ),
+]

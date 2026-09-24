@@ -1,0 +1,47 @@
+[project]
+name = "residential-platform-api"
+version = "1.0.0"
+description = "Residential property management SaaS — REST API"
+requires-python = ">=3.12"
+dependencies = [
+    "django>=5.2,<5.3",
+    "djangorestframework>=3.16",
+    "djangorestframework-simplejwt>=5.5",
+    "drf-spectacular>=0.28",
+    "django-cors-headers>=4.6",
+    "psycopg[binary]>=3.2",
+    "python-dotenv>=1.0",
+    "requests>=2.32",
+    "filetype>=1.2",
+    "django-storages[azure]>=1.14",
+    "gunicorn>=23",
+    "supervisor>=4.2",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-django>=4.9",
+    "ruff>=0.6",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings_test"
+python_files = ["test_*.py"]
+addopts = "--reuse-db -q"
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["**/migrations/**"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "DJ"]
+ignore = ["E501", "B904", "DJ001", "DJ008"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["apps", "config", "tests"]
