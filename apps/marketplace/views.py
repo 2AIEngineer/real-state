@@ -5,7 +5,6 @@ from rest_framework.response import Response
 from apps.common.views import BaseAPIView
 from apps.marketplace import serializers as s
 from apps.marketplace.services import ListingService
-from apps.properties.services import PropertyService
 
 
 @extend_schema(tags=["Marketplace"])
@@ -21,7 +20,7 @@ class ListingListView(BaseAPIView):
         else:
             query.pop("status", None)
             qs = ListingService.list_published(
-                actor=request.user, property_id=self.selected_property_id, **query
+                actor=request.user, property_id=self.property.pk, **query
             )
         return self.render_page(s.MarketplaceListingSerializer, qs)
 
@@ -31,11 +30,7 @@ class ListingListView(BaseAPIView):
     )
     def post(self, request):
         data = dict(self.parse(s.MarketplaceListingCreateSerializer))
-        prop = PropertyService.get_visible(
-            actor=request.user,
-            property_id=self.selected_property_id,
-            syndicat_id=self.selected_syndicat_id,
-        )
+        prop = self.property
         images = data.pop("images")
         listing = ListingService.publish(actor=request.user, data=data, images=images, prop=prop)
         return self.render(s.MarketplaceListingSerializer, listing, status=status.HTTP_201_CREATED)
@@ -47,14 +42,18 @@ class ListingDetailView(BaseAPIView):
     def get(self, request, listing_id: int):
         return self.render(
             s.MarketplaceListingSerializer,
-            ListingService.get_visible(actor=request.user, listing_id=listing_id),
+            ListingService.get_visible(
+                actor=request.user, prop=self.property, listing_id=listing_id
+            ),
         )
 
     @extend_schema(
         request=s.MarketplaceListingUpdateSerializer, responses=s.MarketplaceListingSerializer
     )
     def patch(self, request, listing_id: int):
-        listing = ListingService.get_visible(actor=request.user, listing_id=listing_id)
+        listing = ListingService.get_visible(
+            actor=request.user, prop=self.property, listing_id=listing_id
+        )
         data = self.parse(s.MarketplaceListingUpdateSerializer)
         return self.render(
             s.MarketplaceListingSerializer,
@@ -63,7 +62,9 @@ class ListingDetailView(BaseAPIView):
 
     @extend_schema(responses={204: None}, description="Deletes the listing (seller or moderator).")
     def delete(self, request, listing_id: int):
-        listing = ListingService.get_visible(actor=request.user, listing_id=listing_id)
+        listing = ListingService.get_visible(
+            actor=request.user, prop=self.property, listing_id=listing_id
+        )
         ListingService.delete(actor=request.user, listing=listing)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -74,7 +75,9 @@ class ListingSoldView(BaseAPIView):
 
     @extend_schema(request=None, responses=s.MarketplaceListingSerializer)
     def post(self, request, listing_id: int):
-        listing = ListingService.get_visible(actor=request.user, listing_id=listing_id)
+        listing = ListingService.get_visible(
+            actor=request.user, prop=self.property, listing_id=listing_id
+        )
         return self.render(
             s.MarketplaceListingSerializer,
             ListingService.mark_sold(actor=request.user, listing=listing),
@@ -87,7 +90,9 @@ class ListingArchiveView(BaseAPIView):
 
     @extend_schema(request=None, responses=s.MarketplaceListingSerializer)
     def post(self, request, listing_id: int):
-        listing = ListingService.get_visible(actor=request.user, listing_id=listing_id)
+        listing = ListingService.get_visible(
+            actor=request.user, prop=self.property, listing_id=listing_id
+        )
         return self.render(
             s.MarketplaceListingSerializer,
             ListingService.archive(actor=request.user, listing=listing),
@@ -100,7 +105,9 @@ class ListingModerationView(BaseAPIView):
         request=s.MarketplaceListingModerationSerializer, responses=s.MarketplaceListingSerializer
     )
     def post(self, request, listing_id: int):
-        listing = ListingService.get_visible(actor=request.user, listing_id=listing_id)
+        listing = ListingService.get_visible(
+            actor=request.user, prop=self.property, listing_id=listing_id
+        )
         data = self.parse(s.MarketplaceListingModerationSerializer)
         return self.render(
             s.MarketplaceListingSerializer,
@@ -115,7 +122,9 @@ class ListingImagesView(BaseAPIView):
         responses={201: s.MarketplaceListingSerializer},
     )
     def post(self, request, listing_id: int):
-        listing = ListingService.get_visible(actor=request.user, listing_id=listing_id)
+        listing = ListingService.get_visible(
+            actor=request.user, prop=self.property, listing_id=listing_id
+        )
         data = self.parse(s.MarketplaceListingImagesSerializer)
         ListingService.add_images(actor=request.user, listing=listing, images=data["images"])
         return self.render(s.MarketplaceListingSerializer, listing, status=status.HTTP_201_CREATED)
@@ -125,7 +134,9 @@ class ListingImagesView(BaseAPIView):
 class ListingImageDetailView(BaseAPIView):
     @extend_schema(responses={204: None})
     def delete(self, request, listing_id: int, attachment_id: int):
-        listing = ListingService.get_visible(actor=request.user, listing_id=listing_id)
+        listing = ListingService.get_visible(
+            actor=request.user, prop=self.property, listing_id=listing_id
+        )
         ListingService.remove_image(
             actor=request.user, listing=listing, attachment_id=attachment_id
         )

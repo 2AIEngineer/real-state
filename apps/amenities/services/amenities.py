@@ -61,9 +61,11 @@ class AmenityService:
         return qs
 
     @staticmethod
-    def get_visible(*, actor, amenity_id: int) -> Amenity:
+    def get_visible(*, actor, prop: Property, amenity_id: int) -> Amenity:
         amenity = (
-            Amenity.objects.select_related("property", "building").filter(pk=amenity_id).first()
+            Amenity.objects.select_related("property", "building")
+            .filter(pk=amenity_id, property=prop)
+            .first()
         )
         if amenity is None or not AmenityPolicy.can_view(actor, amenity):
             raise NotFound("Amenity not found.")

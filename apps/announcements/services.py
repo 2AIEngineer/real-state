@@ -58,10 +58,10 @@ class AnnouncementService:
         return qs
 
     @staticmethod
-    def get_visible(*, actor, announcement_id: int) -> Announcement:
+    def get_visible(*, actor, prop: Property, announcement_id: int) -> Announcement:
         announcement = (
             Announcement.objects.not_archived()
-            .filter(pk=announcement_id)
+            .filter(pk=announcement_id, property=prop)
             .filter(AnnouncementPolicy.visible_filter(actor))
             .select_related("property", "building", "created_by")
             .first()
@@ -71,14 +71,16 @@ class AnnouncementService:
         return announcement
 
     @staticmethod
-    def get_manageable(*, actor, announcement_id: int) -> Announcement:
+    def get_manageable(*, actor, prop: Property, announcement_id: int) -> Announcement:
         """Lookup for management actions, archived records included.
 
         A archived announcement is out of everyone's feed but must stay reachable
         for the people who may erase it for good.
         """
         announcement = (
-            Announcement.objects.select_related("property").filter(pk=announcement_id).first()
+            Announcement.objects.select_related("property")
+            .filter(pk=announcement_id, property=prop)
+            .first()
         )
         if announcement is None or not AnnouncementPolicy.can_update(actor, announcement):
             raise NotFound("Announcement not found.")

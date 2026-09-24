@@ -33,8 +33,8 @@ def test_opening_is_idempotent(world, room):
 
 def test_participants_are_derived_from_the_context(world, room):
     with pytest.raises(NotFound):
-        ChatService.get_room(actor=world.co_tenant, room_id=room.pk)
-    assert ChatService.get_room(actor=world.syndic, room_id=room.pk) == room
+        ChatService.get_room(actor=world.co_tenant, prop=world.prop, room_id=room.pk)
+    assert ChatService.get_room(actor=world.syndic, prop=world.prop, room_id=room.pk) == room
 
 
 def test_messages_cross_between_initiator_and_staff(world, room):

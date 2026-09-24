@@ -45,16 +45,12 @@ class PropertyDetailView(BaseAPIView):
     def get(self, request, property_id: int):
         return self.render(
             s.PropertySerializer,
-            PropertyService.get_visible(
-                actor=request.user, property_id=property_id, syndicat_id=self.selected_syndicat_id
-            ),
+            self.selected_property(property_id),
         )
 
     @extend_schema(request=s.PropertyUpdateSerializer, responses=s.PropertySerializer)
     def patch(self, request, property_id: int):
-        prop = PropertyService.get_visible(
-            actor=request.user, property_id=property_id, syndicat_id=self.selected_syndicat_id
-        )
+        prop = self.selected_property(property_id)
         data = self.parse(s.PropertyUpdateSerializer)
         return self.render(
             s.PropertySerializer,
@@ -66,9 +62,7 @@ class PropertyDetailView(BaseAPIView):
         description="Deletes an empty property (409 while it still holds content).",
     )
     def delete(self, request, property_id: int):
-        prop = PropertyService.get_visible(
-            actor=request.user, property_id=property_id, syndicat_id=self.selected_syndicat_id
-        )
+        prop = self.selected_property(property_id)
         PropertyService.delete(actor=request.user, prop=prop)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -77,9 +71,7 @@ class PropertyDetailView(BaseAPIView):
 class PropertyFeaturesView(BaseAPIView):
     @extend_schema(request=s.PropertyFeaturesSerializer, responses=s.PropertySerializer)
     def patch(self, request, property_id: int):
-        prop = PropertyService.get_visible(
-            actor=request.user, property_id=property_id, syndicat_id=self.selected_syndicat_id
-        )
+        prop = self.selected_property(property_id)
         data = self.parse(s.PropertyFeaturesSerializer)
         return self.render(
             s.PropertySerializer,
@@ -91,9 +83,7 @@ class PropertyFeaturesView(BaseAPIView):
 class PropertyPromoterView(BaseAPIView):
     @extend_schema(request=s.PromoterChangeSerializer, responses=s.PropertySerializer)
     def post(self, request, property_id: int):
-        prop = PropertyService.get_visible(
-            actor=request.user, property_id=property_id, syndicat_id=self.selected_syndicat_id
-        )
+        prop = self.selected_property(property_id)
         data = self.parse(s.PromoterChangeSerializer)
         promoter = PromoterService.get_visible(actor=request.user, promoter_id=data["promoter_id"])
         prop = PropertyService.change_promoter(
@@ -109,9 +99,7 @@ class PropertyPromoterView(BaseAPIView):
 class PropertyLogoView(BaseAPIView):
     @extend_schema(request=UploadFileSerializer, responses=s.PropertySerializer)
     def patch(self, request, property_id: int):
-        prop = PropertyService.get_visible(
-            actor=request.user, property_id=property_id, syndicat_id=self.selected_syndicat_id
-        )
+        prop = self.selected_property(property_id)
         data = self.parse(UploadFileSerializer)
         PropertyService.set_logo(actor=request.user, prop=prop, upload=data["file"])
         return self.render(s.PropertySerializer, prop)

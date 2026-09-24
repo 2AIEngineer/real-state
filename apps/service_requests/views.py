@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from apps.accounts.services.accounts import AccountService
 from apps.common.serializers import ActionReasonSerializer, UploadFilesSerializer
 from apps.common.views import BaseAPIView
-from apps.properties.services import PropertyService, UnitService
+from apps.properties.services import UnitService
 from apps.service_requests import serializers as s
 from apps.service_requests.services import Feedback, ServiceRequestService
 
@@ -21,7 +21,7 @@ class ServiceRequestListView(BaseAPIView):
         return self.render_page(
             s.ServiceRequestSerializer,
             ServiceRequestService.list_visible(
-                actor=request.user, property_id=self.selected_property_id, **query
+                actor=request.user, property_id=self.property.pk, **query
             ),
         )
 
@@ -30,13 +30,13 @@ class ServiceRequestListView(BaseAPIView):
     )
     def post(self, request):
         data = dict(self.parse(s.ServiceRequestCreateSerializer))
-        prop = PropertyService.get_visible(
-            actor=request.user,
-            property_id=self.selected_property_id,
-            syndicat_id=self.selected_syndicat_id,
-        )
+        prop = self.property
         unit_id = data.pop("unit_id")
-        unit = UnitService.get_visible(actor=request.user, unit_id=unit_id) if unit_id else None
+        unit = (
+            UnitService.get_visible(actor=request.user, prop=self.property, unit_id=unit_id)
+            if unit_id
+            else None
+        )
         sr = ServiceRequestService.submit(actor=request.user, prop=prop, unit=unit, **data)
         return self.render(s.ServiceRequestSerializer, sr, status=status.HTTP_201_CREATED)
 
@@ -47,7 +47,9 @@ class ServiceRequestDetailView(BaseAPIView):
     def get(self, request, request_id: int):
         return self.render(
             s.ServiceRequestSerializer,
-            ServiceRequestService.get_visible(actor=request.user, request_id=request_id),
+            ServiceRequestService.get_visible(
+                actor=request.user, prop=self.property, request_id=request_id
+            ),
         )
 
     @extend_schema(
@@ -55,7 +57,9 @@ class ServiceRequestDetailView(BaseAPIView):
         description="Permanently deletes the request, its rounds and its conversation.",
     )
     def delete(self, request, request_id: int):
-        sr = ServiceRequestService.get_visible(actor=request.user, request_id=request_id)
+        sr = ServiceRequestService.get_visible(
+            actor=request.user, prop=self.property, request_id=request_id
+        )
         ServiceRequestService.delete(actor=request.user, sr=sr)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -64,7 +68,9 @@ class ServiceRequestDetailView(BaseAPIView):
 class ServiceRequestFilesView(BaseAPIView):
     @extend_schema(request=UploadFilesSerializer, responses={201: s.ServiceRequestSerializer})
     def post(self, request, request_id: int):
-        sr = ServiceRequestService.get_visible(actor=request.user, request_id=request_id)
+        sr = ServiceRequestService.get_visible(
+            actor=request.user, prop=self.property, request_id=request_id
+        )
         data = self.parse(UploadFilesSerializer)
         ServiceRequestService.add_files(actor=request.user, sr=sr, files=data["files"])
         return self.render(s.ServiceRequestSerializer, sr, status=status.HTTP_201_CREATED)
@@ -74,7 +80,9 @@ class ServiceRequestFilesView(BaseAPIView):
 class ServiceRequestFileDetailView(BaseAPIView):
     @extend_schema(responses={204: None})
     def delete(self, request, request_id: int, attachment_id: int):
-        sr = ServiceRequestService.get_visible(actor=request.user, request_id=request_id)
+        sr = ServiceRequestService.get_visible(
+            actor=request.user, prop=self.property, request_id=request_id
+        )
         ServiceRequestService.remove_file(actor=request.user, sr=sr, attachment_id=attachment_id)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -85,7 +93,9 @@ class AssignmentListView(BaseAPIView):
 
     @extend_schema(responses=s.ServiceRequestAssignmentSerializer(many=True))
     def get(self, request, request_id: int):
-        sr = ServiceRequestService.get_visible(actor=request.user, request_id=request_id)
+        sr = ServiceRequestService.get_visible(
+            actor=request.user, prop=self.property, request_id=request_id
+        )
         return self.render(
             s.ServiceRequestAssignmentSerializer,
             ServiceRequestService.assignments(actor=request.user, sr=sr),
@@ -97,7 +107,9 @@ class AssignmentListView(BaseAPIView):
         responses={201: s.ServiceRequestAssignmentSerializer(many=True)},
     )
     def post(self, request, request_id: int):
-        sr = ServiceRequestService.get_visible(actor=request.user, request_id=request_id)
+        sr = ServiceRequestService.get_visible(
+            actor=request.user, prop=self.property, request_id=request_id
+        )
         data = self.parse(s.ServiceRequestAssignSerializer)
         resolvers = AccountService.resolve_many(user_ids=data["resolver_ids"], field="resolver_ids")
         created = ServiceRequestService.assign(actor=request.user, sr=sr, resolvers=resolvers)
@@ -112,7 +124,9 @@ class ResolveView(BaseAPIView):
         request=s.ServiceRequestResolveSerializer, responses=s.ServiceRequestAssignmentSerializer
     )
     def post(self, request, request_id: int):
-        sr = ServiceRequestService.get_visible(actor=request.user, request_id=request_id)
+        sr = ServiceRequestService.get_visible(
+            actor=request.user, prop=self.property, request_id=request_id
+        )
         data = self.parse(s.ServiceRequestResolveSerializer)
         return self.render(
             s.ServiceRequestAssignmentSerializer,
@@ -124,7 +138,9 @@ class ResolveView(BaseAPIView):
 class FeedbackView(BaseAPIView):
     @extend_schema(request=s.ServiceRequestFeedbackSerializer, responses=s.ServiceRequestSerializer)
     def post(self, request, request_id: int):
-        sr = ServiceRequestService.get_visible(actor=request.user, request_id=request_id)
+        sr = ServiceRequestService.get_visible(
+            actor=request.user, prop=self.property, request_id=request_id
+        )
         data = self.parse(s.ServiceRequestFeedbackSerializer)
         return self.render(
             s.ServiceRequestSerializer,
@@ -138,7 +154,9 @@ class FeedbackView(BaseAPIView):
 class CloseView(BaseAPIView):
     @extend_schema(request=None, responses=s.ServiceRequestSerializer)
     def post(self, request, request_id: int):
-        sr = ServiceRequestService.get_visible(actor=request.user, request_id=request_id)
+        sr = ServiceRequestService.get_visible(
+            actor=request.user, prop=self.property, request_id=request_id
+        )
         return self.render(
             s.ServiceRequestSerializer, ServiceRequestService.close(actor=request.user, sr=sr)
         )
@@ -148,7 +166,9 @@ class CloseView(BaseAPIView):
 class CancelView(BaseAPIView):
     @extend_schema(request=ActionReasonSerializer, responses=s.ServiceRequestSerializer)
     def post(self, request, request_id: int):
-        sr = ServiceRequestService.get_visible(actor=request.user, request_id=request_id)
+        sr = ServiceRequestService.get_visible(
+            actor=request.user, prop=self.property, request_id=request_id
+        )
         data = self.parse(ActionReasonSerializer)
         return self.render(
             s.ServiceRequestSerializer,

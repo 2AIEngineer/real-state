@@ -92,7 +92,9 @@ class TestTargetRoles:
         }
         assert not archived.filter(user=newcomer).exists()
         with pytest.raises(NotFound):
-            AnnouncementService.get_visible(actor=world.tenant, announcement_id=announcement.pk)
+            AnnouncementService.get_visible(
+                actor=world.tenant, prop=world.prop, announcement_id=announcement.pk
+            )
 
     def test_scheduled_and_expired_are_hidden_from_owners_and_tenants(self, world):
         now = timezone.now()

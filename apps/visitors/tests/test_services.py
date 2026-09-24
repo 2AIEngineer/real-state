@@ -30,9 +30,12 @@ def test_owners_and_tenants_are_notified_and_can_read(world):
     assert InboxNotification.objects.filter(
         notification_type="visitor.arrived", user=world.tenant
     ).exists()
-    assert VisitorService.get_visible(actor=world.owner, visitor_id=visitor.pk) == visitor
+    assert (
+        VisitorService.get_visible(actor=world.owner, prop=world.prop, visitor_id=visitor.pk)
+        == visitor
+    )
     with pytest.raises(NotFound):
-        VisitorService.get_visible(actor=world.outsider, visitor_id=visitor.pk)
+        VisitorService.get_visible(actor=world.outsider, prop=world.prop, visitor_id=visitor.pk)
 
 
 def test_owners_and_tenants_cannot_log_visitors(world):

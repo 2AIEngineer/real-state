@@ -15,6 +15,7 @@ from apps.common.exceptions import (
 from apps.common.files.rules import EntityType
 from apps.common.files.service import AttachmentService
 from apps.common.services.audit import AuditService
+from apps.properties.models import Property
 from apps.short_term_rental.audit import ShortTermRentalAudit
 from apps.short_term_rental.models import (
     ShortTermRental,
@@ -137,12 +138,12 @@ class ShortTermRentalMemberService:
         )
 
     @staticmethod
-    def get_visible(*, actor, member_id: int) -> ShortTermRentalMember:
+    def get_visible(*, actor, prop: Property, member_id: int) -> ShortTermRentalMember:
         member = (
             ShortTermRentalMember.objects.select_related(
                 "short_term_rental__unit__building__property"
             )
-            .filter(pk=member_id)
+            .filter(pk=member_id, short_term_rental__unit__building__property=prop)
             .first()
         )
         if member is None or not ShortTermRentalPolicy.can_view_member(actor, member):

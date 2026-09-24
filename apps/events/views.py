@@ -6,7 +6,7 @@ from apps.common.serializers import ActionReasonSerializer, UploadFilesSerialize
 from apps.common.views import BaseAPIView
 from apps.events import serializers as s
 from apps.events.services import EventService
-from apps.properties.services import BuildingService, PropertyService
+from apps.properties.services import BuildingService
 
 
 @extend_schema(tags=["Events"])
@@ -16,11 +16,7 @@ class EventListView(BaseAPIView):
     )
     def get(self, request):
         query = dict(self.parse_query_params(s.EventsQueryParamsSerializer))
-        prop = PropertyService.get_visible(
-            actor=request.user,
-            property_id=self.selected_property_id,
-            syndicat_id=self.selected_syndicat_id,
-        )
+        prop = self.property
         return self.render_page(
             s.EventSerializer, EventService.list_visible(actor=request.user, prop=prop, **query)
         )
@@ -28,14 +24,12 @@ class EventListView(BaseAPIView):
     @extend_schema(request=s.EventCreateSerializer, responses={201: s.EventSerializer})
     def post(self, request):
         data = dict(self.parse(s.EventCreateSerializer))
-        prop = PropertyService.get_visible(
-            actor=request.user,
-            property_id=self.selected_property_id,
-            syndicat_id=self.selected_syndicat_id,
-        )
+        prop = self.property
         building_id = data.pop("building_id")
         building = (
-            BuildingService.get_visible(actor=request.user, building_id=building_id)
+            BuildingService.get_visible(
+                actor=request.user, prop=self.property, building_id=building_id
+            )
             if building_id
             else None
         )
@@ -48,12 +42,13 @@ class EventDetailView(BaseAPIView):
     @extend_schema(responses=s.EventSerializer)
     def get(self, request, event_id: int):
         return self.render(
-            s.EventSerializer, EventService.get_visible(actor=request.user, event_id=event_id)
+            s.EventSerializer,
+            EventService.get_visible(actor=request.user, prop=self.property, event_id=event_id),
         )
 
     @extend_schema(request=s.EventUpdateSerializer, responses=s.EventSerializer)
     def patch(self, request, event_id: int):
-        event = EventService.get_visible(actor=request.user, event_id=event_id)
+        event = EventService.get_visible(actor=request.user, prop=self.property, event_id=event_id)
         data = self.parse(s.EventUpdateSerializer)
         return self.render(
             s.EventSerializer, EventService.update(actor=request.user, event=event, changes=data)
@@ -67,7 +62,9 @@ class EventDetailView(BaseAPIView):
         ),
     )
     def delete(self, request, event_id: int):
-        event = EventService.get_manageable(actor=request.user, event_id=event_id)
+        event = EventService.get_manageable(
+            actor=request.user, prop=self.property, event_id=event_id
+        )
         EventService.delete(actor=request.user, event=event)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -76,7 +73,7 @@ class EventDetailView(BaseAPIView):
 class EventCancelView(BaseAPIView):
     @extend_schema(request=ActionReasonSerializer, responses=s.EventSerializer)
     def post(self, request, event_id: int):
-        event = EventService.get_visible(actor=request.user, event_id=event_id)
+        event = EventService.get_visible(actor=request.user, prop=self.property, event_id=event_id)
         data = self.parse(ActionReasonSerializer)
         return self.render(
             s.EventSerializer,
@@ -90,7 +87,7 @@ class EventArchiveView(BaseAPIView):
 
     @extend_schema(request=None, responses=s.EventSerializer)
     def post(self, request, event_id: int):
-        event = EventService.get_visible(actor=request.user, event_id=event_id)
+        event = EventService.get_visible(actor=request.user, prop=self.property, event_id=event_id)
         EventService.archive(actor=request.user, event=event)
         return self.render(s.EventSerializer, event)
 
@@ -99,7 +96,7 @@ class EventArchiveView(BaseAPIView):
 class EventFilesView(BaseAPIView):
     @extend_schema(request=UploadFilesSerializer, responses={201: s.EventSerializer})
     def post(self, request, event_id: int):
-        event = EventService.get_visible(actor=request.user, event_id=event_id)
+        event = EventService.get_visible(actor=request.user, prop=self.property, event_id=event_id)
         data = self.parse(UploadFilesSerializer)
         EventService.add_files(actor=request.user, event=event, files=data["files"])
         return self.render(s.EventSerializer, event, status=status.HTTP_201_CREATED)
@@ -109,6 +106,6 @@ class EventFilesView(BaseAPIView):
 class EventFileDetailView(BaseAPIView):
     @extend_schema(responses={204: None})
     def delete(self, request, event_id: int, attachment_id: int):
-        event = EventService.get_visible(actor=request.user, event_id=event_id)
+        event = EventService.get_visible(actor=request.user, prop=self.property, event_id=event_id)
         EventService.remove_file(actor=request.user, event=event, attachment_id=attachment_id)
         return Response(status=status.HTTP_204_NO_CONTENT)

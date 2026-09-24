@@ -40,7 +40,7 @@ def answers_for(survey, pick=0):
 def test_drafts_are_invisible_to_owners_and_tenants(world):
     survey = draft(world)
     with pytest.raises(NotFound):
-        SurveyService.get_visible(actor=world.owner, survey_id=survey.pk)
+        SurveyService.get_visible(actor=world.owner, prop=world.prop, survey_id=survey.pk)
 
 
 def test_publication_requires_complete_questions(world):

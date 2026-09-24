@@ -40,6 +40,7 @@ from apps.common.exceptions import (
 from apps.common.services.audit import AuditService
 from apps.notifications.services import delete_notification_traces
 from apps.properties.enums import Feature
+from apps.properties.models import Property
 from apps.properties.services import FeatureGate
 
 BOOKING_CONSTRAINTS = {"booking_no_overlap_on_exclusive_amenity": errors.slot_taken}
@@ -68,10 +69,10 @@ class BookingService:
         return qs
 
     @staticmethod
-    def get_visible(*, actor, booking_id: int) -> Booking:
+    def get_visible(*, actor, prop: Property, booking_id: int) -> Booking:
         booking = (
             Booking.objects.select_related("amenity__property", "booker")
-            .filter(pk=booking_id)
+            .filter(pk=booking_id, amenity__property=prop)
             .first()
         )
         if booking is None or not BookingPolicy.can_view(actor, booking):

@@ -26,6 +26,8 @@ def test_property_creation_flow(api, world):
         format="json",
     )
     assert prop.status_code == 201 and prop.json()["features"]["store"] is False
+    # The new property is worked on once selected.
+    client = api(world.admin, world.syndicat, prop.json()["id"])
     building = client.post(
         f"/api/v1/properties/{prop.json()['id']}/buildings/", {"name": "A"}, format="json"
     ).json()

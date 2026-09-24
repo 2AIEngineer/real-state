@@ -87,8 +87,8 @@ class SurveyService:
         return qs
 
     @staticmethod
-    def get_visible(*, actor, survey_id: int) -> Survey:
-        survey = _prefetched().filter(pk=survey_id).first()
+    def get_visible(*, actor, prop: Property, survey_id: int) -> Survey:
+        survey = _prefetched().filter(pk=survey_id, property=prop).first()
         if survey is None or not SurveyPolicy.can_view(actor, survey):
             raise NotFound("Survey not found.")
         return survey

@@ -20,7 +20,7 @@ def _user(user_id: int, field: str = "user_id"):
 class OwnershipListView(BaseAPIView):
     @extend_schema(responses=s.OwnershipSerializer(many=True))
     def get(self, request, unit_id: int):
-        unit = UnitService.get_visible(actor=request.user, unit_id=unit_id)
+        unit = UnitService.get_visible(actor=request.user, prop=self.property, unit_id=unit_id)
         return self.render_page(
             s.OwnershipSerializer,
             OwnershipService.history(actor=request.user, unit=unit),
@@ -36,7 +36,7 @@ class OwnershipTransferView(BaseAPIView):
         responses={201: s.OwnershipSerializer(many=True)},
     )
     def post(self, request, unit_id: int):
-        unit = UnitService.get_visible(actor=request.user, unit_id=unit_id)
+        unit = UnitService.get_visible(actor=request.user, prop=self.property, unit_id=unit_id)
         data = self.parse(s.OwnershipTransferSerializer)
         acquirers = [
             Acquirer(user=_user(a["user_id"], "acquirers"), share=a["share"])
@@ -58,7 +58,7 @@ class OwnershipTransferView(BaseAPIView):
 class CoOwnerView(BaseAPIView):
     @extend_schema(request=s.OwnershipCoOwnerSerializer, responses={201: s.OwnershipSerializer})
     def post(self, request, unit_id: int):
-        unit = UnitService.get_visible(actor=request.user, unit_id=unit_id)
+        unit = UnitService.get_visible(actor=request.user, prop=self.property, unit_id=unit_id)
         data = self.parse(s.OwnershipCoOwnerSerializer)
         ownership = OwnershipService.add_co_owner(
             actor=request.user,

@@ -88,10 +88,10 @@ class ServiceRequestService:
         return qs
 
     @staticmethod
-    def get_visible(*, actor, request_id: int) -> ServiceRequest:
+    def get_visible(*, actor, prop: Property, request_id: int) -> ServiceRequest:
         sr = (
             ServiceRequest.objects.select_related("property", "unit__building", "requester")
-            .filter(pk=request_id)
+            .filter(pk=request_id, property=prop)
             .first()
         )
         if sr is None or not ServiceRequestPolicy.can_view(actor, sr):

@@ -30,7 +30,7 @@ class ShortTermRentalListView(BaseAPIView):
     def get(self, request):
         query = self.parse_query_params(s.ShortTermRentalsQueryParamsSerializer)
         qs = ShortTermRentalService.list_visible(
-            actor=request.user, property_id=self.selected_property_id, **query
+            actor=request.user, property_id=self.property.pk, **query
         ).prefetch_related("members")
         return self.render_page(s.ShortTermRentalSerializer, qs)
 
@@ -39,7 +39,9 @@ class ShortTermRentalListView(BaseAPIView):
     )
     def post(self, request):
         data = self.parse(s.ShortTermRentalCreateSerializer)
-        unit = UnitService.get_visible(actor=request.user, unit_id=data["unit_id"])
+        unit = UnitService.get_visible(
+            actor=request.user, prop=self.property, unit_id=data["unit_id"]
+        )
         rental = ShortTermRentalService.declare(
             actor=request.user,
             unit=unit,
@@ -59,7 +61,7 @@ class ShortTermRentalDetailView(BaseAPIView):
         return self.render(
             s.ShortTermRentalSerializer,
             ShortTermRentalService.get_visible(
-                actor=request.user, short_term_rental_id=short_term_rental_id
+                actor=request.user, prop=self.property, short_term_rental_id=short_term_rental_id
             ),
         )
 
@@ -68,7 +70,7 @@ class ShortTermRentalDetailView(BaseAPIView):
     )
     def delete(self, request, short_term_rental_id: int):
         rental = ShortTermRentalService.get_visible(
-            actor=request.user, short_term_rental_id=short_term_rental_id
+            actor=request.user, prop=self.property, short_term_rental_id=short_term_rental_id
         )
         ShortTermRentalService.delete(actor=request.user, rental=rental)
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -81,7 +83,7 @@ class RescheduleView(BaseAPIView):
     )
     def post(self, request, short_term_rental_id: int):
         rental = ShortTermRentalService.get_visible(
-            actor=request.user, short_term_rental_id=short_term_rental_id
+            actor=request.user, prop=self.property, short_term_rental_id=short_term_rental_id
         )
         data = self.parse(s.ShortTermRentalRescheduleSerializer)
         return self.render(
@@ -96,7 +98,7 @@ class _TransitionView(BaseAPIView):
     @extend_schema(tags=["Short-term rentals"], request=None, responses=s.ShortTermRentalSerializer)
     def post(self, request, short_term_rental_id: int):
         rental = ShortTermRentalService.get_visible(
-            actor=request.user, short_term_rental_id=short_term_rental_id
+            actor=request.user, prop=self.property, short_term_rental_id=short_term_rental_id
         )
         return self.render(
             s.ShortTermRentalSerializer,
@@ -117,7 +119,7 @@ class CancelView(BaseAPIView):
     @extend_schema(request=ActionReasonSerializer, responses=s.ShortTermRentalSerializer)
     def post(self, request, short_term_rental_id: int):
         rental = ShortTermRentalService.get_visible(
-            actor=request.user, short_term_rental_id=short_term_rental_id
+            actor=request.user, prop=self.property, short_term_rental_id=short_term_rental_id
         )
         data = self.parse(ActionReasonSerializer)
         return self.render(
@@ -133,7 +135,7 @@ class MemberListView(BaseAPIView):
     @extend_schema(responses=s.ShortTermRentalMemberSerializer(many=True))
     def get(self, request, short_term_rental_id: int):
         rental = ShortTermRentalService.get_visible(
-            actor=request.user, short_term_rental_id=short_term_rental_id
+            actor=request.user, prop=self.property, short_term_rental_id=short_term_rental_id
         )
         return self.render(
             s.ShortTermRentalMemberSerializer,
@@ -147,7 +149,7 @@ class MemberListView(BaseAPIView):
     )
     def post(self, request, short_term_rental_id: int):
         rental = ShortTermRentalService.get_visible(
-            actor=request.user, short_term_rental_id=short_term_rental_id
+            actor=request.user, prop=self.property, short_term_rental_id=short_term_rental_id
         )
         data = self.parse(s.ShortTermRentalMemberCreateSerializer)
         member = ShortTermRentalMemberService.add(
@@ -168,7 +170,7 @@ class MemberDetailView(BaseAPIView):
     )
     def patch(self, request, short_term_rental_member_id: int):
         member = ShortTermRentalMemberService.get_visible(
-            actor=request.user, member_id=short_term_rental_member_id
+            actor=request.user, prop=self.property, member_id=short_term_rental_member_id
         )
         data = dict(self.parse(s.ShortTermRentalMemberUpdateSerializer))
         make_primary = data.pop("make_primary", False)
@@ -182,7 +184,7 @@ class MemberDetailView(BaseAPIView):
     @extend_schema(responses={204: None})
     def delete(self, request, short_term_rental_member_id: int):
         member = ShortTermRentalMemberService.get_visible(
-            actor=request.user, member_id=short_term_rental_member_id
+            actor=request.user, prop=self.property, member_id=short_term_rental_member_id
         )
         ShortTermRentalMemberService.remove(actor=request.user, member=member)
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -193,7 +195,7 @@ class MemberIdCardView(BaseAPIView):
     @extend_schema(request=UploadFileSerializer, responses=s.ShortTermRentalMemberSerializer)
     def patch(self, request, short_term_rental_member_id: int):
         member = ShortTermRentalMemberService.get_visible(
-            actor=request.user, member_id=short_term_rental_member_id
+            actor=request.user, prop=self.property, member_id=short_term_rental_member_id
         )
         data = self.parse(UploadFileSerializer)
         ShortTermRentalMemberService.set_id_card(

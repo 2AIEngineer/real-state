@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from apps.accounts.services.accounts import AccountService
 from apps.common.serializers import UploadFilesSerializer
 from apps.common.views import BaseAPIView
-from apps.properties.services import BuildingService, PropertyService, UnitService
+from apps.properties.services import BuildingService, UnitService
 from apps.service_requests.services import ServiceRequestService
 from apps.work_orders import serializers as s
 from apps.work_orders.services import WorkOrderService
@@ -27,7 +27,7 @@ class WorkOrderListView(BaseAPIView):
         return self.render_page(
             s.WorkOrderSerializer,
             WorkOrderService.list_visible(
-                actor=request.user, property_id=self.selected_property_id, **query
+                actor=request.user, property_id=self.property.pk, **query
             ),
         )
 
@@ -35,11 +35,7 @@ class WorkOrderListView(BaseAPIView):
     def post(self, request):
         data = dict(self.parse(s.WorkOrderCreateSerializer))
         actor = request.user
-        prop = PropertyService.get_visible(
-            actor=request.user,
-            property_id=self.selected_property_id,
-            syndicat_id=self.selected_syndicat_id,
-        )
+        prop = self.property
         building_id, unit_id, sr_id = (
             data.pop("building_id"),
             data.pop("unit_id"),
@@ -49,11 +45,17 @@ class WorkOrderListView(BaseAPIView):
             actor=actor,
             prop=prop,
             title=data.pop("title"),
-            building=BuildingService.get_visible(actor=actor, building_id=building_id)
+            building=BuildingService.get_visible(
+                actor=actor, prop=self.property, building_id=building_id
+            )
             if building_id
             else None,
-            unit=UnitService.get_visible(actor=actor, unit_id=unit_id) if unit_id else None,
-            service_request=ServiceRequestService.get_visible(actor=actor, request_id=sr_id)
+            unit=UnitService.get_visible(actor=actor, prop=self.property, unit_id=unit_id)
+            if unit_id
+            else None,
+            service_request=ServiceRequestService.get_visible(
+                actor=actor, prop=self.property, request_id=sr_id
+            )
             if sr_id
             else None,
             assignee=_assignee(data.pop("assignee_id")),
@@ -69,12 +71,16 @@ class WorkOrderDetailView(BaseAPIView):
     def get(self, request, work_order_id: int):
         return self.render(
             s.WorkOrderSerializer,
-            WorkOrderService.get_visible(actor=request.user, work_order_id=work_order_id),
+            WorkOrderService.get_visible(
+                actor=request.user, prop=self.property, work_order_id=work_order_id
+            ),
         )
 
     @extend_schema(request=s.WorkOrderUpdateSerializer, responses=s.WorkOrderSerializer)
     def patch(self, request, work_order_id: int):
-        wo = WorkOrderService.get_visible(actor=request.user, work_order_id=work_order_id)
+        wo = WorkOrderService.get_visible(
+            actor=request.user, prop=self.property, work_order_id=work_order_id
+        )
         data = dict(self.parse(s.WorkOrderUpdateSerializer))
         if "assignee_id" in data:
             data["assignee"] = _assignee(data.pop("assignee_id"))
@@ -86,7 +92,9 @@ class WorkOrderDetailView(BaseAPIView):
         responses={204: None}, description="Permanently deletes the work order and its files."
     )
     def delete(self, request, work_order_id: int):
-        wo = WorkOrderService.get_visible(actor=request.user, work_order_id=work_order_id)
+        wo = WorkOrderService.get_visible(
+            actor=request.user, prop=self.property, work_order_id=work_order_id
+        )
         WorkOrderService.delete(actor=request.user, wo=wo)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -95,7 +103,9 @@ class WorkOrderDetailView(BaseAPIView):
 class WorkOrderTransitionView(BaseAPIView):
     @extend_schema(request=s.WorkOrderTransitionSerializer, responses=s.WorkOrderSerializer)
     def post(self, request, work_order_id: int):
-        wo = WorkOrderService.get_visible(actor=request.user, work_order_id=work_order_id)
+        wo = WorkOrderService.get_visible(
+            actor=request.user, prop=self.property, work_order_id=work_order_id
+        )
         data = self.parse(s.WorkOrderTransitionSerializer)
         return self.render(
             s.WorkOrderSerializer, WorkOrderService.transition(actor=request.user, wo=wo, **data)
@@ -106,7 +116,9 @@ class WorkOrderTransitionView(BaseAPIView):
 class WorkOrderFilesView(BaseAPIView):
     @extend_schema(request=UploadFilesSerializer, responses={201: s.WorkOrderSerializer})
     def post(self, request, work_order_id: int):
-        wo = WorkOrderService.get_visible(actor=request.user, work_order_id=work_order_id)
+        wo = WorkOrderService.get_visible(
+            actor=request.user, prop=self.property, work_order_id=work_order_id
+        )
         data = self.parse(UploadFilesSerializer)
         WorkOrderService.add_files(actor=request.user, wo=wo, files=data["files"])
         return self.render(s.WorkOrderSerializer, wo, status=status.HTTP_201_CREATED)

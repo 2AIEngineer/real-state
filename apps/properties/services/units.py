@@ -13,7 +13,7 @@ from apps.common.services.audit import AuditService
 from apps.notifications.services import delete_notification_traces
 from apps.properties import errors
 from apps.properties.audit import UnitAudit
-from apps.properties.models import Building, Unit, UnitOwnership
+from apps.properties.models import Building, Property, Unit, UnitOwnership
 from apps.properties.policies import UnitPolicy
 from apps.properties.services.ownership import open_promoter_default
 
@@ -47,8 +47,16 @@ class UnitService:
         return UnitService._base().filter(pk__in=AccessService.owned_or_rented_unit_ids(actor))
 
     @staticmethod
-    def get_visible(*, actor, unit_id: int) -> Unit:
-        unit = UnitService._base().filter(pk=unit_id).first()
+    def get_visible(*, actor, prop: Property | None, unit_id: int) -> Unit:
+        """The unit, inside `prop` when given.
+
+        `prop` is the selected property on every dashboard route; only the
+        account console, which works across properties, passes `None`.
+        """
+        units = UnitService._base().filter(pk=unit_id)
+        if prop is not None:
+            units = units.filter(building__property=prop)
+        unit = units.first()
         if unit is None or not UnitPolicy.can_view(actor, unit):
             raise NotFound("Unit not found.")
         return unit

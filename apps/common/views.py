@@ -2,19 +2,19 @@
 
 A client selects a syndicat and a property in three steps after login (see
 `apps.common.enums.UIConfigStep`), and carries the result on every later call:
-`X-Syndicat-Id`, `X-Property-Id`. The property never travels as a URL
-parameter or in a body, so a client can never read or write in a property
-other than the one it selected.
+`X-Syndicat-Id`, `X-Property-Id`.
 
-| Base view          | Requires                                                |
-|---------------------|---------------------------------------------------------|
-| `ApiMixin` + `APIView` | nothing (auth flows, `/me/`, notifications, admin console) |
-| `UIConfigStepView`  | `X-UI-Config-Step` equal to the step the view declares  |
-| `BaseAPIView`       | `X-Syndicat-Id`, `X-Property-Id`, `X-UI-Config-Step: dashboard` |
+| Base view              | Requires                                                    |
+|------------------------|-------------------------------------------------------------|
+| `ApiMixin` + `APIView` | nothing (auth flows, `/me/`, notifications, admin console)   |
+| `UIConfigStepView`     | `X-UI-Config-Step` equal to the step the view declares      |
+| `BaseAPIView`          | `X-Syndicat-Id`, `X-Property-Id`, `X-UI-Config-Step: dashboard` |
 
-Every request once inside the dashboard carries all three: nothing is ever
-guessed, and a client cannot act on a syndicat or a property it has not
-selected.
+`BaseAPIView` resolves the selection once, before the handler runs: the
+property must exist, be visible to the account and belong to the selected
+syndicat. The handler then works with `self.property` and hands it to the
+services, which look records up *inside* that property only: a record of
+another property answers 404, even to an account that manages both.
 """
 
 from __future__ import annotations
@@ -26,7 +26,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.common.enums import UIConfigStep
-from apps.common.exceptions import InvalidInput
+from apps.common.exceptions import InvalidInput, NotFound
 from apps.common.pagination import StandardPagination
 
 SYNDICAT_HEADER = "X-Syndicat-Id"
@@ -35,10 +35,11 @@ STEP_HEADER = "X-UI-Config-Step"
 
 
 class ApiMixin:
-    """Helpers to validate input, read the selection headers and render output."""
+    """Validating input, reading the selection headers, rendering output."""
 
     pagination_class = StandardPagination
 
+    # ------------------------------------------------------------ input / output
     def parse(
         self, serializer_class: type[serializers.Serializer], data: Any = None, **kwargs
     ) -> dict:
@@ -66,7 +67,7 @@ class ApiMixin:
     def get_serializer_context(self) -> dict:
         return {"request": self.request, "view": self}
 
-    # -- selection headers, always readable, required only where a base view says so --
+    # ------------------------------------------------------------ selection headers
     def _header_id(self, header: str) -> int | None:
         raw = self.request.headers.get(header)
         if raw in (None, ""):
@@ -76,13 +77,31 @@ class ApiMixin:
         except (TypeError, ValueError):
             raise InvalidInput(f"{header} must be an integer.", field=header) from None
 
+    def _required_header_id(self, header: str, what: str) -> int:
+        value = self._header_id(header)
+        if value is None:
+            raise InvalidInput(
+                f"Select a {what} first: this endpoint requires the {header} header.",
+                field=header,
+                code="selection_required",
+            )
+        return value
+
     @property
     def selected_syndicat_id(self) -> int | None:
         return self._header_id(SYNDICAT_HEADER)
 
     @property
     def selected_property_id(self) -> int | None:
+        """The raw header, for the few views outside the dashboard that read it
+        (the account console). Dashboard views use `self.property` instead."""
         return self._header_id(PROPERTY_HEADER)
+
+    def require_selected_syndicat_id(self) -> int:
+        return self._required_header_id(SYNDICAT_HEADER, "syndicat")
+
+    def require_selected_property_id(self) -> int:
+        return self._required_header_id(PROPERTY_HEADER, "property")
 
     @property
     def ui_config_step(self) -> str | None:
@@ -92,26 +111,6 @@ class ApiMixin:
         if raw not in UIConfigStep.values:
             raise InvalidInput(f"Unknown UI configuration step '{raw}'.", field=STEP_HEADER)
         return raw
-
-    def require_selected_syndicat_id(self) -> int:
-        syndicat_id = self.selected_syndicat_id
-        if syndicat_id is None:
-            raise InvalidInput(
-                f"Select a syndicat first: this endpoint requires the {SYNDICAT_HEADER} header.",
-                field=SYNDICAT_HEADER,
-                code="selection_required",
-            )
-        return syndicat_id
-
-    def require_selected_property_id(self) -> int:
-        property_id = self.selected_property_id
-        if property_id is None:
-            raise InvalidInput(
-                f"Select a property first: this endpoint requires the {PROPERTY_HEADER} header.",
-                field=PROPERTY_HEADER,
-                code="selection_required",
-            )
-        return property_id
 
     def require_ui_config_step(self, expected: str) -> None:
         if self.ui_config_step != expected:
@@ -134,16 +133,22 @@ class UIConfigStepView(ApiMixin, APIView):
 
 
 class BaseAPIView(ApiMixin, APIView):
-    """Base of every dashboard endpoint.
-
-    The client has finished configuring its session and carries the selection
-    on every call: `X-Syndicat-Id`, `X-Property-Id`, and `X-UI-Config-Step:
-    dashboard`. Nothing here is optional, so no dashboard endpoint can run on
-    a guessed or partial selection.
-    """
+    """Base of every dashboard endpoint: `self.property` is the selected property."""
 
     def initial(self, request, *args, **kwargs) -> None:
         super().initial(request, *args, **kwargs)  # authentication first
         self.require_ui_config_step(UIConfigStep.DASHBOARD)
-        self.require_selected_syndicat_id()
-        self.require_selected_property_id()
+        syndicat_id = self.require_selected_syndicat_id()
+        property_id = self.require_selected_property_id()
+        # Local import: the shared kernel sits below the property referential.
+        from apps.properties.services import PropertyService
+
+        self.property = PropertyService.get_visible(
+            actor=request.user, property_id=property_id, syndicat_id=syndicat_id
+        )
+
+    def selected_property(self, property_id: int):
+        """The property named in the URL, which must be the selected one."""
+        if property_id != self.property.pk:
+            raise NotFound("Property not found.")
+        return self.property

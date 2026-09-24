@@ -66,10 +66,10 @@ class WorkOrderService:
         return qs
 
     @staticmethod
-    def get_visible(*, actor, work_order_id: int) -> WorkOrder:
+    def get_visible(*, actor, prop: Property, work_order_id: int) -> WorkOrder:
         wo = (
             WorkOrder.objects.select_related("property", "building", "unit", "assignee")
-            .filter(pk=work_order_id)
+            .filter(pk=work_order_id, property=prop)
             .first()
         )
         if wo is None or not WorkOrderPolicy.can_view(actor, wo):

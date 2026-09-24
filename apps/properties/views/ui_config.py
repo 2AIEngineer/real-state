@@ -70,10 +70,7 @@ class UIConfigPropertiesView(UIConfigStepView):
 class PropertyStatisticsView(BaseAPIView):
     @extend_schema(responses=s.PropertyStatisticsSerializer)
     def get(self, request, property_id: int):
-        prop = PropertyService.get_visible(
-            actor=request.user,
-            property_id=property_id,
-            syndicat_id=self.selected_syndicat_id,
+        statistics = PropertyStatistics.of(
+            actor=request.user, prop=self.selected_property(property_id)
         )
-        statistics = PropertyStatistics.of(actor=request.user, prop=prop)
         return self.render(s.PropertyStatisticsSerializer, statistics)

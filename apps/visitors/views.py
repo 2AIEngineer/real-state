@@ -18,15 +18,15 @@ class VisitorListView(BaseAPIView):
         query = self.parse_query_params(s.VisitorsQueryParamsSerializer)
         return self.render_page(
             s.VisitorSerializer,
-            VisitorService.list_visible(
-                actor=request.user, property_id=self.selected_property_id, **query
-            ),
+            VisitorService.list_visible(actor=request.user, property_id=self.property.pk, **query),
         )
 
     @extend_schema(request=s.VisitorCreateSerializer, responses={201: s.VisitorSerializer})
     def post(self, request):
         data = self.parse(s.VisitorCreateSerializer)
-        unit = UnitService.get_visible(actor=request.user, unit_id=data["unit_id"])
+        unit = UnitService.get_visible(
+            actor=request.user, prop=self.property, unit_id=data["unit_id"]
+        )
         visitor = VisitorService.register(
             actor=request.user,
             unit=unit,
@@ -46,12 +46,16 @@ class VisitorDetailView(BaseAPIView):
     def get(self, request, visitor_id: int):
         return self.render(
             s.VisitorSerializer,
-            VisitorService.get_visible(actor=request.user, visitor_id=visitor_id),
+            VisitorService.get_visible(
+                actor=request.user, prop=self.property, visitor_id=visitor_id
+            ),
         )
 
     @extend_schema(request=s.VisitorUpdateSerializer, responses=s.VisitorSerializer)
     def patch(self, request, visitor_id: int):
-        visitor = VisitorService.get_visible(actor=request.user, visitor_id=visitor_id)
+        visitor = VisitorService.get_visible(
+            actor=request.user, prop=self.property, visitor_id=visitor_id
+        )
         data = self.parse(s.VisitorUpdateSerializer)
         return self.render(
             s.VisitorSerializer,
@@ -62,7 +66,9 @@ class VisitorDetailView(BaseAPIView):
         responses={204: None}, description="Deletes an entry logged by mistake (management only)."
     )
     def delete(self, request, visitor_id: int):
-        visitor = VisitorService.get_visible(actor=request.user, visitor_id=visitor_id)
+        visitor = VisitorService.get_visible(
+            actor=request.user, prop=self.property, visitor_id=visitor_id
+        )
         VisitorService.delete(actor=request.user, visitor=visitor)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -71,7 +77,9 @@ class VisitorDetailView(BaseAPIView):
 class VisitorDepartureView(BaseAPIView):
     @extend_schema(request=s.VisitorDepartureSerializer, responses=s.VisitorSerializer)
     def post(self, request, visitor_id: int):
-        visitor = VisitorService.get_visible(actor=request.user, visitor_id=visitor_id)
+        visitor = VisitorService.get_visible(
+            actor=request.user, prop=self.property, visitor_id=visitor_id
+        )
         data = self.parse(s.VisitorDepartureSerializer)
         return self.render(
             s.VisitorSerializer,
@@ -83,7 +91,9 @@ class VisitorDepartureView(BaseAPIView):
 class VisitorIdCardView(BaseAPIView):
     @extend_schema(request=UploadFileSerializer, responses=s.VisitorSerializer)
     def patch(self, request, visitor_id: int):
-        visitor = VisitorService.get_visible(actor=request.user, visitor_id=visitor_id)
+        visitor = VisitorService.get_visible(
+            actor=request.user, prop=self.property, visitor_id=visitor_id
+        )
         data = self.parse(UploadFileSerializer)
         VisitorService.set_id_card(actor=request.user, visitor=visitor, upload=data["file"])
         return self.render(s.VisitorSerializer, visitor)

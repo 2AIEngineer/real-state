@@ -88,7 +88,7 @@ def register_ownerships(*, actor, user, ownerships) -> None:
     """
     today = timezone.localdate()
     for owned in ownerships:
-        unit = UnitService.get_visible(actor=actor, unit_id=owned.unit_id)
+        unit = UnitService.get_visible(actor=actor, prop=None, unit_id=owned.unit_id)
         if OwnershipService.active(unit).filter(is_promoter_default=True).exists():
             OwnershipService.transfer(
                 actor=actor,
@@ -111,7 +111,7 @@ def register_tenancy(*, actor, user, tenancy: RentedUnit) -> None:
     """
     LeaseService.record_tenant(
         actor=actor,
-        unit=UnitService.get_visible(actor=actor, unit_id=tenancy.unit_id),
+        unit=UnitService.get_visible(actor=actor, prop=None, unit_id=tenancy.unit_id),
         user=user,
         start_date=tenancy.start_date,
         end_date=tenancy.end_date,

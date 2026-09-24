@@ -31,7 +31,7 @@ from apps.leasing.services.rules import (
     lock_active_lease,
 )
 from apps.notifications.services import delete_notification_traces
-from apps.properties.models import Unit
+from apps.properties.models import Property, Unit
 
 LEASE_CONSTRAINTS = {
     "lease_no_overlapping_active_per_unit": errors.lease_overlap,
@@ -71,8 +71,8 @@ class LeaseService:
         return leases
 
     @staticmethod
-    def get_visible(*, actor, lease_id: int) -> Lease:
-        lease = LeaseService._base().filter(pk=lease_id).first()
+    def get_visible(*, actor, prop: Property, lease_id: int) -> Lease:
+        lease = LeaseService._base().filter(pk=lease_id, unit__building__property=prop).first()
         if lease is None or not LeasePolicy.can_view(actor, lease):
             raise NotFound("Lease not found.")
         return lease

@@ -52,4 +52,4 @@ def test_closed_work_order_is_frozen(world):
 def test_owners_and_tenants_do_not_see_work_orders(world):
     wo = create(world)
     with pytest.raises(NotFound):
-        WorkOrderService.get_visible(actor=world.owner, work_order_id=wo.pk)
+        WorkOrderService.get_visible(actor=world.owner, prop=world.prop, work_order_id=wo.pk)

@@ -29,16 +29,17 @@ from apps.leasing.services.rules import (
     check_member_dates,
     lock_active_lease,
 )
+from apps.properties.models import Property
 
 MEMBER_CONSTRAINTS = {"unique_lease_member": errors.already_member}
 
 
 class LeaseMemberService:
     @staticmethod
-    def get_visible(*, actor, member_id: int) -> LeaseMember:
+    def get_visible(*, actor, prop: Property, member_id: int) -> LeaseMember:
         member = (
             LeaseMember.objects.select_related("lease__unit__building__property", "user")
-            .filter(pk=member_id)
+            .filter(pk=member_id, lease__unit__building__property=prop)
             .first()
         )
         if member is None or not LeaseMemberPolicy.can_view(actor, member):

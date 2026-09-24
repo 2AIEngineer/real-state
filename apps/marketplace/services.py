@@ -81,10 +81,11 @@ class ListingService:
         return qs.filter(status=status) if status else qs
 
     @staticmethod
-    def get_visible(*, actor, listing_id: int) -> MarketplaceListing:
+    def get_visible(*, actor, prop: Property, listing_id: int) -> MarketplaceListing:
+        """A listing of the selected property, or one attached to no property."""
         listing = (
             MarketplaceListing.objects.select_related("seller", "property")
-            .filter(pk=listing_id)
+            .filter(Q(property=prop) | Q(property__isnull=True), pk=listing_id)
             .first()
         )
         if listing is None or not ListingPolicy.can_view(actor, listing):

@@ -57,7 +57,10 @@ def test_documents_are_visible_to_their_target_roles_only(world):
         target_roles=[PropertyRole.OWNER],
         upload=f.pdf(),
     )
-    assert DocumentService.get_visible(actor=world.owner, document_id=document.pk) == document
+    assert (
+        DocumentService.get_visible(actor=world.owner, prop=world.prop, document_id=document.pk)
+        == document
+    )
     with pytest.raises(NotFound):
-        DocumentService.get_visible(actor=world.tenant, document_id=document.pk)
+        DocumentService.get_visible(actor=world.tenant, prop=world.prop, document_id=document.pk)
     assert DocumentPolicy.can_view(world.tenant, document) is False

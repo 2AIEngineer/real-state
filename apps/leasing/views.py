@@ -46,9 +46,7 @@ class LeaseListView(BaseAPIView):
         query = self.parse_query_params(s.LeasesQueryParamsSerializer)
         return self.render_page(
             s.LeaseSerializer,
-            LeaseService.list_visible(
-                actor=request.user, property_id=self.selected_property_id, **query
-            ),
+            LeaseService.list_visible(actor=request.user, property_id=self.property.pk, **query),
         )
 
     @extend_schema(request=s.LeaseCreateSerializer, responses={201: s.LeaseSerializer})
@@ -66,7 +64,7 @@ class LeaseListView(BaseAPIView):
         )
         return self.render(
             s.LeaseSerializer,
-            LeaseService.get_visible(actor=request.user, lease_id=lease.pk),
+            LeaseService.get_visible(actor=request.user, prop=self.property, lease_id=lease.pk),
             status=status.HTTP_201_CREATED,
         )
 
@@ -76,16 +74,18 @@ class LeaseDetailView(BaseAPIView):
     @extend_schema(responses=s.LeaseSerializer)
     def get(self, request, lease_id: int):
         return self.render(
-            s.LeaseSerializer, LeaseService.get_visible(actor=request.user, lease_id=lease_id)
+            s.LeaseSerializer,
+            LeaseService.get_visible(actor=request.user, prop=self.property, lease_id=lease_id),
         )
 
     @extend_schema(request=s.LeaseUpdateSerializer, responses=s.LeaseSerializer)
     def patch(self, request, lease_id: int):
-        lease = LeaseService.get_visible(actor=request.user, lease_id=lease_id)
+        lease = LeaseService.get_visible(actor=request.user, prop=self.property, lease_id=lease_id)
         data = self.parse(s.LeaseUpdateSerializer)
         LeaseService.update(actor=request.user, lease=lease, changes=data)
         return self.render(
-            s.LeaseSerializer, LeaseService.get_visible(actor=request.user, lease_id=lease_id)
+            s.LeaseSerializer,
+            LeaseService.get_visible(actor=request.user, prop=self.property, lease_id=lease_id),
         )
 
     @extend_schema(
@@ -93,7 +93,7 @@ class LeaseDetailView(BaseAPIView):
         description="Permanently deletes the lease, its members and its inspections.",
     )
     def delete(self, request, lease_id: int):
-        lease = LeaseService.get_visible(actor=request.user, lease_id=lease_id)
+        lease = LeaseService.get_visible(actor=request.user, prop=self.property, lease_id=lease_id)
         LeaseService.delete(actor=request.user, lease=lease)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -102,7 +102,7 @@ class LeaseDetailView(BaseAPIView):
 class LeaseTerminateView(BaseAPIView):
     @extend_schema(request=s.LeaseTerminationSerializer, responses=s.LeaseSerializer)
     def post(self, request, lease_id: int):
-        lease = LeaseService.get_visible(actor=request.user, lease_id=lease_id)
+        lease = LeaseService.get_visible(actor=request.user, prop=self.property, lease_id=lease_id)
         data = self.parse(s.LeaseTerminationSerializer)
         LeaseService.terminate(
             actor=request.user,
@@ -111,7 +111,8 @@ class LeaseTerminateView(BaseAPIView):
             reason=data["reason"],
         )
         return self.render(
-            s.LeaseSerializer, LeaseService.get_visible(actor=request.user, lease_id=lease_id)
+            s.LeaseSerializer,
+            LeaseService.get_visible(actor=request.user, prop=self.property, lease_id=lease_id),
         )
 
 
@@ -119,11 +120,12 @@ class LeaseTerminateView(BaseAPIView):
 class LeaseCancelView(BaseAPIView):
     @extend_schema(request=ActionReasonSerializer, responses=s.LeaseSerializer)
     def post(self, request, lease_id: int):
-        lease = LeaseService.get_visible(actor=request.user, lease_id=lease_id)
+        lease = LeaseService.get_visible(actor=request.user, prop=self.property, lease_id=lease_id)
         data = self.parse(ActionReasonSerializer)
         LeaseService.cancel(actor=request.user, lease=lease, reason=data["reason"])
         return self.render(
-            s.LeaseSerializer, LeaseService.get_visible(actor=request.user, lease_id=lease_id)
+            s.LeaseSerializer,
+            LeaseService.get_visible(actor=request.user, prop=self.property, lease_id=lease_id),
         )
 
 
@@ -131,7 +133,7 @@ class LeaseCancelView(BaseAPIView):
 class LeaseMemberListView(BaseAPIView):
     @extend_schema(request=s.LeaseMemberInputSerializer, responses={201: s.LeaseMemberSerializer})
     def post(self, request, lease_id: int):
-        lease = LeaseService.get_visible(actor=request.user, lease_id=lease_id)
+        lease = LeaseService.get_visible(actor=request.user, prop=self.property, lease_id=lease_id)
         data = self.parse(s.LeaseMemberInputSerializer)
         member = LeaseMemberService.add(actor=request.user, lease=lease, member=_member_input(data))
         return self.render(s.LeaseMemberSerializer, member, status=status.HTTP_201_CREATED)
@@ -143,12 +145,16 @@ class LeaseMemberDetailView(BaseAPIView):
     def get(self, request, member_id: int):
         return self.render(
             s.LeaseMemberSerializer,
-            LeaseMemberService.get_visible(actor=request.user, member_id=member_id),
+            LeaseMemberService.get_visible(
+                actor=request.user, prop=self.property, member_id=member_id
+            ),
         )
 
     @extend_schema(request=s.LeaseMemberUpdateSerializer, responses=s.LeaseMemberSerializer)
     def patch(self, request, member_id: int):
-        member = LeaseMemberService.get_visible(actor=request.user, member_id=member_id)
+        member = LeaseMemberService.get_visible(
+            actor=request.user, prop=self.property, member_id=member_id
+        )
         data = self.parse(s.LeaseMemberUpdateSerializer)
         return self.render(
             s.LeaseMemberSerializer,
@@ -160,7 +166,9 @@ class LeaseMemberDetailView(BaseAPIView):
 class LeaseMemberDepartureView(BaseAPIView):
     @extend_schema(request=s.LeaseMemberDepartureSerializer, responses=s.LeaseMemberSerializer)
     def post(self, request, member_id: int):
-        member = LeaseMemberService.get_visible(actor=request.user, member_id=member_id)
+        member = LeaseMemberService.get_visible(
+            actor=request.user, prop=self.property, member_id=member_id
+        )
         data = self.parse(s.LeaseMemberDepartureSerializer)
         return self.render(
             s.LeaseMemberSerializer,
@@ -174,7 +182,9 @@ class LeaseMemberDepartureView(BaseAPIView):
 class LeaseMemberProofOfIdentityView(BaseAPIView):
     @extend_schema(request=UploadFileSerializer, responses=s.LeaseMemberSerializer)
     def patch(self, request, member_id: int):
-        member = LeaseMemberService.get_visible(actor=request.user, member_id=member_id)
+        member = LeaseMemberService.get_visible(
+            actor=request.user, prop=self.property, member_id=member_id
+        )
         data = self.parse(UploadFileSerializer)
         LeaseMemberService.set_proof_of_identity(
             actor=request.user, member=member, upload=data["file"]
@@ -186,7 +196,9 @@ class LeaseMemberProofOfIdentityView(BaseAPIView):
 class LeaseMemberProofOfAddressView(BaseAPIView):
     @extend_schema(request=UploadFileSerializer, responses=s.LeaseMemberSerializer)
     def patch(self, request, member_id: int):
-        member = LeaseMemberService.get_visible(actor=request.user, member_id=member_id)
+        member = LeaseMemberService.get_visible(
+            actor=request.user, prop=self.property, member_id=member_id
+        )
         data = self.parse(UploadFileSerializer)
         LeaseMemberService.set_proof_of_address(
             actor=request.user, member=member, upload=data["file"]
@@ -198,7 +210,7 @@ class LeaseMemberProofOfAddressView(BaseAPIView):
 class LeaseComponentStateListView(BaseAPIView):
     @extend_schema(responses=s.LeaseComponentStateSerializer(many=True))
     def get(self, request, lease_id: int):
-        lease = LeaseService.get_visible(actor=request.user, lease_id=lease_id)
+        lease = LeaseService.get_visible(actor=request.user, prop=self.property, lease_id=lease_id)
         return self.render_page(
             s.LeaseComponentStateSerializer,
             LeaseComponentStateService.list_for_lease(actor=request.user, lease=lease),
@@ -209,7 +221,7 @@ class LeaseComponentStateListView(BaseAPIView):
         responses={201: s.LeaseComponentStateSerializer},
     )
     def post(self, request, lease_id: int):
-        lease = LeaseService.get_visible(actor=request.user, lease_id=lease_id)
+        lease = LeaseService.get_visible(actor=request.user, prop=self.property, lease_id=lease_id)
         data = self.parse(s.LeaseComponentStateInputSerializer)
         component = LeaseComponentStateService.record(actor=request.user, lease=lease, **data)
         return self.render(
@@ -222,7 +234,7 @@ class LeaseComponentStateDetailView(BaseAPIView):
     """One line of an inspection, always read through its lease."""
 
     def _component(self, request, lease_id: int, lease_component_state_id: int):
-        lease = LeaseService.get_visible(actor=request.user, lease_id=lease_id)
+        lease = LeaseService.get_visible(actor=request.user, prop=self.property, lease_id=lease_id)
         return LeaseComponentStateService.get(
             actor=request.user, lease=lease, lease_component_state_id=lease_component_state_id
         )
@@ -251,7 +263,7 @@ class LeaseComponentStateDetailView(BaseAPIView):
 class LeaseComponentStateFilesView(BaseAPIView):
     @extend_schema(request=UploadFilesSerializer, responses={201: s.LeaseComponentStateSerializer})
     def post(self, request, lease_id: int, lease_component_state_id: int):
-        lease = LeaseService.get_visible(actor=request.user, lease_id=lease_id)
+        lease = LeaseService.get_visible(actor=request.user, prop=self.property, lease_id=lease_id)
         component = LeaseComponentStateService.get(
             actor=request.user, lease=lease, lease_component_state_id=lease_component_state_id
         )

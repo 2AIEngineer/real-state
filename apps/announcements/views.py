@@ -6,7 +6,7 @@ from apps.announcements import serializers as s
 from apps.announcements.services import AnnouncementService
 from apps.common.serializers import UploadFilesSerializer
 from apps.common.views import BaseAPIView
-from apps.properties.services import BuildingService, PropertyService
+from apps.properties.services import BuildingService
 
 
 @extend_schema(tags=["Announcements"])
@@ -17,11 +17,7 @@ class AnnouncementListView(BaseAPIView):
     )
     def get(self, request):
         query = self.parse_query_params(s.AnnouncementsQueryParamsSerializer)
-        prop = PropertyService.get_visible(
-            actor=request.user,
-            property_id=self.selected_property_id,
-            syndicat_id=self.selected_syndicat_id,
-        )
+        prop = self.property
         qs = AnnouncementService.list_visible(
             actor=request.user,
             prop=prop,
@@ -36,14 +32,12 @@ class AnnouncementListView(BaseAPIView):
     )
     def post(self, request):
         data = dict(self.parse(s.AnnouncementCreateSerializer))
-        prop = PropertyService.get_visible(
-            actor=request.user,
-            property_id=self.selected_property_id,
-            syndicat_id=self.selected_syndicat_id,
-        )
+        prop = self.property
         building_id = data.pop("building_id")
         building = (
-            BuildingService.get_visible(actor=request.user, building_id=building_id)
+            BuildingService.get_visible(
+                actor=request.user, prop=self.property, building_id=building_id
+            )
             if building_id
             else None
         )
@@ -59,13 +53,15 @@ class AnnouncementDetailView(BaseAPIView):
     def get(self, request, announcement_id: int):
         return self.render(
             s.AnnouncementSerializer,
-            AnnouncementService.get_visible(actor=request.user, announcement_id=announcement_id),
+            AnnouncementService.get_visible(
+                actor=request.user, prop=self.property, announcement_id=announcement_id
+            ),
         )
 
     @extend_schema(request=s.AnnouncementUpdateSerializer, responses=s.AnnouncementSerializer)
     def patch(self, request, announcement_id: int):
         announcement = AnnouncementService.get_visible(
-            actor=request.user, announcement_id=announcement_id
+            actor=request.user, prop=self.property, announcement_id=announcement_id
         )
         data = self.parse(s.AnnouncementUpdateSerializer)
         return self.render(
@@ -82,7 +78,7 @@ class AnnouncementDetailView(BaseAPIView):
     )
     def delete(self, request, announcement_id: int):
         announcement = AnnouncementService.get_manageable(
-            actor=request.user, announcement_id=announcement_id
+            actor=request.user, prop=self.property, announcement_id=announcement_id
         )
         AnnouncementService.delete(actor=request.user, announcement=announcement)
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -95,7 +91,7 @@ class AnnouncementArchiveView(BaseAPIView):
     @extend_schema(request=None, responses=s.AnnouncementSerializer)
     def post(self, request, announcement_id: int):
         announcement = AnnouncementService.get_visible(
-            actor=request.user, announcement_id=announcement_id
+            actor=request.user, prop=self.property, announcement_id=announcement_id
         )
         AnnouncementService.archive(actor=request.user, announcement=announcement)
         return self.render(s.AnnouncementSerializer, announcement)
@@ -106,7 +102,7 @@ class AnnouncementFilesView(BaseAPIView):
     @extend_schema(request=UploadFilesSerializer, responses={201: s.AnnouncementSerializer})
     def post(self, request, announcement_id: int):
         announcement = AnnouncementService.get_visible(
-            actor=request.user, announcement_id=announcement_id
+            actor=request.user, prop=self.property, announcement_id=announcement_id
         )
         data = self.parse(UploadFilesSerializer)
         AnnouncementService.add_files(
@@ -120,7 +116,7 @@ class AnnouncementFileDetailView(BaseAPIView):
     @extend_schema(responses={204: None})
     def delete(self, request, announcement_id: int, attachment_id: int):
         announcement = AnnouncementService.get_visible(
-            actor=request.user, announcement_id=announcement_id
+            actor=request.user, prop=self.property, announcement_id=announcement_id
         )
         AnnouncementService.remove_file(
             actor=request.user, announcement=announcement, attachment_id=attachment_id

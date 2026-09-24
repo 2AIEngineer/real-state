@@ -60,10 +60,10 @@ class EventService:
         return qs
 
     @staticmethod
-    def get_visible(*, actor, event_id: int) -> Event:
+    def get_visible(*, actor, prop: Property, event_id: int) -> Event:
         event = (
             Event.objects.not_archived()
-            .filter(pk=event_id)
+            .filter(pk=event_id, property=prop)
             .filter(EventPolicy.visible_filter(actor))
             .select_related("property", "building", "created_by")
             .first()
@@ -73,13 +73,13 @@ class EventService:
         return event
 
     @staticmethod
-    def get_manageable(*, actor, event_id: int) -> Event:
+    def get_manageable(*, actor, prop: Property, event_id: int) -> Event:
         """Lookup for management actions, archived records included.
 
         A archived event is out of everyone's feed but must stay reachable
         for the people who may erase it for good.
         """
-        event = Event.objects.select_related("property").filter(pk=event_id).first()
+        event = Event.objects.select_related("property").filter(pk=event_id, property=prop).first()
         if event is None or not EventPolicy.can_update(actor, event):
             raise NotFound("Event not found.")
         return event

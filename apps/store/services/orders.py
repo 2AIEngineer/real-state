@@ -58,11 +58,11 @@ class OrderService:
         return qs
 
     @staticmethod
-    def get_visible(*, actor, order_id: int) -> Order:
+    def get_visible(*, actor, prop: Property, order_id: int) -> Order:
         order = (
             Order.objects.select_related("property", "orderer", "unit")
             .prefetch_related("items")
-            .filter(pk=order_id)
+            .filter(pk=order_id, property=prop)
             .first()
         )
         if order is None or not OrderPolicy.can_view(actor, order):

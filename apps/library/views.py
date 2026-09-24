@@ -6,7 +6,6 @@ from apps.common.serializers import UploadFileSerializer
 from apps.common.views import BaseAPIView
 from apps.library import serializers as s
 from apps.library.services import DocumentService, FolderService
-from apps.properties.services import PropertyService
 
 
 @extend_schema(tags=["Library"])
@@ -17,11 +16,7 @@ class FolderListView(BaseAPIView):
     )
     def get(self, request):
         query = self.parse_query_params(s.LibraryFoldersQueryParamsSerializer)
-        prop = PropertyService.get_visible(
-            actor=request.user,
-            property_id=self.selected_property_id,
-            syndicat_id=self.selected_syndicat_id,
-        )
+        prop = self.property
         qs = FolderService.list_for_property(
             actor=request.user,
             prop=prop,
@@ -35,14 +30,10 @@ class FolderListView(BaseAPIView):
     )
     def post(self, request):
         data = dict(self.parse(s.LibraryFolderCreateSerializer))
-        prop = PropertyService.get_visible(
-            actor=request.user,
-            property_id=self.selected_property_id,
-            syndicat_id=self.selected_syndicat_id,
-        )
+        prop = self.property
         parent_id = data.pop("parent_folder_id")
         parent = (
-            FolderService.get_visible(actor=request.user, folder_id=parent_id)
+            FolderService.get_visible(actor=request.user, prop=self.property, folder_id=parent_id)
             if parent_id
             else None
         )
@@ -56,17 +47,21 @@ class FolderDetailView(BaseAPIView):
     def get(self, request, folder_id: int):
         return self.render(
             s.LibraryFolderSerializer,
-            FolderService.get_visible(actor=request.user, folder_id=folder_id),
+            FolderService.get_visible(actor=request.user, prop=self.property, folder_id=folder_id),
         )
 
     @extend_schema(request=s.LibraryFolderUpdateSerializer, responses=s.LibraryFolderSerializer)
     def patch(self, request, folder_id: int):
-        folder = FolderService.get_visible(actor=request.user, folder_id=folder_id)
+        folder = FolderService.get_visible(
+            actor=request.user, prop=self.property, folder_id=folder_id
+        )
         data = dict(self.parse(s.LibraryFolderUpdateSerializer))
         if "parent_folder_id" in data:
             parent_id = data.pop("parent_folder_id")
             data["parent_folder"] = (
-                FolderService.get_visible(actor=request.user, folder_id=parent_id)
+                FolderService.get_visible(
+                    actor=request.user, prop=self.property, folder_id=parent_id
+                )
                 if parent_id
                 else None
             )
@@ -77,7 +72,9 @@ class FolderDetailView(BaseAPIView):
 
     @extend_schema(responses={204: None})
     def delete(self, request, folder_id: int):
-        folder = FolderService.get_visible(actor=request.user, folder_id=folder_id)
+        folder = FolderService.get_visible(
+            actor=request.user, prop=self.property, folder_id=folder_id
+        )
         FolderService.delete(actor=request.user, folder=folder)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -90,11 +87,7 @@ class DocumentListView(BaseAPIView):
     )
     def get(self, request):
         query = self.parse_query_params(s.LibraryDocumentsQueryParamsSerializer)
-        prop = PropertyService.get_visible(
-            actor=request.user,
-            property_id=self.selected_property_id,
-            syndicat_id=self.selected_syndicat_id,
-        )
+        prop = self.property
         qs = DocumentService.list_visible(
             actor=request.user,
             prop=prop,
@@ -108,7 +101,9 @@ class DocumentListView(BaseAPIView):
     )
     def post(self, request):
         data = dict(self.parse(s.LibraryDocumentCreateSerializer))
-        folder = FolderService.get_visible(actor=request.user, folder_id=data.pop("folder_id"))
+        folder = FolderService.get_visible(
+            actor=request.user, prop=self.property, folder_id=data.pop("folder_id")
+        )
         upload = data.pop("file")
         document = DocumentService.publish(actor=request.user, folder=folder, upload=upload, **data)
         return self.render(s.LibraryDocumentSerializer, document, status=status.HTTP_201_CREATED)
@@ -120,16 +115,20 @@ class DocumentDetailView(BaseAPIView):
     def get(self, request, document_id: int):
         return self.render(
             s.LibraryDocumentSerializer,
-            DocumentService.get_visible(actor=request.user, document_id=document_id),
+            DocumentService.get_visible(
+                actor=request.user, prop=self.property, document_id=document_id
+            ),
         )
 
     @extend_schema(request=s.LibraryDocumentUpdateSerializer, responses=s.LibraryDocumentSerializer)
     def patch(self, request, document_id: int):
-        document = DocumentService.get_visible(actor=request.user, document_id=document_id)
+        document = DocumentService.get_visible(
+            actor=request.user, prop=self.property, document_id=document_id
+        )
         data = dict(self.parse(s.LibraryDocumentUpdateSerializer))
         if "folder_id" in data:
             data["folder"] = FolderService.get_visible(
-                actor=request.user, folder_id=data.pop("folder_id")
+                actor=request.user, prop=self.property, folder_id=data.pop("folder_id")
             )
         return self.render(
             s.LibraryDocumentSerializer,
@@ -138,7 +137,9 @@ class DocumentDetailView(BaseAPIView):
 
     @extend_schema(responses={204: None})
     def delete(self, request, document_id: int):
-        document = DocumentService.get_visible(actor=request.user, document_id=document_id)
+        document = DocumentService.get_visible(
+            actor=request.user, prop=self.property, document_id=document_id
+        )
         DocumentService.delete(actor=request.user, document=document)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -147,7 +148,9 @@ class DocumentDetailView(BaseAPIView):
 class DocumentFileView(BaseAPIView):
     @extend_schema(request=UploadFileSerializer, responses=s.LibraryDocumentSerializer)
     def patch(self, request, document_id: int):
-        document = DocumentService.get_visible(actor=request.user, document_id=document_id)
+        document = DocumentService.get_visible(
+            actor=request.user, prop=self.property, document_id=document_id
+        )
         data = self.parse(UploadFileSerializer)
         DocumentService.replace_file(actor=request.user, document=document, upload=data["file"])
         return self.render(s.LibraryDocumentSerializer, document)

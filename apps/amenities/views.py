@@ -6,7 +6,7 @@ from apps.amenities import serializers as s
 from apps.amenities.services import AmenityService, BookingService
 from apps.common.serializers import ActionReasonSerializer, UploadFilesSerializer
 from apps.common.views import BaseAPIView
-from apps.properties.services import BuildingService, PropertyService
+from apps.properties.services import BuildingService
 
 
 @extend_schema(tags=["Amenities"])
@@ -16,11 +16,7 @@ class AmenityListView(BaseAPIView):
     )
     def get(self, request):
         query = self.parse_query_params(s.AmenitiesQueryParamsSerializer)
-        prop = PropertyService.get_visible(
-            actor=request.user,
-            property_id=self.selected_property_id,
-            syndicat_id=self.selected_syndicat_id,
-        )
+        prop = self.property
         qs = AmenityService.list_visible(
             actor=request.user, prop=prop, include_inactive=query["include_inactive"]
         )
@@ -29,14 +25,12 @@ class AmenityListView(BaseAPIView):
     @extend_schema(request=s.AmenityCreateSerializer, responses={201: s.AmenitySerializer})
     def post(self, request):
         data = dict(self.parse(s.AmenityCreateSerializer))
-        prop = PropertyService.get_visible(
-            actor=request.user,
-            property_id=self.selected_property_id,
-            syndicat_id=self.selected_syndicat_id,
-        )
+        prop = self.property
         building_id = data.pop("building_id")
         building = (
-            BuildingService.get_visible(actor=request.user, building_id=building_id)
+            BuildingService.get_visible(
+                actor=request.user, prop=self.property, building_id=building_id
+            )
             if building_id
             else None
         )
@@ -50,12 +44,16 @@ class AmenityDetailView(BaseAPIView):
     def get(self, request, amenity_id: int):
         return self.render(
             s.AmenitySerializer,
-            AmenityService.get_visible(actor=request.user, amenity_id=amenity_id),
+            AmenityService.get_visible(
+                actor=request.user, prop=self.property, amenity_id=amenity_id
+            ),
         )
 
     @extend_schema(request=s.AmenityUpdateSerializer, responses=s.AmenitySerializer)
     def patch(self, request, amenity_id: int):
-        amenity = AmenityService.get_visible(actor=request.user, amenity_id=amenity_id)
+        amenity = AmenityService.get_visible(
+            actor=request.user, prop=self.property, amenity_id=amenity_id
+        )
         data = self.parse(s.AmenityUpdateSerializer)
         return self.render(
             s.AmenitySerializer,
@@ -64,7 +62,9 @@ class AmenityDetailView(BaseAPIView):
 
     @extend_schema(responses={204: None}, description="Deletes an amenity that was never booked.")
     def delete(self, request, amenity_id: int):
-        amenity = AmenityService.get_visible(actor=request.user, amenity_id=amenity_id)
+        amenity = AmenityService.get_visible(
+            actor=request.user, prop=self.property, amenity_id=amenity_id
+        )
         AmenityService.delete(actor=request.user, amenity=amenity)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -78,7 +78,9 @@ class AmenityScheduleView(BaseAPIView):
         responses=s.AmenitySlotSerializer(many=True),
     )
     def get(self, request, amenity_id: int):
-        amenity = AmenityService.get_visible(actor=request.user, amenity_id=amenity_id)
+        amenity = AmenityService.get_visible(
+            actor=request.user, prop=self.property, amenity_id=amenity_id
+        )
         query = self.parse_query_params(s.AmenityScheduleQueryParamsSerializer)
         return self.render(
             s.AmenitySlotSerializer,
@@ -91,7 +93,9 @@ class AmenityScheduleView(BaseAPIView):
 class AmenityImagesView(BaseAPIView):
     @extend_schema(request=UploadFilesSerializer, responses={201: s.AmenitySerializer})
     def post(self, request, amenity_id: int):
-        amenity = AmenityService.get_visible(actor=request.user, amenity_id=amenity_id)
+        amenity = AmenityService.get_visible(
+            actor=request.user, prop=self.property, amenity_id=amenity_id
+        )
         data = self.parse(UploadFilesSerializer)
         AmenityService.add_images(actor=request.user, amenity=amenity, files=data["files"])
         return self.render(s.AmenitySerializer, amenity, status=status.HTTP_201_CREATED)
@@ -101,7 +105,9 @@ class AmenityImagesView(BaseAPIView):
 class AmenityImageDetailView(BaseAPIView):
     @extend_schema(responses={204: None})
     def delete(self, request, amenity_id: int, attachment_id: int):
-        amenity = AmenityService.get_visible(actor=request.user, amenity_id=amenity_id)
+        amenity = AmenityService.get_visible(
+            actor=request.user, prop=self.property, amenity_id=amenity_id
+        )
         AmenityService.remove_image(
             actor=request.user, amenity=amenity, attachment_id=attachment_id
         )
@@ -117,15 +123,15 @@ class BookingListView(BaseAPIView):
         query = self.parse_query_params(s.BookingsQueryParamsSerializer)
         return self.render_page(
             s.BookingSerializer,
-            BookingService.list_visible(
-                actor=request.user, property_id=self.selected_property_id, **query
-            ),
+            BookingService.list_visible(actor=request.user, property_id=self.property.pk, **query),
         )
 
     @extend_schema(request=s.BookingCreateSerializer, responses={201: s.BookingSerializer})
     def post(self, request):
         data = self.parse(s.BookingCreateSerializer)
-        amenity = AmenityService.get_visible(actor=request.user, amenity_id=data["amenity_id"])
+        amenity = AmenityService.get_visible(
+            actor=request.user, prop=self.property, amenity_id=data["amenity_id"]
+        )
         booking = BookingService.book(
             actor=request.user,
             amenity=amenity,
@@ -143,14 +149,18 @@ class BookingDetailView(BaseAPIView):
     def get(self, request, booking_id: int):
         return self.render(
             s.BookingSerializer,
-            BookingService.get_visible(actor=request.user, booking_id=booking_id),
+            BookingService.get_visible(
+                actor=request.user, prop=self.property, booking_id=booking_id
+            ),
         )
 
     @extend_schema(
         responses={204: None}, description="Permanently deletes the booking and its conversation."
     )
     def delete(self, request, booking_id: int):
-        booking = BookingService.get_visible(actor=request.user, booking_id=booking_id)
+        booking = BookingService.get_visible(
+            actor=request.user, prop=self.property, booking_id=booking_id
+        )
         BookingService.delete(actor=request.user, booking=booking)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -159,7 +169,9 @@ class BookingDetailView(BaseAPIView):
 class BookingDecisionView(BaseAPIView):
     @extend_schema(request=s.BookingDecisionSerializer, responses=s.BookingSerializer)
     def post(self, request, booking_id: int):
-        booking = BookingService.get_visible(actor=request.user, booking_id=booking_id)
+        booking = BookingService.get_visible(
+            actor=request.user, prop=self.property, booking_id=booking_id
+        )
         data = self.parse(s.BookingDecisionSerializer)
         return self.render(
             s.BookingSerializer, BookingService.decide(actor=request.user, booking=booking, **data)
@@ -170,7 +182,9 @@ class BookingDecisionView(BaseAPIView):
 class BookingCancelView(BaseAPIView):
     @extend_schema(request=ActionReasonSerializer, responses=s.BookingSerializer)
     def post(self, request, booking_id: int):
-        booking = BookingService.get_visible(actor=request.user, booking_id=booking_id)
+        booking = BookingService.get_visible(
+            actor=request.user, prop=self.property, booking_id=booking_id
+        )
         data = self.parse(ActionReasonSerializer)
         return self.render(
             s.BookingSerializer,

@@ -31,9 +31,11 @@ class BuildingService:
         )
 
     @staticmethod
-    def get_visible(*, actor, building_id: int) -> Building:
+    def get_visible(*, actor, prop: Property, building_id: int) -> Building:
         building = (
-            Building.objects.select_related("property__syndicat").filter(pk=building_id).first()
+            Building.objects.select_related("property__syndicat")
+            .filter(pk=building_id, property=prop)
+            .first()
         )
         if building is None or not BuildingPolicy.can_view(actor, building):
             raise NotFound("Building not found.")

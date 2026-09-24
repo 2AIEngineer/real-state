@@ -24,7 +24,6 @@ def _submit(api, world, **extra):
     )
 
 
-@pytest.mark.xfail(strict=True, reason="AUDIT S1: detail routes ignore X-Property-Id")
 def test_a_record_is_not_reachable_under_another_selected_property(api, world):
     other = f.make_property(syndicat=world.syndicat, name="Other")
     f.assign_role(world.manager, StructuralRole.MANAGER, other)
@@ -35,7 +34,6 @@ def test_a_record_is_not_reachable_under_another_selected_property(api, world):
     assert response.status_code == 404
 
 
-@pytest.mark.xfail(strict=True, reason="AUDIT S1: the syndicat header is never checked on lists")
 def test_a_foreign_syndicat_header_is_rejected(api, world):
     foreign = f.make_syndicat(name="Foreign")
 

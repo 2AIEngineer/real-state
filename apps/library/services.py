@@ -81,8 +81,10 @@ class FolderService:
         return qs
 
     @staticmethod
-    def get_visible(*, actor, folder_id: int) -> Folder:
-        folder = Folder.objects.select_related("property").filter(pk=folder_id).first()
+    def get_visible(*, actor, prop: Property, folder_id: int) -> Folder:
+        folder = (
+            Folder.objects.select_related("property").filter(pk=folder_id, property=prop).first()
+        )
         if folder is None or not FolderPolicy.can_view(actor, folder):
             raise NotFound("Folder not found.")
         return folder
@@ -195,9 +197,9 @@ class DocumentService:
         return qs
 
     @staticmethod
-    def get_visible(*, actor, document_id: int) -> LibraryDocument:
+    def get_visible(*, actor, prop: Property, document_id: int) -> LibraryDocument:
         document = (
-            LibraryDocument.objects.filter(pk=document_id)
+            LibraryDocument.objects.filter(pk=document_id, property=prop)
             .filter(DocumentPolicy.visible_filter(actor))
             .select_related("folder", "property", "created_by")
             .first()

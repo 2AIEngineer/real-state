@@ -19,7 +19,7 @@ from apps.common.files.service import AttachmentService
 from apps.common.services.audit import AuditService
 from apps.notifications.services import delete_notification_traces
 from apps.properties.enums import Feature
-from apps.properties.models import Unit
+from apps.properties.models import Property, Unit
 from apps.properties.services import FeatureGate
 from apps.visitors import notices
 from apps.visitors.audit import VisitorAudit
@@ -52,10 +52,10 @@ class VisitorService:
         return qs
 
     @staticmethod
-    def get_visible(*, actor, visitor_id: int) -> Visitor:
+    def get_visible(*, actor, prop: Property, visitor_id: int) -> Visitor:
         visitor = (
             Visitor.objects.select_related("unit__building__property", "registered_by")
-            .filter(pk=visitor_id)
+            .filter(pk=visitor_id, property=prop)
             .first()
         )
         if visitor is None or not VisitorPolicy.can_view(actor, visitor):

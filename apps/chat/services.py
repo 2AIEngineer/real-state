@@ -24,6 +24,7 @@ from apps.common.files.rules import EntityType
 from apps.common.files.service import AttachmentService
 from apps.notifications.services import delete_notification_traces
 from apps.properties.enums import Feature
+from apps.properties.models import Property
 from apps.properties.services import FeatureGate
 
 User = get_user_model()
@@ -95,8 +96,8 @@ class ChatService:
         )
 
     @staticmethod
-    def get_room(*, actor, room_id: int) -> ChatRoom:
-        room = ChatService._base_rooms().filter(pk=room_id).first()
+    def get_room(*, actor, prop: Property, room_id: int) -> ChatRoom:
+        room = ChatService._base_rooms().filter(pk=room_id, property=prop).first()
         if room is None or not ChatPolicy.can_participate(actor, context_of(room)):
             raise NotFound("Conversation not found.")
         return room

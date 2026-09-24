@@ -32,7 +32,7 @@ from apps.common.services.audit import AuditService
 from apps.leasing.models import Lease
 from apps.notifications.services import delete_notification_traces
 from apps.properties.enums import Feature
-from apps.properties.models import Unit
+from apps.properties.models import Property, Unit
 from apps.properties.services import FeatureGate
 from apps.short_term_rental import errors, notices
 from apps.short_term_rental.audit import ShortTermRentalAudit
@@ -69,12 +69,12 @@ class ShortTermRentalService:
         return qs.distinct()
 
     @staticmethod
-    def get_visible(*, actor, short_term_rental_id: int) -> ShortTermRental:
+    def get_visible(*, actor, prop: Property, short_term_rental_id: int) -> ShortTermRental:
         rental = (
             ShortTermRental.objects.select_related(
                 "unit__building__property", "initiated_by", "lease"
             )
-            .filter(pk=short_term_rental_id)
+            .filter(pk=short_term_rental_id, unit__building__property=prop)
             .first()
         )
         if rental is None or not ShortTermRentalPolicy.can_view(actor, rental):
