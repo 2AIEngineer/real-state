@@ -5,7 +5,6 @@ from __future__ import annotations
 import datetime as dt
 
 from django.db import transaction
-from django.utils import timezone
 
 from apps.common.db import apply_changes, translate_integrity_errors
 from apps.common.exceptions import (
@@ -29,6 +28,7 @@ from apps.leasing.services.rules import (
     check_member_dates,
     lock_active_lease,
 )
+from apps.properties import timezones
 from apps.properties.models import Property
 
 MEMBER_CONSTRAINTS = {"unique_lease_member": errors.already_member}
@@ -53,7 +53,9 @@ class LeaseMemberService:
             raise PermissionDenied("Only the property management can add lease members.")
         lease = lock_active_lease(lease)
         check_member_account(member.user)
-        joined_at = member.joined_at or max(lease.start_date, timezone.localdate())
+        joined_at = member.joined_at or max(
+            lease.start_date, timezones.today(lease.unit.building.property)
+        )
         check_member_dates(lease, joined_at)
         with translate_integrity_errors(MEMBER_CONSTRAINTS):
             row = LeaseMember.objects.create(

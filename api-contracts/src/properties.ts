@@ -113,6 +113,8 @@ export const patchedPropertyRequestSchema = z.object({
   country: z.string().max(120).optional(),
   contact_email: z.union([z.email(), z.literal("")]).optional(),
   contact_phone: z.string().max(32).optional(),
+  /** IANA time zone ("Africa/Casablanca", "America/Montreal"): dates and clock times of the property are read in it. */
+  timezone: z.string().max(64).optional(),
   is_active: z.boolean().optional(),
 });
 export type PatchedPropertyRequest = z.infer<typeof patchedPropertyRequestSchema>;
@@ -183,6 +185,8 @@ export const propertySchema = z.object({
   country: z.string(),
   contact_email: z.union([z.email(), z.literal("")]),
   contact_phone: z.string(),
+  /** IANA time zone ("Africa/Casablanca", "America/Montreal"): dates and clock times of the property are read in it. */
+  timezone: z.string(),
   is_active: z.boolean(),
   features: z.record(z.string(), z.boolean()),
   logo: attachmentSchema.nullable(),
@@ -216,6 +220,8 @@ export const propertyInputRequestSchema = z.object({
   country: z.string().max(120).optional(),
   contact_email: z.union([z.email(), z.literal("")]).optional(),
   contact_phone: z.string().max(32).optional(),
+  /** IANA time zone ("Africa/Casablanca", "America/Montreal"): dates and clock times of the property are read in it. */
+  timezone: z.string().max(64).optional(),
   features: propertyFeaturesRequestSchema.optional(),
 });
 export type PropertyInputRequest = z.infer<typeof propertyInputRequestSchema>;

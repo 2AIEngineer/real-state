@@ -36,6 +36,7 @@ PROPERTY_FIELDS = (
     "country",
     "contact_email",
     "contact_phone",
+    "timezone",
 )
 PROPERTY_CONSTRAINTS = {"property_name_per_syndicat": errors.property_name_taken}
 

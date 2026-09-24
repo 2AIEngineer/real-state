@@ -31,6 +31,7 @@ from apps.common.files.service import AttachmentService
 from apps.common.services.audit import AuditService
 from apps.leasing.models import Lease
 from apps.notifications.services import delete_notification_traces
+from apps.properties import timezones
 from apps.properties.enums import Feature
 from apps.properties.models import Property, Unit
 from apps.properties.services import FeatureGate
@@ -104,7 +105,9 @@ class ShortTermRentalService:
             raise InvalidInput("At least one member is required.", field="members")
         if not 0 <= primary_index < len(members):
             raise InvalidInput("The primary member index is out of range.", field="primary_index")
-        check_period(right, unit, checkin_date, checkout_date, today=timezone.localdate())
+        check_period(
+            right, unit, checkin_date, checkout_date, today=timezones.today(unit.building.property)
+        )
         with translate_integrity_errors(RENTAL_CONSTRAINTS):
             rental = ShortTermRental.objects.create(
                 unit=unit,
@@ -144,7 +147,13 @@ class ShortTermRentalService:
             right = resolve_right(rental.initiated_by, rental.unit)
         else:
             right = DeclarationRight(InitiatorCapacity.MANAGEMENT)
-        check_period(right, rental.unit, checkin_date, checkout_date, today=timezone.localdate())
+        check_period(
+            right,
+            rental.unit,
+            checkin_date,
+            checkout_date,
+            today=timezones.today(rental.unit.building.property),
+        )
         rental.checkin_date, rental.checkout_date = checkin_date, checkout_date
         with translate_integrity_errors(RENTAL_CONSTRAINTS):
             rental.save(update_fields=["checkin_date", "checkout_date", "updated_at"])

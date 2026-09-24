@@ -5,11 +5,25 @@ from rest_framework import serializers
 
 from apps.common.files.rules import EntityType
 from apps.common.files.serializers import AttachmentsField
+from apps.properties import timezones
 from apps.properties.enums import Feature
 from apps.properties.models import (
     FEATURE_FLAG_FIELDS,
     Property,
 )
+
+
+class TimeZoneField(serializers.CharField):
+    """An IANA time zone name, such as `Africa/Casablanca` or `America/Montreal`."""
+
+    def __init__(self, **kwargs):
+        super().__init__(max_length=64, **kwargs)
+
+    def to_internal_value(self, data):
+        value = super().to_internal_value(data)
+        if not timezones.is_known(value):
+            raise serializers.ValidationError(f"'{value}' is not a known IANA time zone.")
+        return value
 
 
 class PropertySerializer(serializers.ModelSerializer):
@@ -29,6 +43,7 @@ class PropertySerializer(serializers.ModelSerializer):
             "country",
             "contact_email",
             "contact_phone",
+            "timezone",
             "is_active",
             "features",
             "logo",
@@ -56,6 +71,7 @@ class PropertyInputSerializer(serializers.Serializer):
     country = serializers.CharField(max_length=120, required=False, allow_blank=True)
     contact_email = serializers.EmailField(required=False, allow_blank=True)
     contact_phone = serializers.CharField(max_length=32, required=False, allow_blank=True)
+    timezone = TimeZoneField(required=False)
     features = PropertyFeaturesSerializer(required=False)
 
 
@@ -68,6 +84,7 @@ class PropertyUpdateSerializer(serializers.Serializer):
     country = serializers.CharField(max_length=120, required=False, allow_blank=True)
     contact_email = serializers.EmailField(required=False, allow_blank=True)
     contact_phone = serializers.CharField(max_length=32, required=False, allow_blank=True)
+    timezone = TimeZoneField(required=False)
     is_active = serializers.BooleanField(required=False)
 
 

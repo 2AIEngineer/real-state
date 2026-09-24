@@ -21,11 +21,10 @@ import datetime as dt
 from dataclasses import dataclass
 from decimal import Decimal
 
-from django.utils import timezone
-
 from apps.accounts.enums import StructuralRole
 from apps.common.exceptions import InvalidInput
 from apps.leasing.services import LeaseService
+from apps.properties import timezones
 from apps.properties.services import Acquirer, OwnershipService, UnitService
 
 
@@ -86,9 +85,9 @@ def register_ownerships(*, actor, user, ownerships) -> None:
     `OwnershipService`, which checks that the author manages the property and
     journals the change.
     """
-    today = timezone.localdate()
     for owned in ownerships:
         unit = UnitService.get_visible(actor=actor, prop=None, unit_id=owned.unit_id)
+        today = timezones.today(unit.building.property)
         if OwnershipService.active(unit).filter(is_promoter_default=True).exists():
             OwnershipService.transfer(
                 actor=actor,

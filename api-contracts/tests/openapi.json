@@ -17839,6 +17839,11 @@
                         "type": "string",
                         "maxLength": 32
                     },
+                    "timezone": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 64
+                    },
                     "is_active": {
                         "type": "boolean"
                     }
@@ -18441,6 +18446,10 @@
                         "type": "string",
                         "readOnly": true
                     },
+                    "timezone": {
+                        "type": "string",
+                        "readOnly": true
+                    },
                     "is_active": {
                         "type": "boolean",
                         "readOnly": true
@@ -18487,6 +18496,7 @@
                     "name",
                     "promoter",
                     "syndicat",
+                    "timezone",
                     "updated_at"
                 ]
             },
@@ -18573,6 +18583,11 @@
                     "contact_phone": {
                         "type": "string",
                         "maxLength": 32
+                    },
+                    "timezone": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 64
                     },
                     "features": {
                         "$ref": "#/components/schemas/PropertyFeaturesRequest"

@@ -4,6 +4,7 @@ from django.db.models import F, Q
 
 from apps.common.models import TimeStampedModel
 from apps.properties.enums import Feature
+from apps.properties.timezones import default_time_zone
 
 
 class Syndicat(TimeStampedModel):
@@ -79,6 +80,8 @@ class Property(TimeStampedModel):
     country = models.CharField(max_length=120, blank=True)
     contact_email = models.EmailField(blank=True)
     contact_phone = models.CharField(max_length=32, blank=True)
+    # IANA name: "today", opening hours and notification times are read in it.
+    timezone = models.CharField(max_length=64, default=default_time_zone)
     is_active = models.BooleanField(default=True)
 
     # SaaS plan gating — one switch per module.

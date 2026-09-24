@@ -39,6 +39,7 @@ from apps.common.exceptions import (
 )
 from apps.common.services.audit import AuditService
 from apps.notifications.services import delete_notification_traces
+from apps.properties import timezones
 from apps.properties.enums import Feature
 from apps.properties.models import Property
 from apps.properties.services import FeatureGate
@@ -99,7 +100,8 @@ class BookingService:
                 field="start_datetime",
             )
         if amenity.opening_time:
-            local_start, local_end = timezone.localtime(start), timezone.localtime(end)
+            local_start = timezones.local(amenity.property, start)
+            local_end = timezones.local(amenity.property, end)
             if (
                 local_start.date() != local_end.date()
                 or local_start.time() < amenity.opening_time

@@ -12,13 +12,12 @@ from decimal import Decimal
 
 from django.db import transaction
 from django.db.models import QuerySet
-from django.utils import timezone
 
 from apps.common.db import deleting, translate_integrity_errors
 from apps.common.exceptions import BusinessRuleViolation, InvalidInput, NotFound, PermissionDenied
 from apps.common.services.audit import AuditService
 from apps.notifications.services import delete_notification_traces
-from apps.properties import notices
+from apps.properties import notices, timezones
 from apps.properties.audit import OwnershipAudit
 from apps.properties.models import (
     OwnershipEndReason,
@@ -288,4 +287,6 @@ class OwnershipService:
         with deleting("ownership record"):
             delete_notification_traces(ownership)
             ownership.delete()
-            OwnershipService._ensure_not_orphan(unit, start_date=timezone.localdate(), actor=actor)
+            OwnershipService._ensure_not_orphan(
+                unit, start_date=timezones.today(unit.building.property), actor=actor
+            )

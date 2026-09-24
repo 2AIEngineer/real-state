@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
-from django.utils import timezone
-
 from apps.events.models import Event
 from apps.notifications.models import NotificationCategory, Severity
 from apps.notifications.services import NotificationIntent, NotificationService, SnapshotService
+from apps.properties import timezones
 
 
 def _tell(event: Event, *, kind: str, title: str, body: str, actor, severity: str = Severity.INFO):
@@ -29,7 +28,7 @@ def _tell(event: Event, *, kind: str, title: str, body: str, actor, severity: st
 
 def _when(event: Event) -> str:
     where = f" — {event.location}" if event.location else ""
-    return f"{timezone.localtime(event.start_at):%d/%m/%Y à %H:%M}{where}"
+    return f"{timezones.local(event.property, event.start_at):%d/%m/%Y à %H:%M}{where}"
 
 
 def created(event: Event, *, actor) -> None:

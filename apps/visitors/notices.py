@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
-from django.utils import timezone
-
 from apps.accounts.services.directory import UserDirectory
 from apps.notifications.models import NotificationCategory, Severity
 from apps.notifications.services import NotificationIntent, NotificationService
+from apps.properties import timezones
 from apps.visitors.models import Visitor, VisitStatus
 
 
@@ -18,7 +17,9 @@ def visitor_logged(visitor: Visitor, *, actor) -> None:
     if admitted:
         event, severity = "visitor.arrived", Severity.INFO
         title = f"Visiteur — lot {unit.number}"
-        body = f"{name} est arrivé(e) à {timezone.localtime(visitor.arrived_at):%H:%M}."
+        body = (
+            f"{name} est arrivé(e) à {timezones.local(visitor.property, visitor.arrived_at):%H:%M}."
+        )
     else:
         event, severity = "visitor.denied", Severity.WARNING
         title = f"Visite refusée — lot {unit.number}"

@@ -31,6 +31,7 @@ from apps.leasing.services.rules import (
     lock_active_lease,
 )
 from apps.notifications.services import delete_notification_traces
+from apps.properties import timezones
 from apps.properties.models import Property, Unit
 
 LEASE_CONSTRAINTS = {
@@ -184,7 +185,7 @@ class LeaseService:
         lease = LeaseService.create(
             actor=actor,
             unit=unit,
-            start_date=start_date or timezone.localdate(),
+            start_date=start_date or timezones.today(unit.building.property),
             end_date=end_date,
             contract_reference=contract_reference,
             members=[MemberInput(user=user, is_signatory=True)],
@@ -280,7 +281,7 @@ class LeaseService:
         if not LeasePolicy.can_terminate(actor, lease):
             raise PermissionDenied("Only the property management can cancel leases.")
         lease = lock_active_lease(lease)
-        if lease.start_date <= timezone.localdate():
+        if lease.start_date <= timezones.today(lease.unit.building.property):
             raise InvalidTransition(
                 "A lease that has already taken effect must be terminated, not cancelled.",
                 code="lease_already_started",
@@ -307,11 +308,21 @@ class LeaseService:
 
     @staticmethod
     def expire_due(*, today: dt.date | None = None) -> int:
-        """Scheduled job: leases past their end date are terminated at term."""
-        today = today or timezone.localdate()
-        due = Lease.objects.filter(status=LeaseStatus.ACTIVE, end_date__lt=today).select_related(
-            "unit"
-        )
+        """Scheduled job: leases past their end date are terminated at term.
+
+        "Past" is read in the time zone of each property (`today` forces one
+        date for all, in tests). No time zone is more than a day ahead of UTC,
+        so the leases ending before tomorrow in UTC are the only candidates.
+        """
+        horizon = today or timezone.now().date() + dt.timedelta(days=1)
+        candidates = Lease.objects.filter(
+            status=LeaseStatus.ACTIVE, end_date__lt=horizon
+        ).select_related("unit__building__property")
+        due = [
+            lease
+            for lease in candidates
+            if lease.end_date < (today or timezones.today(lease.unit.building.property))
+        ]
         count = 0
         for lease in due:
             LeaseService.terminate(

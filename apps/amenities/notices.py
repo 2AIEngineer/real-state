@@ -4,20 +4,19 @@ from __future__ import annotations
 
 import datetime as dt
 
-from django.utils import timezone
-
 from apps.accounts.services.directory import UserDirectory
 from apps.amenities.models import Booking, BookingStatus
 from apps.notifications.models import NotificationCategory, Severity
 from apps.notifications.services import NotificationIntent, NotificationService
+from apps.properties import timezones
 
 
-def _fmt(value: dt.datetime) -> str:
-    return timezone.localtime(value).strftime("%d/%m/%Y %H:%M")
+def _fmt(booking, value: dt.datetime) -> str:
+    return timezones.local(booking.amenity.property, value).strftime("%d/%m/%Y %H:%M")
 
 
 def _slot(booking: Booking) -> str:
-    return f"{_fmt(booking.start_datetime)} → {_fmt(booking.end_datetime)}"
+    return f"{_fmt(booking, booking.start_datetime)} → {_fmt(booking, booking.end_datetime)}"
 
 
 def _tell(

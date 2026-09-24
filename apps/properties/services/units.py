@@ -4,14 +4,13 @@ from __future__ import annotations
 
 from django.db import transaction
 from django.db.models import QuerySet
-from django.utils import timezone
 
 from apps.accounts.services.authorization import AccessService
 from apps.common.db import apply_changes, deleting, translate_integrity_errors
 from apps.common.exceptions import BusinessRuleViolation, NotFound, PermissionDenied
 from apps.common.services.audit import AuditService
 from apps.notifications.services import delete_notification_traces
-from apps.properties import errors
+from apps.properties import errors, timezones
 from apps.properties.audit import UnitAudit
 from apps.properties.models import Building, Property, Unit, UnitOwnership
 from apps.properties.policies import UnitPolicy
@@ -79,7 +78,7 @@ class UnitService:
             unit.save()
         # A unit always has an owner: the promoter holds it until it is sold.
         open_promoter_default(
-            unit, prop=building.property, start_date=timezone.localdate(), actor=actor
+            unit, prop=building.property, start_date=timezones.today(building.property), actor=actor
         )
         AuditService.record(
             actor=actor, action=UnitAudit.CREATED, target=unit, property_id=building.property_id
