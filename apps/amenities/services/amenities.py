@@ -15,7 +15,8 @@ from apps.amenities.models import (
     Booking,
 )
 from apps.amenities.policies import AmenityPolicy
-from apps.common.db import apply_changes, deleting, translate_integrity_errors
+from apps.common.db import apply_changes, translate_integrity_errors
+from apps.common.deletion import destroy
 from apps.common.exceptions import (
     InvalidInput,
     NotFound,
@@ -154,7 +155,8 @@ class AmenityService:
     @staticmethod
     @transaction.atomic
     def delete(*, actor, amenity: Amenity) -> None:
-        """Removable while it was never booked; otherwise deactivate it."""
+        """Permanent removal of an amenity, its bookings and their conversations.
+        Deactivating it is the alternative that keeps them."""
         if not AmenityPolicy.can_delete(actor, amenity):
             raise PermissionDenied("Only the property management can delete amenities.")
         AuditService.record(
@@ -163,9 +165,7 @@ class AmenityService:
             target=amenity,
             property_id=amenity.property_id,
         )
-        with deleting("amenity", hint="Set it inactive instead to keep past bookings."):
-            AttachmentService.delete_for_entity(EntityType.AMENITY, amenity.pk)
-            amenity.delete()
+        destroy(amenity)
 
     @staticmethod
     def schedule(

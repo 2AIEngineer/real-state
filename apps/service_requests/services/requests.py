@@ -13,12 +13,11 @@ from django.db import transaction
 from django.db.models import QuerySet
 from django.utils import timezone
 
-from apps.common.db import deleting
+from apps.common.deletion import destroy
 from apps.common.exceptions import InvalidInput, InvalidTransition, NotFound, PermissionDenied
 from apps.common.files.rules import EntityType
 from apps.common.files.service import AttachmentService
 from apps.common.services.audit import AuditService
-from apps.notifications.services import delete_notification_traces
 from apps.properties.enums import Feature
 from apps.properties.models import Property, Unit
 from apps.properties.services import FeatureGate
@@ -31,14 +30,6 @@ from apps.service_requests.models import (
 )
 from apps.service_requests.policies import ServiceRequestPolicy
 from apps.service_requests.services._state import OPEN_STATES, current_resolvers, lock
-
-
-def _purge_conversation(sr: ServiceRequest) -> None:
-    """Drop the chat room of the request being deleted, with its media."""
-    # Local import: chat is built on top of service requests.
-    from apps.chat.services import ChatService
-
-    ChatService.delete_conversation_of(sr)
 
 
 class ServiceRequestService:
@@ -182,7 +173,7 @@ class ServiceRequestService:
     @staticmethod
     @transaction.atomic
     def delete(*, actor, sr: ServiceRequest) -> None:
-        """Permanent removal of a request, its rounds and its conversation (all cascaded)."""
+        """Permanent removal of a request, its rounds and its conversation."""
         if not ServiceRequestPolicy.can_delete(actor, sr):
             raise PermissionDenied("Only the property management can delete service requests.")
         AuditService.record(
@@ -192,12 +183,4 @@ class ServiceRequestService:
             property_id=sr.property_id,
             metadata={"status": sr.status, "title": sr.title},
         )
-        with deleting("service request"):
-            for assignment in sr.assignments.all():
-                AttachmentService.delete_for_entity(
-                    EntityType.SERVICE_REQUEST_RESOLUTION, assignment.pk
-                )
-            _purge_conversation(sr)
-            AttachmentService.delete_for_entity(EntityType.SERVICE_REQUEST, sr.pk)
-            delete_notification_traces(sr)
-            sr.delete()
+        destroy(sr)

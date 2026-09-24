@@ -65,3 +65,10 @@ def test_the_stored_name_is_random_and_ends_with_the_detected_format(world):
     (attachment,) = attach(world, EntityType.PROPERTY_LOGO, world.prop.pk, [f.png("brand.html")])
     assert attachment.file.name.startswith("attachments/property_logo/")
     assert attachment.file.name.endswith(".png") and "brand" not in attachment.file.name
+
+
+def test_every_entity_type_names_a_real_owner_model():
+    from django.apps import apps
+
+    for rule in RULES.values():
+        assert apps.get_model(rule.owner)

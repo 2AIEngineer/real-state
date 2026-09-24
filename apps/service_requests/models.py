@@ -37,13 +37,13 @@ class ServiceRequestStatus(models.TextChoices):
 
 class ServiceRequest(TimeStampedModel):
     property = models.ForeignKey(
-        "properties.Property", on_delete=models.PROTECT, related_name="service_requests"
+        "properties.Property", on_delete=models.CASCADE, related_name="service_requests"
     )
     unit = models.ForeignKey(
         "properties.Unit",
         null=True,
         blank=True,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="service_requests",
         help_text="Empty when the request concerns common areas.",
     )

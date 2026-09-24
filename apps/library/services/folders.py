@@ -6,6 +6,7 @@ from django.db import transaction
 from django.db.models import Count, QuerySet
 
 from apps.common.db import apply_changes, translate_integrity_errors
+from apps.common.deletion import destroy
 from apps.common.exceptions import BusinessRuleViolation, InvalidInput, NotFound, PermissionDenied
 from apps.common.services.audit import AuditService
 from apps.library import errors
@@ -41,21 +42,6 @@ class FolderService:
             ],
             ignore_conflicts=True,
         )
-
-    @staticmethod
-    def delete_system_folders(*, prop: Property) -> int:
-        """Remove the folders seeded with the property, if still empty.
-
-        Called when the property itself is deleted: user-made folders and any
-        folder holding documents stay and block the deletion.
-        """
-        deleted = 0
-        for folder in Folder.objects.filter(property=prop, is_system=True):
-            if folder.subfolders.exists() or folder.documents.exists():
-                continue
-            folder.delete()
-            deleted += 1
-        return deleted
 
     @staticmethod
     def list_for_property(
@@ -160,14 +146,10 @@ class FolderService:
             raise PermissionDenied("Only the property management can delete folders.")
         if folder.is_system:
             raise BusinessRuleViolation("Default folders cannot be deleted.", code="system_folder")
-        if folder.subfolders.exists() or folder.documents.exists():
-            raise BusinessRuleViolation(
-                "Only empty folders can be deleted.", code="folder_not_empty"
-            )
         AuditService.record(
             actor=actor,
             action=LibraryAudit.FOLDER_DELETED,
             target=folder,
             property_id=folder.property_id,
         )
-        folder.delete()
+        destroy(folder)  # with its subfolders and documents

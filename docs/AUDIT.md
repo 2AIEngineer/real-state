@@ -15,7 +15,7 @@ faut prévoir dans le code dès maintenant pour que la phase de déploiement se 
 | S5 | Throttling contournable | **Corrigé** : `NUM_PROXIES`, limite de connexion par compte, compteurs dans une table de cache PostgreSQL (pas de Redis) | `config/settings.py`, `apps/accounts/throttles.py` |
 | S6 | Secrets dans l'outbox | **Corrigé** : contenu effacé dès qu'un message est final, purge après 30 jours | `apps/notifications/services/delivery.py`, `retention.py` |
 | — | Corps JSON de 50 Mo en mémoire | **Corrigé** : 5 Mo | `config/settings.py` |
-| — | Effacement RGPD incomplet | **Corrigé** : genre, langue, appareils, inbox, préférences | `apps/accounts/services/status.py` |
+| — | Effacement RGPD incomplet | **Corrigé** : genre, langue, appareils, inbox, préférences. Pièces d'identité conservées sans durée (choix produit) ; une purge par règles pourra venir plus tard sous forme de job | `apps/accounts/services/status.py` |
 | — | Push en doublon | **Corrigé** : un message par lot de 100 destinataires | `apps/notifications/services/dispatcher.py` |
 | — | Secrets courts / `ENVIRONMENT` inconnu | **Corrigé** : refus de démarrer en production | `config/env.py` |
 | — | CI absente | **Corrigé** : ruff, migrations, schéma OpenAPI, pytest, contrats TS | `.github/workflows/ci.yml` |
@@ -23,7 +23,7 @@ faut prévoir dans le code dès maintenant pour que la phase de déploiement se 
 | — | Lisibilité | **Fait** : modules découpés par ressource (voir section 11) | — |
 | §5.1 | Fuseau horaire unique | **Corrigé** : `Property.timezone` (IANA) pour « aujourd'hui », les horaires et les heures des notifications | `apps/properties/timezones.py` |
 | §5.5 | Doublons à la création | **Corrigé** : en-tête `Idempotency-Key` sur tout POST | `apps/common/idempotency.py` |
-| §5.6 | Suppression vs archivage | **Clos** : les deux actions existent et c'est l'utilisateur qui choisit | — |
+| §5.6 | Suppression vs archivage | **Tranché** : l'utilisateur choisit. L'archivage garde tout ; la suppression est destructive et emporte tout ce qui en dépend (`CASCADE`, fichiers et notifications compris via `destroy()`) | `apps/common/deletion.py` |
 | — | orjson | `drf-orjson-renderer` (paquet), sans module maison | `config/settings.py` |
 | — | CORS | Les en-têtes `X-Syndicat-Id`, `X-Property-Id`, `X-UI-Config-Step`, `Idempotency-Key` étaient refusés par les navigateurs : autorisés | `config/settings.py` |
 

@@ -158,5 +158,11 @@ class AttachmentService:
     @staticmethod
     @transaction.atomic
     def delete_for_entity(entity_type: str, entity_id: int) -> None:
-        for attachment in AttachmentService.list_for_entity(entity_type, entity_id):
+        AttachmentService.delete_for_entities(entity_type, [entity_id])
+
+    @staticmethod
+    @transaction.atomic
+    def delete_for_entities(entity_type: str, entity_ids) -> None:
+        """Rows now, stored files once the transaction commits."""
+        for attachment in AttachmentService.list_for_entities(entity_type, entity_ids):
             AttachmentService.delete(attachment=attachment)

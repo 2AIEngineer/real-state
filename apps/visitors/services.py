@@ -12,12 +12,12 @@ from django.db import transaction
 from django.db.models import QuerySet
 from django.utils import timezone
 
-from apps.common.db import apply_changes, deleting
+from apps.common.db import apply_changes
+from apps.common.deletion import destroy
 from apps.common.exceptions import InvalidInput, InvalidTransition, NotFound, PermissionDenied
 from apps.common.files.rules import EntityType
 from apps.common.files.service import AttachmentService
 from apps.common.services.audit import AuditService
-from apps.notifications.services import delete_notification_traces
 from apps.properties.enums import Feature
 from apps.properties.models import Property, Unit
 from apps.properties.services import FeatureGate
@@ -165,10 +165,7 @@ class VisitorService:
                 "status": visitor.status,
             },
         )
-        with deleting("visitor entry"):
-            AttachmentService.delete_for_entity(EntityType.VISITOR_ID_CARD, visitor.pk)
-            delete_notification_traces(visitor)
-            visitor.delete()
+        destroy(visitor)
 
     @staticmethod
     @transaction.atomic

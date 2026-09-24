@@ -17,7 +17,7 @@ from django.db import transaction
 from django.db.models import F, QuerySet
 from django.utils import timezone
 
-from apps.common.db import deleting
+from apps.common.deletion import destroy
 from apps.common.exceptions import (
     BusinessRuleViolation,
     InvalidInput,
@@ -26,7 +26,6 @@ from apps.common.exceptions import (
     PermissionDenied,
 )
 from apps.common.services.audit import AuditService
-from apps.notifications.services import delete_notification_traces
 from apps.properties.enums import Feature
 from apps.properties.models import Property, Unit
 from apps.properties.services import FeatureGate
@@ -171,12 +170,7 @@ class OrderService:
             property_id=order.property_id,
             metadata={"status": order.status, "total": str(order.total_amount)},
         )
-        from apps.chat.services import ChatService
-
-        with deleting("order"):
-            ChatService.delete_conversation_of(order)
-            delete_notification_traces(order)
-            order.delete()
+        destroy(order)
 
     @staticmethod
     def _lock(order: Order) -> Order:

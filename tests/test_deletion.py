@@ -1,8 +1,10 @@
 """Deletion policy, module by module.
 
-Configuration and content can be removed while unused; anything carrying
-history is refused with `resource_in_use` (or a more precise code) and keeps
-its deactivate/cancel path instead.
+Deleting is deliberate and destructive: the record goes with everything that
+depends on it, files and notifications included. Archiving, deactivating,
+closing or cancelling are the alternatives that keep history. The only
+refusals left: permissions, a promoter still developing a property (a
+reference, reassigned rather than deleted), and the default library folders.
 """
 
 import datetime as dt
@@ -14,6 +16,7 @@ from django.utils import timezone
 from apps.amenities.services import AmenityService, BookingService
 from apps.common.exceptions import BusinessRuleViolation, NotFound, PermissionDenied
 from apps.common.files.rules import EntityType
+from apps.common.files.service import AttachmentService
 from apps.common.models import Attachment
 from apps.leasing.models import CheckPhase, ComponentCondition
 from apps.leasing.services import LeaseComponentStateService
@@ -42,16 +45,27 @@ pytestmark = pytest.mark.django_db
 TODAY = dt.date.today()
 
 
+def attach(world, entity_type, entity_id, upload):
+    return AttachmentService.attach(
+        entity_type=entity_type, entity_id=entity_id, files=[upload], uploaded_by=world.admin
+    )
+
+
 class TestReferential:
     def test_empty_building_is_deleted(self, world):
         building = f.make_building(world.prop, name="Empty")
         BuildingService.delete(actor=world.manager, building=building)
         assert not Building.objects.filter(pk=building.pk).exists()
 
-    def test_building_with_units_is_refused(self, world):
-        with pytest.raises(BusinessRuleViolation) as exc:
-            BuildingService.delete(actor=world.manager, building=world.building)
-        assert exc.value.code == "resource_in_use" and "Units" in exc.value.details
+    def test_a_building_goes_with_its_units_leases_and_their_files(self, world):
+        from apps.leasing.models import Lease
+
+        member = world.lease.members.get(user=world.tenant)
+        attach(world, EntityType.LEASE_MEMBER_IDENTITY, member.pk, f.pdf())
+        BuildingService.delete(actor=world.manager, building=world.building)
+        assert not Unit.objects.filter(pk=world.unit.pk).exists()
+        assert not Lease.objects.filter(pk=world.lease.pk).exists()
+        assert not Attachment.objects.filter(entity_type=EntityType.LEASE_MEMBER_IDENTITY).exists()
 
     def test_unit_never_used_is_deleted_with_its_promoter_ownership(self, world):
         unit = f.make_unit(world.building, world.manager, number="TMP")
@@ -59,17 +73,12 @@ class TestReferential:
         assert not Unit.objects.filter(pk=unit.pk).exists()
         assert not UnitOwnership.objects.filter(unit_id=unit.pk).exists()
 
-    def test_unit_that_was_sold_keeps_its_ledger(self, world):
-        with pytest.raises(BusinessRuleViolation) as exc:
-            UnitService.delete(actor=world.manager, unit=world.unit)
-        assert exc.value.code == "unit_has_ownership_history"
+    def test_a_sold_and_leased_unit_goes_with_its_ledger_and_leases(self, world):
+        from apps.leasing.models import Lease
 
-    def test_unit_with_a_lease_is_refused(self, world):
-        unit = f.make_unit(world.building, world.manager, number="LEASED")
-        f.make_lease(unit, [f.make_user()], world.manager)
-        with pytest.raises(BusinessRuleViolation) as exc:
-            UnitService.delete(actor=world.manager, unit=unit)
-        assert exc.value.code == "unit_has_leases"
+        UnitService.delete(actor=world.manager, unit=world.unit)
+        assert not UnitOwnership.objects.filter(unit_id=world.unit.pk).exists()
+        assert not Lease.objects.filter(unit_id=world.unit.pk).exists()
 
     def test_property_deletion_takes_its_default_library_folders(self, world):
         prop = PropertyService.create(
@@ -83,10 +92,15 @@ class TestReferential:
         assert not Property.objects.filter(pk=prop.pk).exists()
         assert not Folder.objects.filter(property_id=prop.pk).exists()
 
-    def test_property_with_buildings_is_refused(self, world):
-        with pytest.raises(BusinessRuleViolation) as exc:
-            PropertyService.delete(actor=world.admin, prop=world.prop)
-        assert exc.value.code == "resource_in_use"
+    def test_a_property_goes_with_all_it_holds(self, world):
+        from apps.accounts.models import UserProperty
+
+        attach(world, EntityType.PROPERTY_LOGO, world.prop.pk, f.png())
+        PropertyService.delete(actor=world.admin, prop=world.prop)
+        assert not Property.objects.filter(pk=world.prop.pk).exists()
+        assert not Building.objects.filter(property_id=world.prop.pk).exists()
+        assert not UserProperty.objects.filter(property_id=world.prop.pk).exists()
+        assert not Attachment.objects.filter(entity_type=EntityType.PROPERTY_LOGO).exists()
 
     def test_only_admins_delete_a_property(self, world):
         with pytest.raises(PermissionDenied):
@@ -97,10 +111,9 @@ class TestReferential:
         SyndicatService.delete(actor=world.admin, syndicat=syndicat)
         assert not Syndicat.objects.filter(pk=syndicat.pk).exists()
 
-    def test_syndicat_with_properties_is_refused(self, world):
-        with pytest.raises(BusinessRuleViolation) as exc:
-            SyndicatService.delete(actor=world.admin, syndicat=world.syndicat)
-        assert exc.value.code == "resource_in_use" and "Properties" in exc.value.details
+    def test_a_syndicat_goes_with_its_properties(self, world):
+        SyndicatService.delete(actor=world.admin, syndicat=world.syndicat)
+        assert not Property.objects.filter(pk=world.prop.pk).exists()
 
     def test_promoter_deletion_takes_its_technical_account(self, world):
         promoter = f.make_promoter()
@@ -125,7 +138,7 @@ class TestFeatureModules:
             entity_type=EntityType.AMENITY, entity_id=amenity.pk
         ).exists()
 
-    def test_booked_amenity_is_refused_and_points_to_deactivation(self, world):
+    def test_a_booked_amenity_goes_with_its_bookings(self, world):
         amenity = AmenityService.create(
             actor=world.manager, prop=world.prop, data={"name": "Gym", "requires_approval": False}
         )
@@ -133,9 +146,11 @@ class TestFeatureModules:
         BookingService.book(
             actor=world.tenant, amenity=amenity, start=start, end=start + dt.timedelta(hours=1)
         )
-        with pytest.raises(BusinessRuleViolation) as exc:
-            AmenityService.delete(actor=world.manager, amenity=amenity)
-        assert exc.value.code == "resource_in_use" and "inactive" in exc.value.message
+        amenity_id = amenity.pk
+        AmenityService.delete(actor=world.manager, amenity=amenity)
+        from apps.amenities.models import Booking
+
+        assert not Booking.objects.filter(amenity_id=amenity_id).exists()
 
     def test_product_never_ordered_is_deleted(self, world):
         product = ProductService.create(
@@ -144,15 +159,18 @@ class TestFeatureModules:
         ProductService.delete(actor=world.admin, product=product)
         assert not Product.objects.filter(pk=product.pk).exists()
 
-    def test_ordered_product_is_refused(self, world):
+    def test_an_ordered_product_goes_but_past_orders_keep_their_lines(self, world):
         product = ProductService.create(
             actor=world.admin,
             prop=world.prop,
             data={"name": "Mug", "price": Decimal("2"), "stock_quantity": 3},
         )
-        OrderService.place(actor=world.tenant, prop=world.prop, lines=[OrderLine(product.pk, 1)])
-        with pytest.raises(BusinessRuleViolation):
-            ProductService.delete(actor=world.admin, product=product)
+        order = OrderService.place(
+            actor=world.tenant, prop=world.prop, lines=[OrderLine(product.pk, 1)]
+        )
+        ProductService.delete(actor=world.admin, product=product)
+        line = order.items.get()
+        assert line.product is None and line.product_name == "Mug"  # the order is intact
 
     def test_survey_without_answer_is_deleted(self, world):
         survey = SurveyService.create_draft(
@@ -165,7 +183,7 @@ class TestFeatureModules:
         SurveyService.delete(actor=world.manager, survey=survey)
         assert not Survey.objects.filter(pk=survey.pk).exists()
 
-    def test_answered_survey_is_refused(self, world):
+    def test_an_answered_survey_goes_with_its_answers(self, world):
         survey = SurveyService.create_draft(
             actor=world.manager,
             prop=world.prop,
@@ -178,9 +196,8 @@ class TestFeatureModules:
         ParticipationService.respond(
             actor=world.owner, survey=survey, answers={question.pk: question.options.first().pk}
         )
-        with pytest.raises(BusinessRuleViolation) as exc:
-            SurveyService.delete(actor=world.manager, survey=survey)
-        assert exc.value.code == "survey_has_responses"
+        SurveyService.delete(actor=world.manager, survey=survey)
+        assert not Survey.objects.filter(pk=survey.pk).exists()
 
     def test_seller_deletes_their_listing_but_not_someone_elses(self, world):
         listing = ListingService.publish(
@@ -229,11 +246,11 @@ def test_delete_over_http_returns_204_then_404(api, world):
     assert client.delete(f"/api/v1/buildings/{building.pk}/").status_code == 404
 
 
-def test_delete_in_use_over_http_is_409(api, world):
+def test_deleting_a_building_in_use_over_http_is_a_204(api, world):
     response = api(world.manager, world.syndicat, world.prop).delete(
         f"/api/v1/buildings/{world.building.pk}/"
     )
-    assert response.status_code == 409 and response.json()["error"]["code"] == "resource_in_use"
+    assert response.status_code == 204
 
 
 class TestTransactionalRecords:
@@ -296,7 +313,7 @@ class TestTransactionalRecords:
         assert not LeaseMember.objects.filter(lease_id=world.lease.pk).exists()
         assert not Attachment.objects.filter(entity_type=EntityType.LEASE_COMPONENT_STATE).exists()
 
-    def test_lease_with_a_short_term_rental_is_refused_first(self, world):
+    def test_a_lease_goes_with_its_short_term_rentals(self, world):
         from apps.leasing.services import LeaseService
         from apps.short_term_rental.services import (
             ShortTermRentalMemberInput,
@@ -310,11 +327,8 @@ class TestTransactionalRecords:
             checkout_date=TODAY + dt.timedelta(days=3),
             members=[ShortTermRentalMemberInput("A", "B")],
         )
-        with pytest.raises(BusinessRuleViolation) as exc:
-            LeaseService.delete(actor=world.syndic, lease=world.lease)
-        assert exc.value.code == "resource_in_use"
-        ShortTermRentalService.delete(actor=world.manager, rental=rental)
         LeaseService.delete(actor=world.syndic, lease=world.lease)
+        assert not type(rental).objects.filter(pk=rental.pk).exists()
 
     def test_manager_cannot_delete_a_lease(self, world):
         from apps.leasing.services import LeaseService

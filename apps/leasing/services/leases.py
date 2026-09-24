@@ -8,16 +8,14 @@ from django.db import transaction
 from django.db.models import Prefetch, QuerySet
 from django.utils import timezone
 
-from apps.common.db import deleting, translate_integrity_errors
+from apps.common.db import translate_integrity_errors
+from apps.common.deletion import destroy
 from apps.common.exceptions import (
-    BusinessRuleViolation,
     InvalidInput,
     InvalidTransition,
     NotFound,
     PermissionDenied,
 )
-from apps.common.files.rules import EntityType
-from apps.common.files.service import AttachmentService
 from apps.common.services.audit import AuditService
 from apps.leasing import errors, notices
 from apps.leasing.audit import LeaseAudit
@@ -30,7 +28,6 @@ from apps.leasing.services.rules import (
     check_member_dates,
     lock_active_lease,
 )
-from apps.notifications.services import delete_notification_traces
 from apps.properties import timezones
 from apps.properties.models import Property, Unit
 
@@ -337,21 +334,10 @@ class LeaseService:
     @staticmethod
     @transaction.atomic
     def delete(*, actor, lease: Lease) -> None:
-        """Permanent removal of a lease and everything recorded under it.
-
-        Meant for records created by mistake or for a demonstration: it drops
-        members, inspections and their files. Refused while a short rental still
-        relies on the lease, so the dependency is removed knowingly first.
-        """
-        from apps.short_term_rental.models import ShortTermRental
-
+        """Permanent removal of a lease and everything recorded under it:
+        members, inspections, the short rentals declared under it, their files."""
         if not LeasePolicy.can_delete(actor, lease):
             raise PermissionDenied("Only administrators and syndics can delete a lease.")
-        if ShortTermRental.objects.filter(lease=lease).exists():
-            raise BusinessRuleViolation(
-                "Short rentals are attached to this lease: delete them first.",
-                code="resource_in_use",
-            )
         AuditService.record(
             actor=actor,
             action=LeaseAudit.DELETED,
@@ -363,12 +349,4 @@ class LeaseService:
                 "members": lease.members.count(),
             },
         )
-        with deleting("lease"):
-            for component in lease.lease_component_states.all():
-                AttachmentService.delete_for_entity(EntityType.LEASE_COMPONENT_STATE, component.pk)
-            for member in lease.members.all():
-                AttachmentService.delete_for_entity(EntityType.LEASE_MEMBER_IDENTITY, member.pk)
-                AttachmentService.delete_for_entity(EntityType.LEASE_MEMBER_ADDRESS, member.pk)
-            lease.members.all().delete()  # PROTECT: members go first, their files with them
-            delete_notification_traces(lease)
-            lease.delete()
+        destroy(lease)

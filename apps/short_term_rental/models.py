@@ -32,7 +32,7 @@ class InitiatorCapacity(models.TextChoices):
 
 class ShortTermRental(TimeStampedModel):
     unit = models.ForeignKey(
-        "properties.Unit", on_delete=models.PROTECT, related_name="short_term_rentals"
+        "properties.Unit", on_delete=models.CASCADE, related_name="short_term_rentals"
     )
     initiated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -44,7 +44,7 @@ class ShortTermRental(TimeStampedModel):
         "leasing.Lease",
         null=True,
         blank=True,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="short_term_rentals",
         help_text="Lease bounding the rental when declared by a tenant.",
     )

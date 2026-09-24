@@ -10,7 +10,8 @@ export type ActionNoteRequest = z.infer<typeof actionNoteRequestSchema>;
 
 export const orderItemSchema = z.object({
   id: z.number().int(),
-  product: z.number().int(),
+  /** Null once the product is removed from the catalogue; name and price stay. */
+  product: z.number().int().nullable(),
   product_name: z.string(),
   unit_price: decimalString(/^-?\d{0,10}(?:\.\d{0,2})?$/),
   quantity: z.number().int(),

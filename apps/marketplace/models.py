@@ -28,7 +28,7 @@ class MarketplaceListing(TimeStampedModel):
         "properties.Property",
         null=True,
         blank=True,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="marketplace_listings",
     )
     category = models.CharField(max_length=24, choices=ListingCategory.choices)

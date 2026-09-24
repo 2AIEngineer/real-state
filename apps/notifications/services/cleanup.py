@@ -20,8 +20,13 @@ from apps.notifications.models import (
 
 def delete_notification_traces(target: models.Model) -> dict[str, int]:
     """Drop inbox entries and frozen recipients attached to `target`."""
-    content_type = ContentType.objects.get_for_model(target)
-    reference = {"content_type": content_type, "object_id": target.pk}
+    return delete_notification_traces_of(type(target), [target.pk])
+
+
+def delete_notification_traces_of(model: type[models.Model], pks) -> dict[str, int]:
+    """Same, for several rows of one model (a deletion and its cascades)."""
+    content_type = ContentType.objects.get_for_model(model)
+    reference = {"content_type": content_type, "object_id__in": list(pks)}
     inbox, _ = InboxNotification.objects.filter(**reference).delete()
     snapshots, _ = RecipientSnapshot.objects.filter(**reference).delete()
     return {"inbox": inbox, "snapshots": snapshots}

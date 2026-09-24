@@ -5,10 +5,10 @@ from __future__ import annotations
 from django.db import transaction
 from django.db.models import Count, QuerySet
 
-from apps.common.db import apply_changes, deleting, translate_integrity_errors
+from apps.common.db import apply_changes, translate_integrity_errors
+from apps.common.deletion import destroy
 from apps.common.exceptions import NotFound, PermissionDenied
 from apps.common.services.audit import AuditService
-from apps.notifications.services import delete_notification_traces
 from apps.properties import errors
 from apps.properties.audit import BuildingAudit
 from apps.properties.models import Building, Property
@@ -75,7 +75,7 @@ class BuildingService:
     @staticmethod
     @transaction.atomic
     def delete(*, actor, building: Building) -> None:
-        """Removable while it holds no unit and nothing points at it."""
+        """Permanent removal of a building and everything in it."""
         if not BuildingPolicy.can_delete(actor, building):
             raise PermissionDenied("Only the property management can delete buildings.")
         AuditService.record(
@@ -84,6 +84,4 @@ class BuildingService:
             target=building,
             property_id=building.property_id,
         )
-        with deleting("building"):
-            delete_notification_traces(building)
-            building.delete()
+        destroy(building)

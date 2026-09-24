@@ -8,7 +8,7 @@ from django.db import transaction
 from django.db.models import QuerySet
 from django.utils import timezone
 
-from apps.common.db import deleting
+from apps.common.deletion import destroy
 from apps.common.exceptions import InvalidInput, InvalidTransition, NotFound, PermissionDenied
 from apps.common.files.rules import EntityType
 from apps.common.files.service import AttachmentService
@@ -17,7 +17,7 @@ from apps.events import notices
 from apps.events.audit import EventAudit
 from apps.events.models import Event, EventStatus
 from apps.events.policies import EventPolicy
-from apps.notifications.services import SnapshotService, delete_notification_traces
+from apps.notifications.services import SnapshotService
 from apps.properties.enums import Feature
 from apps.properties.models import Building, Property
 from apps.properties.services import FeatureGate
@@ -205,10 +205,7 @@ class EventService:
             property_id=event.property_id,
             metadata={"title": event.title},
         )
-        with deleting("event"):
-            AttachmentService.delete_for_entity(EntityType.EVENT, event.pk)
-            delete_notification_traces(event)
-            event.delete()
+        destroy(event)
 
     @staticmethod
     @transaction.atomic

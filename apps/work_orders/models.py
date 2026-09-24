@@ -38,20 +38,20 @@ class WorkOrder(TimeStampedModel):
     """
 
     property = models.ForeignKey(
-        "properties.Property", on_delete=models.PROTECT, related_name="work_orders"
+        "properties.Property", on_delete=models.CASCADE, related_name="work_orders"
     )
     building = models.ForeignKey(
         "properties.Building",
         null=True,
         blank=True,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="work_orders",
     )
     unit = models.ForeignKey(
         "properties.Unit",
         null=True,
         blank=True,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="work_orders",
     )
     service_request = models.ForeignKey(

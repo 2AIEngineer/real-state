@@ -188,7 +188,7 @@ class UserSyndicat(UserAssignmentBase):
     """Covers a whole syndicat, including properties added to it later."""
 
     syndicat = models.ForeignKey(
-        "properties.Syndicat", on_delete=models.PROTECT, related_name="user_assignments"
+        "properties.Syndicat", on_delete=models.CASCADE, related_name="user_assignments"
     )
 
     class Meta:
@@ -216,7 +216,7 @@ class UserProperty(UserAssignmentBase):
     """Covers one property (fixed list: never extends to other properties)."""
 
     property = models.ForeignKey(
-        "properties.Property", on_delete=models.PROTECT, related_name="user_assignments"
+        "properties.Property", on_delete=models.CASCADE, related_name="user_assignments"
     )
 
     class Meta:
@@ -245,7 +245,7 @@ class UserBuilding(UserAssignmentBase):
     """Covers one building and its units."""
 
     building = models.ForeignKey(
-        "properties.Building", on_delete=models.PROTECT, related_name="user_assignments"
+        "properties.Building", on_delete=models.CASCADE, related_name="user_assignments"
     )
 
     class Meta:

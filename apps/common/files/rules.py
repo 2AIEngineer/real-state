@@ -89,41 +89,72 @@ class AttachmentRule:
     allowed_types: frozenset[str]
     max_files: int
     max_size_bytes: int
+    # The model the files belong to ("app_label.Model"): when one of its rows is
+    # deleted, directly or by cascade, its files go with it (`apps.common.deletion`).
+    owner: str
     public: bool = False
 
     def describe_types(self) -> str:
         return ", ".join(sorted(t.split("/")[-1] for t in self.allowed_types))
 
 
-def _rule(types, *, files: int, mb: int, public: bool = False) -> AttachmentRule:
-    return AttachmentRule(types, max_files=files, max_size_bytes=mb * MB, public=public)
+def _rule(types, *, owner: str, files: int, mb: int, public: bool = False) -> AttachmentRule:
+    return AttachmentRule(
+        types, max_files=files, max_size_bytes=mb * MB, owner=owner, public=public
+    )
 
 
 RULES: dict[str, AttachmentRule] = {
     # Public: shown to anyone who has the link (branding and catalogue pictures).
-    EntityType.SYNDICAT_LOGO: _rule(IMAGES, files=1, mb=10, public=True),
-    EntityType.PROPERTY_LOGO: _rule(IMAGES, files=1, mb=10, public=True),
-    EntityType.AMENITY: _rule(IMAGES, files=20, mb=10, public=True),
-    EntityType.PRODUCT: _rule(IMAGES, files=20, mb=10, public=True),
-    EntityType.MARKETPLACE_LISTING: _rule(IMAGES, files=20, mb=10, public=True),
+    EntityType.SYNDICAT_LOGO: _rule(
+        IMAGES, owner="properties.Syndicat", files=1, mb=10, public=True
+    ),
+    EntityType.PROPERTY_LOGO: _rule(
+        IMAGES, owner="properties.Property", files=1, mb=10, public=True
+    ),
+    EntityType.AMENITY: _rule(IMAGES, owner="amenities.Amenity", files=20, mb=10, public=True),
+    EntityType.PRODUCT: _rule(IMAGES, owner="store.Product", files=20, mb=10, public=True),
+    EntityType.MARKETPLACE_LISTING: _rule(
+        IMAGES, owner="marketplace.MarketplaceListing", files=20, mb=10, public=True
+    ),
     # Private: residents' content and personal documents.
-    EntityType.ANNOUNCEMENT: _rule(DOCUMENTS, files=30, mb=25),
-    EntityType.EVENT: _rule(DOCUMENTS, files=30, mb=25),
-    EntityType.SURVEY: _rule(DOCUMENTS, files=30, mb=25),
-    EntityType.LIBRARY_DOCUMENT: _rule(DOCUMENTS, files=1, mb=25),
-    EntityType.SERVICE_REQUEST: _rule(PHOTOS_AND_PDF, files=30, mb=20),
-    EntityType.SERVICE_REQUEST_RESOLUTION: _rule(PHOTOS_AND_PDF, files=30, mb=20),
-    EntityType.WORK_ORDER: _rule(PHOTOS_AND_PDF, files=30, mb=20),
-    EntityType.LEASE_COMPONENT_STATE: _rule(PHOTOS_AND_PDF, files=30, mb=20),
-    EntityType.LEASE_MEMBER_IDENTITY: _rule(PHOTOS_AND_PDF, files=1, mb=10),
-    EntityType.LEASE_MEMBER_ADDRESS: _rule(PHOTOS_AND_PDF, files=1, mb=10),
-    EntityType.VISITOR_ID_CARD: _rule(PHOTOS_AND_PDF, files=1, mb=10),
-    EntityType.SHORT_TERM_RENTAL_MEMBER_ID_CARD: _rule(PHOTOS_AND_PDF, files=1, mb=10),
+    EntityType.ANNOUNCEMENT: _rule(DOCUMENTS, owner="announcements.Announcement", files=30, mb=25),
+    EntityType.EVENT: _rule(DOCUMENTS, owner="events.Event", files=30, mb=25),
+    EntityType.SURVEY: _rule(DOCUMENTS, owner="surveys.Survey", files=30, mb=25),
+    EntityType.LIBRARY_DOCUMENT: _rule(DOCUMENTS, owner="library.LibraryDocument", files=1, mb=25),
+    EntityType.SERVICE_REQUEST: _rule(
+        PHOTOS_AND_PDF, owner="service_requests.ServiceRequest", files=30, mb=20
+    ),
+    EntityType.SERVICE_REQUEST_RESOLUTION: _rule(
+        PHOTOS_AND_PDF, owner="service_requests.ServiceRequestAssignment", files=30, mb=20
+    ),
+    EntityType.WORK_ORDER: _rule(PHOTOS_AND_PDF, owner="work_orders.WorkOrder", files=30, mb=20),
+    EntityType.LEASE_COMPONENT_STATE: _rule(
+        PHOTOS_AND_PDF, owner="leasing.LeaseComponentState", files=30, mb=20
+    ),
+    EntityType.LEASE_MEMBER_IDENTITY: _rule(
+        PHOTOS_AND_PDF, owner="leasing.LeaseMember", files=1, mb=10
+    ),
+    EntityType.LEASE_MEMBER_ADDRESS: _rule(
+        PHOTOS_AND_PDF, owner="leasing.LeaseMember", files=1, mb=10
+    ),
+    EntityType.VISITOR_ID_CARD: _rule(PHOTOS_AND_PDF, owner="visitors.Visitor", files=1, mb=10),
+    EntityType.SHORT_TERM_RENTAL_MEMBER_ID_CARD: _rule(
+        PHOTOS_AND_PDF, owner="short_term_rental.ShortTermRentalMember", files=1, mb=10
+    ),
     # One file per chat message: png, jpeg or pdf.
     EntityType.CHAT_MESSAGE: _rule(
-        frozenset({"image/png", "image/jpeg", "application/pdf"}), files=1, mb=10
+        frozenset({"image/png", "image/jpeg", "application/pdf"}),
+        owner="chat.ChatMessage",
+        files=1,
+        mb=10,
     ),
 }
+
+
+def entity_types_owned_by(model_label: str) -> tuple[str, ...]:
+    return tuple(t for t, rule in RULES.items() if rule.owner == model_label)
+
 
 # Types holding a single file (a new upload replaces it).
 SINGLE_FILE_TYPES: tuple[str, ...] = tuple(

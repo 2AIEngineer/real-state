@@ -15,7 +15,7 @@ class SurveyStatus(models.TextChoices):
 
 class Survey(TimeStampedModel):
     property = models.ForeignKey(
-        "properties.Property", on_delete=models.PROTECT, related_name="surveys"
+        "properties.Property", on_delete=models.CASCADE, related_name="surveys"
     )
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
@@ -91,9 +91,9 @@ class SurveyResponse(models.Model):
 
 class SurveyAnswer(models.Model):
     response = models.ForeignKey(SurveyResponse, on_delete=models.CASCADE, related_name="answers")
-    question = models.ForeignKey(SurveyQuestion, on_delete=models.PROTECT, related_name="answers")
+    question = models.ForeignKey(SurveyQuestion, on_delete=models.CASCADE, related_name="answers")
     selected_option = models.ForeignKey(
-        SurveyOption, on_delete=models.PROTECT, related_name="answers"
+        SurveyOption, on_delete=models.CASCADE, related_name="answers"
     )
 
     class Meta:

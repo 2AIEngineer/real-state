@@ -15,7 +15,8 @@ from django.db import transaction
 from django.db.models import Count, Prefetch, QuerySet
 from django.utils import timezone
 
-from apps.common.db import apply_changes, deleting
+from apps.common.db import apply_changes
+from apps.common.deletion import destroy
 from apps.common.exceptions import (
     BusinessRuleViolation,
     InvalidInput,
@@ -26,7 +27,7 @@ from apps.common.exceptions import (
 from apps.common.files.rules import EntityType
 from apps.common.files.service import AttachmentService
 from apps.common.services.audit import AuditService
-from apps.notifications.services import SnapshotService, delete_notification_traces
+from apps.notifications.services import SnapshotService
 from apps.properties.enums import Feature
 from apps.properties.models import Property
 from apps.properties.services import FeatureGate
@@ -244,18 +245,11 @@ class SurveyService:
     @staticmethod
     @transaction.atomic
     def delete(*, actor, survey: Survey) -> None:
-        """Removable while nobody answered; a survey with answers is closed, not erased."""
+        """Permanent removal of a survey and its answers. Closing it is the
+        alternative that keeps them."""
         if not SurveyPolicy.can_author(actor, survey.property):
             raise PermissionDenied("Only the property management can manage surveys.")
-        if survey.responses.exists():
-            raise BusinessRuleViolation(
-                "This survey already has answers: close it instead of deleting it.",
-                code="survey_has_responses",
-            )
         AuditService.record(
             actor=actor, action=SurveyAudit.DELETED, target=survey, property_id=survey.property_id
         )
-        with deleting("survey"):
-            AttachmentService.delete_for_entity(EntityType.SURVEY, survey.pk)
-            delete_notification_traces(survey)
-            survey.delete()
+        destroy(survey)

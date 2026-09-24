@@ -17,7 +17,8 @@ from django.db import transaction
 from django.db.models import Q, QuerySet
 from django.utils import timezone
 
-from apps.common.db import apply_changes, deleting
+from apps.common.db import apply_changes
+from apps.common.deletion import destroy
 from apps.common.exceptions import (
     BusinessRuleViolation,
     InvalidInput,
@@ -32,7 +33,6 @@ from apps.marketplace import notices
 from apps.marketplace.audit import MarketplaceAudit
 from apps.marketplace.models import ListingStatus, MarketplaceListing
 from apps.marketplace.policies import ListingPolicy
-from apps.notifications.services import delete_notification_traces
 from apps.properties.enums import Feature
 from apps.properties.models import Property
 from apps.properties.services import FeatureGate
@@ -213,10 +213,7 @@ class ListingService:
             target=listing,
             property_id=listing.property_id,
         )
-        with deleting("listing"):
-            AttachmentService.delete_for_entity(EntityType.MARKETPLACE_LISTING, listing.pk)
-            delete_notification_traces(listing)
-            listing.delete()
+        destroy(listing)
 
     @staticmethod
     @transaction.atomic

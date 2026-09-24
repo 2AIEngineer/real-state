@@ -7,7 +7,7 @@ from apps.common.models import TimeStampedModel
 
 class Product(TimeStampedModel):
     property = models.ForeignKey(
-        "properties.Property", on_delete=models.PROTECT, related_name="products"
+        "properties.Property", on_delete=models.CASCADE, related_name="products"
     )
     name = models.CharField(max_length=160)
     description = models.TextField(blank=True)
@@ -43,13 +43,13 @@ class OrderStatus(models.TextChoices):
 
 class Order(TimeStampedModel):
     property = models.ForeignKey(
-        "properties.Property", on_delete=models.PROTECT, related_name="orders"
+        "properties.Property", on_delete=models.CASCADE, related_name="orders"
     )
     orderer = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="orders"
     )
     unit = models.ForeignKey(
-        "properties.Unit", null=True, blank=True, on_delete=models.PROTECT, related_name="orders"
+        "properties.Unit", null=True, blank=True, on_delete=models.CASCADE, related_name="orders"
     )
     status = models.CharField(
         max_length=10, choices=OrderStatus.choices, default=OrderStatus.PENDING
@@ -84,7 +84,10 @@ class Order(TimeStampedModel):
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
-    product = models.ForeignKey(Product, on_delete=models.PROTECT, related_name="order_items")
+    # A deleted product leaves past orders intact: each line keeps its name and price.
+    product = models.ForeignKey(
+        Product, null=True, blank=True, on_delete=models.SET_NULL, related_name="order_items"
+    )
     # Frozen at order time: later catalogue edits never rewrite history.
     product_name = models.CharField(max_length=160)
     unit_price = models.DecimalField(max_digits=12, decimal_places=2)

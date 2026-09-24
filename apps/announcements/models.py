@@ -26,13 +26,13 @@ class AnnouncementPriority(models.TextChoices):
 
 class Announcement(TimeStampedModel, ArchivableModel):
     property = models.ForeignKey(
-        "properties.Property", on_delete=models.PROTECT, related_name="announcements"
+        "properties.Property", on_delete=models.CASCADE, related_name="announcements"
     )
     building = models.ForeignKey(
         "properties.Building",
         null=True,
         blank=True,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="announcements",
         help_text="Optional narrowing of the target roles to one building.",
     )

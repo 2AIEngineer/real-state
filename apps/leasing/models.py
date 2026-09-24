@@ -24,7 +24,7 @@ class LeaseTerminationReason(models.TextChoices):
 
 
 class Lease(TimeStampedModel):
-    unit = models.ForeignKey("properties.Unit", on_delete=models.PROTECT, related_name="leases")
+    unit = models.ForeignKey("properties.Unit", on_delete=models.CASCADE, related_name="leases")
     start_date = models.DateField()
     end_date = models.DateField(
         null=True, blank=True, help_text="NULL = open-ended / tacit renewal."
@@ -109,7 +109,7 @@ class LeaseMember(TimeStampedModel):
     member, of types `lease_member_identity` / `lease_member_address`.
     """
 
-    lease = models.ForeignKey(Lease, on_delete=models.PROTECT, related_name="members")
+    lease = models.ForeignKey(Lease, on_delete=models.CASCADE, related_name="members")
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="lease_memberships"
     )

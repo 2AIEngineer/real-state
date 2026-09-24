@@ -7,7 +7,8 @@ import datetime as dt
 from django.db import transaction
 from django.db.models import QuerySet
 
-from apps.common.db import apply_changes, deleting, translate_integrity_errors
+from apps.common.db import apply_changes, translate_integrity_errors
+from apps.common.deletion import destroy
 from apps.common.exceptions import InvalidInput, InvalidTransition, NotFound, PermissionDenied
 from apps.common.files.rules import EntityType
 from apps.common.files.service import AttachmentService
@@ -156,9 +157,7 @@ class LeaseComponentStateService:
             target=component,
             property_id=component.lease.property_id,
         )
-        with deleting("component state"):
-            AttachmentService.delete_for_entity(EntityType.LEASE_COMPONENT_STATE, component.pk)
-            component.delete()
+        destroy(component)
 
     @staticmethod
     @transaction.atomic

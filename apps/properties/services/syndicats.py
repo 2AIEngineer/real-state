@@ -6,12 +6,12 @@ from django.db import transaction
 from django.db.models import Count, Q, QuerySet
 
 from apps.accounts.services.authorization import AccessService
-from apps.common.db import apply_changes, deleting, translate_integrity_errors
+from apps.common.db import apply_changes, translate_integrity_errors
+from apps.common.deletion import destroy
 from apps.common.exceptions import NotFound
 from apps.common.files.rules import EntityType
 from apps.common.files.service import AttachmentService
 from apps.common.services.audit import AuditService
-from apps.notifications.services import delete_notification_traces
 from apps.properties import errors, notices
 from apps.properties.audit import SyndicatAudit
 from apps.properties.models import Syndicat
@@ -114,14 +114,12 @@ class SyndicatService:
     @staticmethod
     @transaction.atomic
     def delete(*, actor, syndicat: Syndicat) -> None:
-        """Only an empty syndicat can be removed; otherwise deactivate it."""
+        """Permanent removal of a syndicat and its properties. Deactivating it is
+        the alternative that keeps them."""
         if not SyndicatPolicy.can_delete(actor):
             raise errors.admins_only()
         AuditService.record(actor=actor, action=SyndicatAudit.DELETED, target=syndicat)
-        with deleting("syndicat", hint="Deactivate it instead to keep its history."):
-            AttachmentService.delete_for_entity(EntityType.SYNDICAT_LOGO, syndicat.pk)
-            delete_notification_traces(syndicat)
-            syndicat.delete()
+        destroy(syndicat)
 
     @staticmethod
     @transaction.atomic

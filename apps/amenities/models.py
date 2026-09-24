@@ -15,13 +15,13 @@ class BookingMode(models.TextChoices):
 
 class Amenity(TimeStampedModel):
     property = models.ForeignKey(
-        "properties.Property", on_delete=models.PROTECT, related_name="amenities"
+        "properties.Property", on_delete=models.CASCADE, related_name="amenities"
     )
     building = models.ForeignKey(
         "properties.Building",
         null=True,
         blank=True,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="amenities",
     )
     name = models.CharField(max_length=120)
@@ -98,7 +98,7 @@ BLOCKING_BOOKING_STATUSES = (BookingStatus.PENDING, BookingStatus.CONFIRMED)
 
 
 class Booking(TimeStampedModel):
-    amenity = models.ForeignKey(Amenity, on_delete=models.PROTECT, related_name="bookings")
+    amenity = models.ForeignKey(Amenity, on_delete=models.CASCADE, related_name="bookings")
     booker = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="bookings"
     )

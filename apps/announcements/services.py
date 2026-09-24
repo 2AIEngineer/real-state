@@ -16,12 +16,13 @@ from apps.announcements import notices
 from apps.announcements.audit import AnnouncementAudit
 from apps.announcements.models import Announcement, AnnouncementPriority
 from apps.announcements.policies import AnnouncementPolicy
-from apps.common.db import apply_changes, deleting
+from apps.common.db import apply_changes
+from apps.common.deletion import destroy
 from apps.common.exceptions import InvalidInput, NotFound, PermissionDenied
 from apps.common.files.rules import EntityType
 from apps.common.files.service import AttachmentService
 from apps.common.services.audit import AuditService
-from apps.notifications.services import SnapshotService, delete_notification_traces
+from apps.notifications.services import SnapshotService
 from apps.properties.enums import Feature
 from apps.properties.models import Building, Property
 from apps.properties.services import FeatureGate
@@ -210,10 +211,7 @@ class AnnouncementService:
             property_id=announcement.property_id,
             metadata={"title": announcement.title},
         )
-        with deleting("announcement"):
-            AttachmentService.delete_for_entity(EntityType.ANNOUNCEMENT, announcement.pk)
-            delete_notification_traces(announcement)
-            announcement.delete()
+        destroy(announcement)
 
     @staticmethod
     @transaction.atomic

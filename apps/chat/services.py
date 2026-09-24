@@ -19,10 +19,10 @@ from apps.chat import notices
 from apps.chat.contexts import CONTEXTS, context_of, load_context
 from apps.chat.models import ChatMessage, ChatReadMarker, ChatRoom
 from apps.chat.policies import ChatPolicy
+from apps.common.deletion import destroy
 from apps.common.exceptions import InvalidInput, NotFound, PermissionDenied
 from apps.common.files.rules import EntityType
 from apps.common.files.service import AttachmentService
-from apps.notifications.services import delete_notification_traces
 from apps.properties.enums import Feature
 from apps.properties.models import Property
 from apps.properties.services import FeatureGate
@@ -193,26 +193,7 @@ class ChatService:
             raise PermissionDenied(
                 "Only the sender or the property management can delete this message."
             )
-        AttachmentService.delete_for_entity(EntityType.CHAT_MESSAGE, message.pk)
-        delete_notification_traces(message)
-        message.delete()
-
-    @staticmethod
-    def delete_conversation_of(context) -> None:
-        """Remove the conversation of a business object being deleted.
-
-        The room itself is cascaded by the database; the media of each message
-        and the inbox entries pointing at them are not, hence this pass.
-        """
-        field = {"ServiceRequest": "service_request", "Booking": "booking", "Order": "order"}[
-            type(context).__name__
-        ]
-        room = ChatRoom.objects.filter(**{field: context}).first()
-        if room is None:
-            return
-        for message in room.messages.all():
-            AttachmentService.delete_for_entity(EntityType.CHAT_MESSAGE, message.pk)
-            delete_notification_traces(message)
+        destroy(message)
 
     @staticmethod
     @transaction.atomic

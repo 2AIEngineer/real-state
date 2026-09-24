@@ -30,7 +30,7 @@ class ChatRoom(TimeStampedModel):
         "store.Order", null=True, blank=True, on_delete=models.CASCADE, related_name="chat_room"
     )
     property = models.ForeignKey(
-        "properties.Property", on_delete=models.PROTECT, related_name="chat_rooms"
+        "properties.Property", on_delete=models.CASCADE, related_name="chat_rooms"
     )
     last_message_at = models.DateTimeField(null=True, blank=True, db_index=True)
 

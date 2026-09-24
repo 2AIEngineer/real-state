@@ -13,12 +13,12 @@ from django.utils import timezone
 
 from apps.accounts.enums import StructuralRole
 from apps.accounts.services.authorization import AccessService
-from apps.common.db import apply_changes, deleting
+from apps.common.db import apply_changes
+from apps.common.deletion import destroy
 from apps.common.exceptions import InvalidInput, InvalidTransition, NotFound, PermissionDenied
 from apps.common.files.rules import EntityType
 from apps.common.files.service import AttachmentService
 from apps.common.services.audit import AuditService
-from apps.notifications.services import delete_notification_traces
 from apps.properties.models import Building, Property, Unit
 from apps.service_requests.models import ServiceRequest
 from apps.work_orders import notices
@@ -243,10 +243,7 @@ class WorkOrderService:
             property_id=wo.property_id,
             metadata={"status": wo.status, "title": wo.title},
         )
-        with deleting("work order"):
-            AttachmentService.delete_for_entity(EntityType.WORK_ORDER, wo.pk)
-            delete_notification_traces(wo)
-            wo.delete()
+        destroy(wo)
 
     @staticmethod
     @transaction.atomic

@@ -8,12 +8,12 @@ from django.db import transaction
 from django.db.models import QuerySet
 
 from apps.accounts.services.assignments import PropertyAssignmentService
-from apps.common.db import apply_changes, deleting, translate_integrity_errors
+from apps.common.db import apply_changes, translate_integrity_errors
+from apps.common.deletion import destroy
 from apps.common.exceptions import BusinessRuleViolation, InvalidInput, NotFound, PermissionDenied
 from apps.common.files.rules import EntityType
 from apps.common.files.service import AttachmentService
 from apps.common.services.audit import AuditService
-from apps.notifications.services import delete_notification_traces
 from apps.properties import errors, notices
 from apps.properties.audit import PropertyAudit
 from apps.properties.models import (
@@ -212,22 +212,16 @@ class PropertyService:
     @staticmethod
     @transaction.atomic
     def delete(*, actor, prop: Property) -> None:
-        """Removable while it holds no building nor any module content."""
+        """Permanent removal of a property and all it holds. Deactivating it is
+        the alternative that keeps its history."""
         if not PropertyPolicy.can_delete(actor):
             raise errors.admins_only()
         AuditService.record(
             actor=actor, action=PropertyAudit.DELETED, target=prop, property_id=prop.pk
         )
-        # Drop the folders created with the property; user-made folders and
-        # folders holding documents stay, and block the deletion.
-        from apps.library.services import FolderService
-
-        with deleting("property", hint="Deactivate it instead to keep its history."):
-            FolderService.delete_system_folders(prop=prop)
-            PropertyAssignmentService.delete_for_property(prop=prop, actor=actor)
-            AttachmentService.delete_for_entity(EntityType.PROPERTY_LOGO, prop.pk)
-            delete_notification_traces(prop)
-            prop.delete()
+        # Who loses access is journaled before the rows go.
+        PropertyAssignmentService.delete_for_property(prop=prop, actor=actor)
+        destroy(prop)
 
     @staticmethod
     @transaction.atomic

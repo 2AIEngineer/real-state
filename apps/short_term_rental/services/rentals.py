@@ -19,18 +19,16 @@ from django.db import transaction
 from django.db.models import QuerySet
 from django.utils import timezone
 
-from apps.common.db import deleting, translate_integrity_errors
+from apps.common.db import translate_integrity_errors
+from apps.common.deletion import destroy
 from apps.common.exceptions import (
     InvalidInput,
     InvalidTransition,
     NotFound,
     PermissionDenied,
 )
-from apps.common.files.rules import EntityType
-from apps.common.files.service import AttachmentService
 from apps.common.services.audit import AuditService
 from apps.leasing.models import Lease
-from apps.notifications.services import delete_notification_traces
 from apps.properties import timezones
 from apps.properties.enums import Feature
 from apps.properties.models import Property, Unit
@@ -265,11 +263,4 @@ class ShortTermRentalService:
             property_id=rental.property_id,
             metadata={"status": rental.status},
         )
-        with deleting("short rental"):
-            ShortTermRental.objects.filter(pk=rental.pk).update(primary_member=None)
-            for member in rental.members.all():
-                AttachmentService.delete_for_entity(
-                    EntityType.SHORT_TERM_RENTAL_MEMBER_ID_CARD, member.pk
-                )
-            delete_notification_traces(rental)
-            rental.delete()
+        destroy(rental)

@@ -6,13 +6,13 @@ from django.db import transaction
 from django.db.models import QuerySet
 
 from apps.accounts.services.authorization import AccessService
-from apps.common.db import apply_changes, deleting, translate_integrity_errors
-from apps.common.exceptions import BusinessRuleViolation, NotFound, PermissionDenied
+from apps.common.db import apply_changes, translate_integrity_errors
+from apps.common.deletion import destroy
+from apps.common.exceptions import NotFound, PermissionDenied
 from apps.common.services.audit import AuditService
-from apps.notifications.services import delete_notification_traces
 from apps.properties import errors, timezones
 from apps.properties.audit import UnitAudit
-from apps.properties.models import Building, Property, Unit, UnitOwnership
+from apps.properties.models import Building, Property, Unit
 from apps.properties.policies import UnitPolicy
 from apps.properties.services.ownership import open_promoter_default
 
@@ -106,32 +106,14 @@ class UnitService:
     @staticmethod
     @transaction.atomic
     def delete(*, actor, unit: Unit) -> None:
-        """Removable while the unit was never lived in nor sold.
-
-        The promoter's default ownership is removed with it; any other
-        ownership means the ledger must be kept, and deletion is refused.
-        """
-        from apps.leasing.models import Lease  # leasing depends on properties
-
+        """Permanent removal of a unit and everything recorded on it: ownership
+        ledger, leases, short rentals, requests, orders, visitors, files."""
         if not UnitPolicy.can_delete(actor, unit):
             raise PermissionDenied("Only the property management can delete units.")
-        ownerships = UnitOwnership.objects.filter(unit=unit)
-        if ownerships.exclude(is_promoter_default=True).exists():
-            raise BusinessRuleViolation(
-                "This unit has an ownership history: it cannot be deleted.",
-                code="unit_has_ownership_history",
-            )
-        if Lease.objects.filter(unit=unit).exists():
-            raise BusinessRuleViolation(
-                "This unit has leases: it cannot be deleted.", code="unit_has_leases"
-            )
         AuditService.record(
             actor=actor,
             action=UnitAudit.DELETED,
             target=unit,
             property_id=unit.building.property_id,
         )
-        with deleting("unit"):
-            ownerships.delete()
-            delete_notification_traces(unit)
-            unit.delete()
+        destroy(unit)

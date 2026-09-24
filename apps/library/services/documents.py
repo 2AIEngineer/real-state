@@ -6,6 +6,7 @@ from django.db import transaction
 from django.db.models import QuerySet
 
 from apps.common.db import apply_changes
+from apps.common.deletion import destroy
 from apps.common.exceptions import InvalidInput, NotFound, PermissionDenied
 from apps.common.files.rules import EntityType
 from apps.common.files.service import AttachmentService
@@ -14,7 +15,7 @@ from apps.library import notices
 from apps.library.audit import LibraryAudit
 from apps.library.models import Folder, LibraryDocument
 from apps.library.policies import DocumentPolicy
-from apps.notifications.services import SnapshotService, delete_notification_traces
+from apps.notifications.services import SnapshotService
 from apps.properties.enums import Feature
 from apps.properties.models import Property
 from apps.properties.services import FeatureGate
@@ -132,6 +133,4 @@ class DocumentService:
             target=document,
             property_id=document.property_id,
         )
-        AttachmentService.delete_for_entity(EntityType.LIBRARY_DOCUMENT, document.pk)
-        delete_notification_traces(document)
-        document.delete()
+        destroy(document)

@@ -29,7 +29,8 @@ from apps.amenities.models import (
     BookingStatus,
 )
 from apps.amenities.policies import BookingPolicy
-from apps.common.db import deleting, translate_integrity_errors
+from apps.common.db import translate_integrity_errors
+from apps.common.deletion import destroy
 from apps.common.exceptions import (
     BusinessRuleViolation,
     InvalidInput,
@@ -38,7 +39,6 @@ from apps.common.exceptions import (
     PermissionDenied,
 )
 from apps.common.services.audit import AuditService
-from apps.notifications.services import delete_notification_traces
 from apps.properties import timezones
 from apps.properties.enums import Feature
 from apps.properties.models import Property
@@ -193,12 +193,7 @@ class BookingService:
             property_id=booking.amenity.property_id,
             metadata={"status": booking.status},
         )
-        from apps.chat.services import ChatService
-
-        with deleting("booking"):
-            ChatService.delete_conversation_of(booking)
-            delete_notification_traces(booking)
-            booking.delete()
+        destroy(booking)
 
     @staticmethod
     def _lock(booking: Booking) -> Booking:

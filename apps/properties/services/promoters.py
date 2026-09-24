@@ -7,9 +7,9 @@ from django.db.models import ProtectedError, QuerySet
 
 from apps.accounts.services.technical import TechnicalAccountService
 from apps.common.db import apply_changes, deleting, translate_integrity_errors
+from apps.common.deletion import destroy
 from apps.common.exceptions import NotFound
 from apps.common.services.audit import AuditService
-from apps.notifications.services import delete_notification_traces
 from apps.properties import errors
 from apps.properties.audit import PromoterAudit
 from apps.properties.models import Promoter
@@ -92,9 +92,10 @@ class PromoterService:
             raise errors.admins_only()
         representative = promoter.representative_user
         AuditService.record(actor=actor, action=PromoterAudit.DELETED, target=promoter)
-        with deleting("promoter"):
-            delete_notification_traces(promoter)
-            promoter.delete()
+        # A promoter is a reference, not a container: a property it develops is
+        # moved to another promoter (PATCH /properties/{id}/promoter/), never deleted with it.
+        with deleting("promoter", hint="Assign another promoter to its properties first."):
+            destroy(promoter)
         try:
             with transaction.atomic():
                 if representative.is_technical_account:

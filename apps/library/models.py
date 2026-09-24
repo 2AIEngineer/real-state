@@ -10,10 +10,10 @@ from apps.common.models import TimeStampedModel
 
 class Folder(TimeStampedModel):
     property = models.ForeignKey(
-        "properties.Property", on_delete=models.PROTECT, related_name="library_folders"
+        "properties.Property", on_delete=models.CASCADE, related_name="library_folders"
     )
     parent_folder = models.ForeignKey(
-        "self", null=True, blank=True, on_delete=models.PROTECT, related_name="subfolders"
+        "self", null=True, blank=True, on_delete=models.CASCADE, related_name="subfolders"
     )
     en_name = models.CharField(max_length=160)
     fr_name = models.CharField(max_length=160)
@@ -54,9 +54,9 @@ class Folder(TimeStampedModel):
 class LibraryDocument(TimeStampedModel):
     """A published document; its file is an attachment of type `library_document`."""
 
-    folder = models.ForeignKey(Folder, on_delete=models.PROTECT, related_name="documents")
+    folder = models.ForeignKey(Folder, on_delete=models.CASCADE, related_name="documents")
     property = models.ForeignKey(
-        "properties.Property", on_delete=models.PROTECT, related_name="library_documents"
+        "properties.Property", on_delete=models.CASCADE, related_name="library_documents"
     )
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)

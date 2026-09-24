@@ -15,13 +15,13 @@ class EventStatus(models.TextChoices):
 
 class Event(TimeStampedModel, ArchivableModel):
     property = models.ForeignKey(
-        "properties.Property", on_delete=models.PROTECT, related_name="events"
+        "properties.Property", on_delete=models.CASCADE, related_name="events"
     )
     building = models.ForeignKey(
         "properties.Building",
         null=True,
         blank=True,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="events",
     )
     title = models.CharField(max_length=200)

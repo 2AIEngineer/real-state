@@ -5,7 +5,8 @@ from __future__ import annotations
 from django.db import transaction
 from django.db.models import Q, QuerySet
 
-from apps.common.db import apply_changes, deleting, translate_integrity_errors
+from apps.common.db import apply_changes, translate_integrity_errors
+from apps.common.deletion import destroy
 from apps.common.exceptions import (
     InvalidInput,
     NotFound,
@@ -94,7 +95,8 @@ class ProductService:
     @staticmethod
     @transaction.atomic
     def delete(*, actor, product: Product) -> None:
-        """Removable while it was never ordered; otherwise deactivate it."""
+        """Permanent removal from the catalogue. Past orders keep their lines
+        (name and price are frozen on them); deactivating is the alternative."""
         if not ProductPolicy.can_manage(actor):
             raise errors.store_admins_only()
         AuditService.record(
@@ -103,9 +105,7 @@ class ProductService:
             target=product,
             property_id=product.property_id,
         )
-        with deleting("product", hint="Set it inactive instead to keep past orders."):
-            AttachmentService.delete_for_entity(EntityType.PRODUCT, product.pk)
-            product.delete()
+        destroy(product)
 
     @staticmethod
     @transaction.atomic

@@ -96,26 +96,32 @@ refuser la suppression d'un lot loué ; `LeaseService.terminate`/`.cancel`/`.del
 `short_term_rental.ShortTermRentalService` pour annuler ou bloquer selon les sous-locations en cours. Ces
 appels se lisent à l'endroit où ils ont lieu, sans détour par un mécanisme d'écoute.
 
-### Suppression et fichiers
+### Suppression et archivage
 
-Un fichier est rattaché à un enregistrement par `(entity_type, entity_id)`, sans clé étrangère : la base ne
-peut donc rien nettoyer toute seule. Chaque service qui possède un type de fichier ou déclenche une
-notification s'occupe explicitement, dans son propre `delete()`, de retirer ce qui pointe vers la ligne
-avant de la supprimer :
+Deux actions distinctes, au choix de l'utilisateur :
 
-```python
-with deleting("service request"):
-    for assignment in sr.assignments.all():
-        AttachmentService.delete_for_entity(EntityType.SERVICE_REQUEST_RESOLUTION, assignment.pk)
-    AttachmentService.delete_for_entity(EntityType.SERVICE_REQUEST, sr.pk)
-    delete_notification_traces(sr)
-    sr.delete()
-```
+- **archiver** (ou désactiver, clôturer, annuler selon la ressource) garde tout l'historique ;
+- **supprimer** est une action consciente et destructive : la ressource part avec tout ce qui en dépend
+  (clés étrangères en `CASCADE`). Supprimer un bâtiment supprime ses lots, leurs baux, leurs occupants,
+  leurs demandes, et ainsi de suite. Aucune suppression n'est refusée parce que d'autres enregistrements
+  pointent vers la ligne.
 
-Une suppression qui contourne le service (ORM brut, une cascade non prévue) laisse ces fichiers orphelins ;
-`purge_orphan_attachments` les récupère. Les règles de chaque type de fichier (formats, nombre, taille,
-public ou privé) sont dans `apps/common/files/rules.py`. Le format est détecté d'après le contenu, jamais
-d'après l'extension, et le fichier est stocké et servi sous ce format.
+Trois exceptions seulement : les comptes utilisateurs ne sont jamais supprimés mais fermés (données
+personnelles effacées, `AccountStatusService.close`), un promoteur qui développe encore une propriété se
+remplace sur la propriété avant d'être supprimé (c'est une référence, pas un contenant), et les dossiers
+par défaut de la bibliothèque restent. Une ligne de commande garde ses nom et prix quand le produit est
+retiré du catalogue.
+
+Un fichier ou une notification pointe vers un enregistrement par `(type, id)`, sans clé étrangère : la base
+ne peut pas les supprimer en cascade. Chaque `delete()` de service finit donc par
+`apps.common.deletion.destroy(objet)`, qui recense toutes les lignes atteintes par la cascade et supprime
+leurs fichiers (chaque type de fichier déclare son modèle propriétaire dans `rules.py`) et leurs traces de
+notification, dans la même transaction. Une suppression qui contournerait `destroy` (ORM brut) laisse des
+fichiers orphelins ; `purge_orphan_attachments` récupère les blobs stockés sans ligne.
+
+Les règles de chaque type de fichier (formats, nombre, taille, public ou privé, modèle propriétaire) sont
+dans `apps/common/files/rules.py`. Le format est détecté d'après le contenu, jamais d'après l'extension,
+et le fichier est stocké et servi sous ce format.
 
 ### Lire un fichier
 
@@ -191,9 +197,9 @@ le stock est réservé à la commande.
 ## Ajouter un module
 
 1. `models.py` et sa migration.
-2. `errors.py`, `policies.py`, `services/`, `notices.py`, `audit.py`. Le `delete()` d'un service nettoie
-   explicitement les fichiers (`AttachmentService.delete_for_entity`) et les traces de notification
-   (`delete_notification_traces`) du ou des types que le module possède.
+2. `errors.py`, `policies.py`, `services/`, `notices.py`, `audit.py`. Le `delete()` d'un service vérifie
+   le droit, écrit l'audit puis appelle `destroy(objet)`. Un nouveau type de fichier déclare son modèle
+   propriétaire dans `apps/common/files/rules.py`.
 3. `serializers.py`, `views.py`, `urls.py` (à déclarer dans `config/urls.py`, l'app dans `INSTALLED_APPS`).
    Une vue de tableau de bord hérite de `apps.common.views.BaseAPIView` et passe `prop=self.property` au
    `get_visible` de ses services, qui filtre sur cette propriété.
