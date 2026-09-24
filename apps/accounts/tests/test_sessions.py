@@ -3,8 +3,8 @@
 import pytest
 from rest_framework.test import APIClient
 
-from apps.accounts.services.accounts import AccountService
 from apps.accounts.services.passwords import PasswordService
+from apps.accounts.services.status import AccountStatusService
 
 pytestmark = pytest.mark.django_db
 
@@ -59,7 +59,7 @@ def test_a_password_change_ends_every_session(world):
 def test_a_deactivation_ends_every_session(world):
     credentials = login(world.tenant)
     world.lease.members.filter(user=world.tenant).delete()  # no obligation left
-    AccountService.deactivate(actor=world.admin, user=world.tenant)
+    AccountStatusService.deactivate(actor=world.admin, user=world.tenant)
 
     assert me(credentials["access_token"]).status_code == 401
     assert refresh(credentials["refresh_token"]).status_code == 401

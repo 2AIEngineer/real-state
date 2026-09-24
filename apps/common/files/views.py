@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from django.contrib.auth import get_user_model
 from django.http import Http404, HttpResponse
-from drf_spectacular.utils import OpenApiResponse, extend_schema
+from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 
@@ -13,19 +13,13 @@ from apps.common.files import delivery, links
 from apps.common.models import Attachment
 
 
-@extend_schema(tags=["Files"])
+@extend_schema(exclude=True)  # never called by name: clients open the `url` of an attachment
 class FileView(APIView):
     """Opens a file from the `url` of an attachment. No header needed: the link is signed."""
 
     authentication_classes: list = []
     permission_classes = [AllowAny]
 
-    @extend_schema(
-        responses={
-            200: OpenApiResponse(description="The file."),
-            302: OpenApiResponse(description="Redirect to the stored file."),
-        }
-    )
     def get(self, request, token: str) -> HttpResponse:
         try:
             link = links.read(token)

@@ -16,16 +16,14 @@ class AmenityListView(BaseAPIView):
     )
     def get(self, request):
         query = self.parse_query_params(s.AmenitiesQueryParamsSerializer)
-        prop = self.property
         qs = AmenityService.list_visible(
-            actor=request.user, prop=prop, include_inactive=query["include_inactive"]
+            actor=request.user, prop=self.property, include_inactive=query["include_inactive"]
         )
         return self.render_page(s.AmenitySerializer, qs)
 
     @extend_schema(request=s.AmenityCreateSerializer, responses={201: s.AmenitySerializer})
     def post(self, request):
         data = dict(self.parse(s.AmenityCreateSerializer))
-        prop = self.property
         building_id = data.pop("building_id")
         building = (
             BuildingService.get_visible(
@@ -34,7 +32,9 @@ class AmenityListView(BaseAPIView):
             if building_id
             else None
         )
-        amenity = AmenityService.create(actor=request.user, prop=prop, building=building, data=data)
+        amenity = AmenityService.create(
+            actor=request.user, prop=self.property, building=building, data=data
+        )
         return self.render(s.AmenitySerializer, amenity, status=status.HTTP_201_CREATED)
 
 

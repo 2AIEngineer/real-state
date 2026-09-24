@@ -11,6 +11,7 @@ from apps.accounts.services.accounts import AccountService
 from apps.accounts.services.authorization import AccessService
 from apps.accounts.services.passwords import PasswordService
 from apps.accounts.services.registration import OwnedUnit, RentedUnit
+from apps.accounts.services.status import AccountStatusService
 from apps.common.exceptions import BusinessRuleViolation, InvalidInput, NotFound, PermissionDenied
 from apps.common.models import AuditLogEntry
 from apps.leasing.models import Lease, LeaseMember, LeaseStatus
@@ -359,20 +360,20 @@ class TestCriticalChanges:
 
     def test_cannot_deactivate_an_active_lease_member(self, world):
         with pytest.raises(BusinessRuleViolation) as exc:
-            AccountService.deactivate(actor=world.admin, user=world.tenant)
+            AccountStatusService.deactivate(actor=world.admin, user=world.tenant)
         assert exc.value.code == "active_lease_member"
 
     def test_deactivation_revokes_roles_and_blocks_access(self, world):
         from apps.accounts.services.authorization import AccessService
 
-        AccountService.deactivate(actor=world.admin, user=world.manager)
+        AccountStatusService.deactivate(actor=world.admin, user=world.manager)
         world.manager.refresh_from_db()
         assert not world.manager.is_active and world.manager.deactivated_at
         assert not AccessService.manages_property(world.manager, world.prop)
 
     def test_only_admins_deactivate(self, world):
         with pytest.raises(PermissionDenied):
-            AccountService.deactivate(actor=world.manager, user=world.outsider)
+            AccountStatusService.deactivate(actor=world.manager, user=world.outsider)
 
     def test_closure_erases_personal_data_but_keeps_history(self, world):
         LeaseService.terminate(
@@ -384,7 +385,7 @@ class TestCriticalChanges:
         world.co_tenant.inbox_notifications.create(
             category="account", notification_type="x", title="t", body="b"
         )
-        AccountService.close(actor=world.admin, user=world.co_tenant)
+        AccountStatusService.close(actor=world.admin, user=world.co_tenant)
         world.co_tenant.refresh_from_db()
         assert world.co_tenant.email.endswith("@erased.invalid") and not world.co_tenant.is_active
         assert world.co_tenant.phone == "" and world.co_tenant.gender == "UNDISCLOSED"

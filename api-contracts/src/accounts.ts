@@ -78,6 +78,11 @@ export const passwordChangeRequestSchema = z.object({
 });
 export type PasswordChangeRequest = z.infer<typeof passwordChangeRequestSchema>;
 
+export const logoutRequestSchema = z.object({
+  refresh: z.string().min(1),
+});
+export type LogoutRequest = z.infer<typeof logoutRequestSchema>;
+
 export const passwordResetRequestSchema = z.object({
   email: z.email().min(1),
 });

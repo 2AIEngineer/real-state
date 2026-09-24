@@ -16,10 +16,9 @@ class FolderListView(BaseAPIView):
     )
     def get(self, request):
         query = self.parse_query_params(s.LibraryFoldersQueryParamsSerializer)
-        prop = self.property
         qs = FolderService.list_for_property(
             actor=request.user,
-            prop=prop,
+            prop=self.property,
             parent_id=query.get("parent_id"),
             root_only=query["root_only"],
         )
@@ -30,14 +29,13 @@ class FolderListView(BaseAPIView):
     )
     def post(self, request):
         data = dict(self.parse(s.LibraryFolderCreateSerializer))
-        prop = self.property
         parent_id = data.pop("parent_folder_id")
         parent = (
             FolderService.get_visible(actor=request.user, prop=self.property, folder_id=parent_id)
             if parent_id
             else None
         )
-        folder = FolderService.create(actor=request.user, prop=prop, parent=parent, **data)
+        folder = FolderService.create(actor=request.user, prop=self.property, parent=parent, **data)
         return self.render(s.LibraryFolderSerializer, folder, status=status.HTTP_201_CREATED)
 
 
@@ -87,10 +85,9 @@ class DocumentListView(BaseAPIView):
     )
     def get(self, request):
         query = self.parse_query_params(s.LibraryDocumentsQueryParamsSerializer)
-        prop = self.property
         qs = DocumentService.list_visible(
             actor=request.user,
-            prop=prop,
+            prop=self.property,
             folder_id=query.get("folder_id"),
             search=query.get("search"),
         )

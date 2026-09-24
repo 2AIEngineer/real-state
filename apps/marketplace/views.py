@@ -30,9 +30,10 @@ class ListingListView(BaseAPIView):
     )
     def post(self, request):
         data = dict(self.parse(s.MarketplaceListingCreateSerializer))
-        prop = self.property
         images = data.pop("images")
-        listing = ListingService.publish(actor=request.user, data=data, images=images, prop=prop)
+        listing = ListingService.publish(
+            actor=request.user, data=data, images=images, prop=self.property
+        )
         return self.render(s.MarketplaceListingSerializer, listing, status=status.HTTP_201_CREATED)
 
 

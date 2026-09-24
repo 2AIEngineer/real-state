@@ -17,10 +17,9 @@ class AnnouncementListView(BaseAPIView):
     )
     def get(self, request):
         query = self.parse_query_params(s.AnnouncementsQueryParamsSerializer)
-        prop = self.property
         qs = AnnouncementService.list_visible(
             actor=request.user,
-            prop=prop,
+            prop=self.property,
             include_expired=query["include_expired"],
             category=query.get("category"),
         )
@@ -32,7 +31,6 @@ class AnnouncementListView(BaseAPIView):
     )
     def post(self, request):
         data = dict(self.parse(s.AnnouncementCreateSerializer))
-        prop = self.property
         building_id = data.pop("building_id")
         building = (
             BuildingService.get_visible(
@@ -42,7 +40,7 @@ class AnnouncementListView(BaseAPIView):
             else None
         )
         announcement = AnnouncementService.publish(
-            actor=request.user, prop=prop, building=building, **data
+            actor=request.user, prop=self.property, building=building, **data
         )
         return self.render(s.AnnouncementSerializer, announcement, status=status.HTTP_201_CREATED)
 

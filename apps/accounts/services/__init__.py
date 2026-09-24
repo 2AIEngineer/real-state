@@ -5,7 +5,10 @@
 | `authorization` | The facts other modules build their policies on: who manages what, who works where, who lives there (`AccessService`). |
 | `assignments` | Granting and revoking the places a role is exercised in, one service per table (a package). |
 | `roles` | The single platform-wide role of an account (`RoleService`). |
-| `accounts` | The life of the account itself: creation, profile, e-mail, deactivation, closure (`AccountService`). |
+| `accounts` | The account itself: creation, lookups, role, profile, e-mail (`AccountService`). |
+| `status` | Deactivation, reactivation and closure with erasure of personal data (`AccountStatusService`). |
+| `tokens` | Ending sessions: sign-out, revocation of every token (`TokenService`). |
+| `setup_links` | The e-mailed link to choose a password, and its lifetime. |
 | `registration` | What ties a new account to the residence: the units it owns or rents. |
 | `passwords` | Choosing, resetting and changing passwords (`PasswordService`). |
 | `providers` | The profile of service providers. |

@@ -16,15 +16,14 @@ class EventListView(BaseAPIView):
     )
     def get(self, request):
         query = dict(self.parse_query_params(s.EventsQueryParamsSerializer))
-        prop = self.property
         return self.render_page(
-            s.EventSerializer, EventService.list_visible(actor=request.user, prop=prop, **query)
+            s.EventSerializer,
+            EventService.list_visible(actor=request.user, prop=self.property, **query),
         )
 
     @extend_schema(request=s.EventCreateSerializer, responses={201: s.EventSerializer})
     def post(self, request):
         data = dict(self.parse(s.EventCreateSerializer))
-        prop = self.property
         building_id = data.pop("building_id")
         building = (
             BuildingService.get_visible(
@@ -33,7 +32,9 @@ class EventListView(BaseAPIView):
             if building_id
             else None
         )
-        event = EventService.create(actor=request.user, prop=prop, building=building, **data)
+        event = EventService.create(
+            actor=request.user, prop=self.property, building=building, **data
+        )
         return self.render(s.EventSerializer, event, status=status.HTTP_201_CREATED)
 
 

@@ -10,8 +10,8 @@
     "previous": null,
     "results": [
      {
-      "id": 594,
-      "property": 12228,
+      "id": 174,
+      "property": 4196,
       "building": null,
       "name": "Gym",
       "description": "",
@@ -30,8 +30,8 @@
       "hourly_price": "0.00",
       "is_active": true,
       "images": [],
-      "created_at": "2026-09-24T19:27:06.710429Z",
-      "updated_at": "2026-09-24T19:27:06.710435Z"
+      "created_at": "2026-09-24T22:46:15.284266Z",
+      "updated_at": "2026-09-24T22:46:15.284277Z"
      }
     ]
    }
@@ -41,8 +41,8 @@
    "path": "/api/v1/amenities/{amenity_id}/",
    "status": 200,
    "body": {
-    "id": 594,
-    "property": 12228,
+    "id": 174,
+    "property": 4196,
     "building": null,
     "name": "Gym",
     "description": "",
@@ -61,8 +61,8 @@
     "hourly_price": "0.00",
     "is_active": true,
     "images": [],
-    "created_at": "2026-09-24T19:27:06.710429Z",
-    "updated_at": "2026-09-24T19:27:06.710435Z"
+    "created_at": "2026-09-24T22:46:15.284266Z",
+    "updated_at": "2026-09-24T22:46:15.284277Z"
    }
   },
   {
@@ -88,8 +88,8 @@
     "previous": null,
     "results": [
      {
-      "id": 408,
-      "property": 12228,
+      "id": 120,
+      "property": 4196,
       "building": null,
       "title": "Water cut",
       "body": "Tomorrow.",
@@ -98,30 +98,30 @@
       "target_roles": [
        "tenant"
       ],
-      "published_at": "2026-09-24T19:27:06.677793Z",
+      "published_at": "2026-09-24T22:46:15.242475Z",
       "expires_at": null,
       "created_by": {
-       "id": 115289,
+       "id": 37720,
        "full_name": "First9 Last9",
        "email": "manager@example.test"
       },
       "files": [
        {
-        "id": 1899,
+        "id": 735,
         "entity_type": "announcement",
-        "entity_id": 408,
-        "url": "http://testserver/media/attachments/announcement/2026/09/e260a311c4570acb900255207621ddf5.pdf",
+        "entity_id": 120,
+        "url": "http://testserver/api/v1/files/735.37718.1790337600:wVj-H3Px_Qjy_IKsMQ5u2PRSESZOzqFcpNazvPXm5T4/",
         "original_filename": "doc.pdf",
         "mime_type": "application/pdf",
         "size": 45,
         "checksum_sha256": "5a838678058f6de375e8635b5f2fea47a4e5f07cb1a882a44b10f39abc6f34ff",
         "position": 0,
-        "uploaded_by": 115289,
-        "created_at": "2026-09-24T19:27:06.680911Z"
+        "uploaded_by": 37720,
+        "created_at": "2026-09-24T22:46:15.246499Z"
        }
       ],
-      "created_at": "2026-09-24T19:27:06.677996Z",
-      "updated_at": "2026-09-24T19:27:06.678002Z"
+      "created_at": "2026-09-24T22:46:15.242801Z",
+      "updated_at": "2026-09-24T22:46:15.242811Z"
      }
     ]
    }
@@ -131,8 +131,8 @@
    "path": "/api/v1/announcements/{announcement_id}/",
    "status": 200,
    "body": {
-    "id": 408,
-    "property": 12228,
+    "id": 120,
+    "property": 4196,
     "building": null,
     "title": "Water cut",
     "body": "Tomorrow.",
@@ -141,30 +141,30 @@
     "target_roles": [
      "tenant"
     ],
-    "published_at": "2026-09-24T19:27:06.677793Z",
+    "published_at": "2026-09-24T22:46:15.242475Z",
     "expires_at": null,
     "created_by": {
-     "id": 115289,
+     "id": 37720,
      "full_name": "First9 Last9",
      "email": "manager@example.test"
     },
     "files": [
      {
-      "id": 1899,
+      "id": 735,
       "entity_type": "announcement",
-      "entity_id": 408,
-      "url": "http://testserver/media/attachments/announcement/2026/09/e260a311c4570acb900255207621ddf5.pdf",
+      "entity_id": 120,
+      "url": "http://testserver/api/v1/files/735.37718.1790337600:wVj-H3Px_Qjy_IKsMQ5u2PRSESZOzqFcpNazvPXm5T4/",
       "original_filename": "doc.pdf",
       "mime_type": "application/pdf",
       "size": 45,
       "checksum_sha256": "5a838678058f6de375e8635b5f2fea47a4e5f07cb1a882a44b10f39abc6f34ff",
       "position": 0,
-      "uploaded_by": 115289,
-      "created_at": "2026-09-24T19:27:06.680911Z"
+      "uploaded_by": 37720,
+      "created_at": "2026-09-24T22:46:15.246499Z"
      }
     ],
-    "created_at": "2026-09-24T19:27:06.677996Z",
-    "updated_at": "2026-09-24T19:27:06.678002Z"
+    "created_at": "2026-09-24T22:46:15.242801Z",
+    "updated_at": "2026-09-24T22:46:15.242811Z"
    }
   },
   {
@@ -177,11 +177,11 @@
     "previous": null,
     "results": [
      {
-      "id": 467,
-      "amenity": 594,
+      "id": 137,
+      "amenity": 174,
       "amenity_name": "Gym",
       "booker": {
-       "id": 115294,
+       "id": 37725,
        "full_name": "First14 Last14",
        "email": "tenant@example.test"
       },
@@ -194,7 +194,7 @@
       "decided_at": null,
       "cancelled_at": null,
       "cancellation_reason": "",
-      "created_at": "2026-09-24T19:27:06.716509Z"
+      "created_at": "2026-09-24T22:46:15.292703Z"
      }
     ]
    }
@@ -204,11 +204,11 @@
    "path": "/api/v1/bookings/{booking_id}/",
    "status": 200,
    "body": {
-    "id": 467,
-    "amenity": 594,
+    "id": 137,
+    "amenity": 174,
     "amenity_name": "Gym",
     "booker": {
-     "id": 115294,
+     "id": 37725,
      "full_name": "First14 Last14",
      "email": "tenant@example.test"
     },
@@ -221,7 +221,7 @@
     "decided_at": null,
     "cancelled_at": null,
     "cancellation_reason": "",
-    "created_at": "2026-09-24T19:27:06.716509Z"
+    "created_at": "2026-09-24T22:46:15.292703Z"
    }
   },
   {
@@ -229,15 +229,15 @@
    "path": "/api/v1/buildings/{building_id}/",
    "status": 200,
    "body": {
-    "id": 22679,
-    "property": 12228,
+    "id": 7386,
+    "property": 4196,
     "name": "Bloc A",
     "address": "",
     "floors_count": null,
     "description": "",
     "units_count": 1,
-    "created_at": "2026-09-24T19:27:06.604123Z",
-    "updated_at": "2026-09-24T19:27:06.604135Z"
+    "created_at": "2026-09-24T22:46:15.146351Z",
+    "updated_at": "2026-09-24T22:46:15.146361Z"
    }
   },
   {
@@ -250,9 +250,9 @@
     "previous": null,
     "results": [
      {
-      "id": 22568,
-      "building": 22679,
-      "property": 12228,
+      "id": 7345,
+      "building": 7386,
+      "property": 4196,
       "number": "A101",
       "label": "",
       "floor": null,
@@ -260,8 +260,8 @@
       "area_sqm": null,
       "rooms_count": null,
       "notes": "",
-      "created_at": "2026-09-24T19:27:06.607331Z",
-      "updated_at": "2026-09-24T19:27:06.607344Z"
+      "created_at": "2026-09-24T22:46:15.149032Z",
+      "updated_at": "2026-09-24T22:46:15.149042Z"
      }
     ]
    }
@@ -276,13 +276,13 @@
     "previous": null,
     "results": [
      {
-      "id": 387,
-      "property": 12228,
+      "id": 110,
+      "property": 4196,
       "context_type": "service_request",
-      "context_id": 797,
-      "last_message_at": "2026-09-24T19:27:06.771977Z",
+      "context_id": 382,
+      "last_message_at": "2026-09-24T22:46:15.360337Z",
       "unread_count": 1,
-      "created_at": "2026-09-24T19:27:06.770358Z"
+      "created_at": "2026-09-24T22:46:15.358903Z"
      }
     ]
    }
@@ -292,13 +292,13 @@
    "path": "/api/v1/chat/rooms/{room_id}/",
    "status": 200,
    "body": {
-    "id": 387,
-    "property": 12228,
+    "id": 110,
+    "property": 4196,
     "context_type": "service_request",
-    "context_id": 797,
-    "last_message_at": "2026-09-24T19:27:06.771977Z",
+    "context_id": 382,
+    "last_message_at": "2026-09-24T22:46:15.360337Z",
     "unread_count": 1,
-    "created_at": "2026-09-24T19:27:06.770358Z"
+    "created_at": "2026-09-24T22:46:15.358903Z"
    }
   },
   {
@@ -311,16 +311,16 @@
     "previous": null,
     "results": [
      {
-      "id": 418,
-      "chat_room": 387,
+      "id": 119,
+      "chat_room": 110,
       "sender": {
-       "id": 115294,
+       "id": 37725,
        "full_name": "First14 Last14",
        "email": "tenant@example.test"
       },
       "body": "Still leaking",
       "media": null,
-      "created_at": "2026-09-24T19:27:06.771977Z",
+      "created_at": "2026-09-24T22:46:15.360337Z",
       "edited_at": null
      }
     ]
@@ -336,14 +336,14 @@
     "previous": null,
     "results": [
      {
-      "id": 183,
-      "property": 12228,
+      "id": 66,
+      "property": 4196,
       "building": null,
       "title": "BBQ",
       "description": "",
       "location": "",
-      "start_at": "2026-09-27T19:27:06.676702Z",
-      "end_at": "2026-09-27T22:27:06.676702Z",
+      "start_at": "2026-09-27T22:46:15.241116Z",
+      "end_at": "2026-09-28T01:46:15.241116Z",
       "status": "SCHEDULED",
       "target_roles": [
        "owner",
@@ -353,13 +353,13 @@
       "cancellation_reason": "",
       "completed_at": null,
       "created_by": {
-       "id": 115289,
+       "id": 37720,
        "full_name": "First9 Last9",
        "email": "manager@example.test"
       },
       "files": [],
-      "created_at": "2026-09-24T19:27:06.696294Z",
-      "updated_at": "2026-09-24T19:27:06.696299Z"
+      "created_at": "2026-09-24T22:46:15.265216Z",
+      "updated_at": "2026-09-24T22:46:15.265226Z"
      }
     ]
    }
@@ -369,14 +369,14 @@
    "path": "/api/v1/events/{event_id}/",
    "status": 200,
    "body": {
-    "id": 183,
-    "property": 12228,
+    "id": 66,
+    "property": 4196,
     "building": null,
     "title": "BBQ",
     "description": "",
     "location": "",
-    "start_at": "2026-09-27T19:27:06.676702Z",
-    "end_at": "2026-09-27T22:27:06.676702Z",
+    "start_at": "2026-09-27T22:46:15.241116Z",
+    "end_at": "2026-09-28T01:46:15.241116Z",
     "status": "SCHEDULED",
     "target_roles": [
      "owner",
@@ -386,13 +386,13 @@
     "cancellation_reason": "",
     "completed_at": null,
     "created_by": {
-     "id": 115289,
+     "id": 37720,
      "full_name": "First9 Last9",
      "email": "manager@example.test"
     },
     "files": [],
-    "created_at": "2026-09-24T19:27:06.696294Z",
-    "updated_at": "2026-09-24T19:27:06.696299Z"
+    "created_at": "2026-09-24T22:46:15.265216Z",
+    "updated_at": "2026-09-24T22:46:15.265226Z"
    }
   },
   {
@@ -400,10 +400,10 @@
    "path": "/api/v1/lease-members/{member_id}/",
    "status": 200,
    "body": {
-    "id": 22888,
-    "lease": 11533,
+    "id": 7452,
+    "lease": 3746,
     "user": {
-     "id": 115294,
+     "id": 37725,
      "full_name": "First14 Last14",
      "email": "tenant@example.test"
     },
@@ -418,8 +418,8 @@
     "pets_info": [],
     "proof_of_identity": null,
     "proof_of_address": null,
-    "created_at": "2026-09-24T19:27:06.659474Z",
-    "updated_at": "2026-09-24T19:27:06.659481Z"
+    "created_at": "2026-09-24T22:46:15.217924Z",
+    "updated_at": "2026-09-24T22:46:15.217933Z"
    }
   },
   {
@@ -432,9 +432,9 @@
     "previous": null,
     "results": [
      {
-      "id": 11533,
-      "unit": 22568,
-      "property": 12228,
+      "id": 3746,
+      "unit": 7345,
+      "property": 4196,
       "start_date": "2026-08-25",
       "end_date": null,
       "status": "ACTIVE",
@@ -446,10 +446,10 @@
       "cancellation_reason": "",
       "members": [
        {
-        "id": 22888,
-        "lease": 11533,
+        "id": 7452,
+        "lease": 3746,
         "user": {
-         "id": 115294,
+         "id": 37725,
          "full_name": "First14 Last14",
          "email": "tenant@example.test"
         },
@@ -464,14 +464,14 @@
         "pets_info": [],
         "proof_of_identity": null,
         "proof_of_address": null,
-        "created_at": "2026-09-24T19:27:06.659474Z",
-        "updated_at": "2026-09-24T19:27:06.659481Z"
+        "created_at": "2026-09-24T22:46:15.217924Z",
+        "updated_at": "2026-09-24T22:46:15.217933Z"
        },
        {
-        "id": 22889,
-        "lease": 11533,
+        "id": 7453,
+        "lease": 3746,
         "user": {
-         "id": 115295,
+         "id": 37726,
          "full_name": "First15 Last15",
          "email": "cotenant@example.test"
         },
@@ -486,12 +486,12 @@
         "pets_info": [],
         "proof_of_identity": null,
         "proof_of_address": null,
-        "created_at": "2026-09-24T19:27:06.660315Z",
-        "updated_at": "2026-09-24T19:27:06.660321Z"
+        "created_at": "2026-09-24T22:46:15.218783Z",
+        "updated_at": "2026-09-24T22:46:15.218791Z"
        }
       ],
-      "created_at": "2026-09-24T19:27:06.658098Z",
-      "updated_at": "2026-09-24T19:27:06.658104Z"
+      "created_at": "2026-09-24T22:46:15.216090Z",
+      "updated_at": "2026-09-24T22:46:15.216101Z"
      }
     ]
    }
@@ -501,9 +501,9 @@
    "path": "/api/v1/leases/{lease_id}/",
    "status": 200,
    "body": {
-    "id": 11533,
-    "unit": 22568,
-    "property": 12228,
+    "id": 3746,
+    "unit": 7345,
+    "property": 4196,
     "start_date": "2026-08-25",
     "end_date": null,
     "status": "ACTIVE",
@@ -515,10 +515,10 @@
     "cancellation_reason": "",
     "members": [
      {
-      "id": 22888,
-      "lease": 11533,
+      "id": 7452,
+      "lease": 3746,
       "user": {
-       "id": 115294,
+       "id": 37725,
        "full_name": "First14 Last14",
        "email": "tenant@example.test"
       },
@@ -533,14 +533,14 @@
       "pets_info": [],
       "proof_of_identity": null,
       "proof_of_address": null,
-      "created_at": "2026-09-24T19:27:06.659474Z",
-      "updated_at": "2026-09-24T19:27:06.659481Z"
+      "created_at": "2026-09-24T22:46:15.217924Z",
+      "updated_at": "2026-09-24T22:46:15.217933Z"
      },
      {
-      "id": 22889,
-      "lease": 11533,
+      "id": 7453,
+      "lease": 3746,
       "user": {
-       "id": 115295,
+       "id": 37726,
        "full_name": "First15 Last15",
        "email": "cotenant@example.test"
       },
@@ -555,12 +555,12 @@
       "pets_info": [],
       "proof_of_identity": null,
       "proof_of_address": null,
-      "created_at": "2026-09-24T19:27:06.660315Z",
-      "updated_at": "2026-09-24T19:27:06.660321Z"
+      "created_at": "2026-09-24T22:46:15.218783Z",
+      "updated_at": "2026-09-24T22:46:15.218791Z"
      }
     ],
-    "created_at": "2026-09-24T19:27:06.658098Z",
-    "updated_at": "2026-09-24T19:27:06.658104Z"
+    "created_at": "2026-09-24T22:46:15.216090Z",
+    "updated_at": "2026-09-24T22:46:15.216101Z"
    }
   },
   {
@@ -584,34 +584,34 @@
     "previous": null,
     "results": [
      {
-      "id": 59,
-      "property": 12228,
-      "folder": 1385,
+      "id": 29,
+      "property": 4196,
+      "folder": 467,
       "title": "Bylaws",
       "description": "",
       "target_roles": [
        "owner"
       ],
       "file": {
-       "id": 1901,
+       "id": 737,
        "entity_type": "library_document",
-       "entity_id": 59,
-       "url": "http://testserver/media/attachments/library_document/2026/09/f56312b693963e27f752bd5993c31f4c.pdf",
+       "entity_id": 29,
+       "url": "http://testserver/api/v1/files/737.37718.1790337600:0vm53C9kFeVIlWaoeue6FRALv4Xc1ThJf1r8JK1g5uE/",
        "original_filename": "doc.pdf",
        "mime_type": "application/pdf",
        "size": 45,
        "checksum_sha256": "5a838678058f6de375e8635b5f2fea47a4e5f07cb1a882a44b10f39abc6f34ff",
        "position": 0,
-       "uploaded_by": 115289,
-       "created_at": "2026-09-24T19:27:06.834902Z"
+       "uploaded_by": 37720,
+       "created_at": "2026-09-24T22:46:15.433039Z"
       },
       "created_by": {
-       "id": 115289,
+       "id": 37720,
        "full_name": "First9 Last9",
        "email": "manager@example.test"
       },
-      "created_at": "2026-09-24T19:27:06.832092Z",
-      "updated_at": "2026-09-24T19:27:06.832100Z"
+      "created_at": "2026-09-24T22:46:15.429953Z",
+      "updated_at": "2026-09-24T22:46:15.429966Z"
      }
     ]
    }
@@ -621,34 +621,34 @@
    "path": "/api/v1/library/documents/{document_id}/",
    "status": 200,
    "body": {
-    "id": 59,
-    "property": 12228,
-    "folder": 1385,
+    "id": 29,
+    "property": 4196,
+    "folder": 467,
     "title": "Bylaws",
     "description": "",
     "target_roles": [
      "owner"
     ],
     "file": {
-     "id": 1901,
+     "id": 737,
      "entity_type": "library_document",
-     "entity_id": 59,
-     "url": "http://testserver/media/attachments/library_document/2026/09/f56312b693963e27f752bd5993c31f4c.pdf",
+     "entity_id": 29,
+     "url": "http://testserver/api/v1/files/737.37718.1790337600:0vm53C9kFeVIlWaoeue6FRALv4Xc1ThJf1r8JK1g5uE/",
      "original_filename": "doc.pdf",
      "mime_type": "application/pdf",
      "size": 45,
      "checksum_sha256": "5a838678058f6de375e8635b5f2fea47a4e5f07cb1a882a44b10f39abc6f34ff",
      "position": 0,
-     "uploaded_by": 115289,
-     "created_at": "2026-09-24T19:27:06.834902Z"
+     "uploaded_by": 37720,
+     "created_at": "2026-09-24T22:46:15.433039Z"
     },
     "created_by": {
-     "id": 115289,
+     "id": 37720,
      "full_name": "First9 Last9",
      "email": "manager@example.test"
     },
-    "created_at": "2026-09-24T19:27:06.832092Z",
-    "updated_at": "2026-09-24T19:27:06.832100Z"
+    "created_at": "2026-09-24T22:46:15.429953Z",
+    "updated_at": "2026-09-24T22:46:15.429966Z"
    }
   },
   {
@@ -661,15 +661,15 @@
     "previous": null,
     "results": [
      {
-      "id": 1385,
-      "property": 12228,
+      "id": 467,
+      "property": 4196,
       "parent_folder": null,
       "en_name": "Rules",
       "fr_name": "R\u00e8gles",
       "description": "",
       "is_system": false,
       "subfolders_count": 0,
-      "created_at": "2026-09-24T19:27:06.828637Z"
+      "created_at": "2026-09-24T22:46:15.426161Z"
      }
     ]
    }
@@ -679,15 +679,15 @@
    "path": "/api/v1/library/folders/{folder_id}/",
    "status": 200,
    "body": {
-    "id": 1385,
-    "property": 12228,
+    "id": 467,
+    "property": 4196,
     "parent_folder": null,
     "en_name": "Rules",
     "fr_name": "R\u00e8gles",
     "description": "",
     "is_system": false,
     "subfolders_count": 0,
-    "created_at": "2026-09-24T19:27:06.828637Z"
+    "created_at": "2026-09-24T22:46:15.426161Z"
    }
   },
   {
@@ -700,13 +700,13 @@
     "previous": null,
     "results": [
      {
-      "id": 236,
+      "id": 74,
       "seller": {
-       "id": 115294,
+       "id": 37725,
        "full_name": "First14 Last14",
        "email": "tenant@example.test"
       },
-      "property": 12228,
+      "property": 4196,
       "category": "various_offer",
       "title": "Bike",
       "description": "Good",
@@ -717,25 +717,25 @@
       "contact_phone": "",
       "contact_email": "",
       "status": "PUBLISHED",
-      "published_at": "2026-09-24T19:27:06.846939Z",
+      "published_at": "2026-09-24T22:46:15.446989Z",
       "closed_at": null,
       "images": [
        {
-        "id": 1902,
+        "id": 738,
         "entity_type": "marketplace_listing",
-        "entity_id": 236,
-        "url": "http://testserver/media/attachments/marketplace_listing/2026/09/df1720b0a0c5675465a40868c88e4e22.png",
+        "entity_id": 74,
+        "url": "http://testserver/api/v1/files/738:3HzoD6gYjWYbfuA_7Myxyyz7n4D1qMpASJGRp1Dx-W8/",
         "original_filename": "photo.png",
         "mime_type": "image/png",
         "size": 67,
         "checksum_sha256": "d0afbaf740ad2d35e78e6238ae16b5b17bdfd8d2b26351fc66bc2dfdf8e59f9f",
         "position": 0,
-        "uploaded_by": 115294,
-        "created_at": "2026-09-24T19:27:06.849388Z"
+        "uploaded_by": 37725,
+        "created_at": "2026-09-24T22:46:15.450258Z"
        }
       ],
-      "created_at": "2026-09-24T19:27:06.847154Z",
-      "updated_at": "2026-09-24T19:27:06.847160Z"
+      "created_at": "2026-09-24T22:46:15.447322Z",
+      "updated_at": "2026-09-24T22:46:15.447332Z"
      }
     ]
    }
@@ -745,13 +745,13 @@
    "path": "/api/v1/marketplace/listings/{listing_id}/",
    "status": 200,
    "body": {
-    "id": 236,
+    "id": 74,
     "seller": {
-     "id": 115294,
+     "id": 37725,
      "full_name": "First14 Last14",
      "email": "tenant@example.test"
     },
-    "property": 12228,
+    "property": 4196,
     "category": "various_offer",
     "title": "Bike",
     "description": "Good",
@@ -762,25 +762,25 @@
     "contact_phone": "",
     "contact_email": "",
     "status": "PUBLISHED",
-    "published_at": "2026-09-24T19:27:06.846939Z",
+    "published_at": "2026-09-24T22:46:15.446989Z",
     "closed_at": null,
     "images": [
      {
-      "id": 1902,
+      "id": 738,
       "entity_type": "marketplace_listing",
-      "entity_id": 236,
-      "url": "http://testserver/media/attachments/marketplace_listing/2026/09/df1720b0a0c5675465a40868c88e4e22.png",
+      "entity_id": 74,
+      "url": "http://testserver/api/v1/files/738:3HzoD6gYjWYbfuA_7Myxyyz7n4D1qMpASJGRp1Dx-W8/",
       "original_filename": "photo.png",
       "mime_type": "image/png",
       "size": 67,
       "checksum_sha256": "d0afbaf740ad2d35e78e6238ae16b5b17bdfd8d2b26351fc66bc2dfdf8e59f9f",
       "position": 0,
-      "uploaded_by": 115294,
-      "created_at": "2026-09-24T19:27:06.849388Z"
+      "uploaded_by": 37725,
+      "created_at": "2026-09-24T22:46:15.450258Z"
      }
     ],
-    "created_at": "2026-09-24T19:27:06.847154Z",
-    "updated_at": "2026-09-24T19:27:06.847160Z"
+    "created_at": "2026-09-24T22:46:15.447322Z",
+    "updated_at": "2026-09-24T22:46:15.447332Z"
    }
   },
   {
@@ -793,208 +793,208 @@
     "previous": null,
     "results": [
      {
-      "id": 109369,
+      "id": 36000,
       "category": "store",
       "notification_type": "store.order_created",
       "severity": "INFO",
-      "title": "Nouvelle commande #218 \u2014 Residence 4",
+      "title": "Nouvelle commande #65 \u2014 Residence 4",
       "body": "First14 Last14 a pass\u00e9 une commande de 9.00 (1 article(s)).",
       "data": {
-       "order_id": 218,
-       "property_id": 12228
+       "order_id": 65,
+       "property_id": 4196
       },
       "target_type": "store.order",
-      "object_id": 218,
+      "object_id": 65,
       "is_read": false,
       "read_at": null,
-      "created_at": "2026-09-24T19:27:06.874060Z"
+      "created_at": "2026-09-24T22:46:15.479574Z"
      },
      {
-      "id": 109368,
+      "id": 35999,
       "category": "marketplace",
       "notification_type": "marketplace.listing_created",
       "severity": "INFO",
       "title": "Nouvelle annonce \u2014 Residence 4",
       "body": "\u00ab Bike \u00bb \u2014 50.00 MAD",
       "data": {
-       "listing_id": 236
+       "listing_id": 74
       },
       "target_type": "marketplace.marketplacelisting",
-      "object_id": 236,
+      "object_id": 74,
       "is_read": false,
       "read_at": null,
-      "created_at": "2026-09-24T19:27:06.857058Z"
+      "created_at": "2026-09-24T22:46:15.460200Z"
      },
      {
-      "id": 109365,
+      "id": 35996,
       "category": "library",
       "notification_type": "library.document_published",
       "severity": "INFO",
       "title": "Nouveau document \u2014 Residence 4",
       "body": "Le document \u00ab Bylaws \u00bb a \u00e9t\u00e9 ajout\u00e9 \u00e0 la biblioth\u00e8que (R\u00e8gles).",
       "data": {
-       "document_id": 59,
-       "property_id": 12228
+       "document_id": 29,
+       "property_id": 4196
       },
       "target_type": "library.librarydocument",
-      "object_id": 59,
+      "object_id": 29,
       "is_read": false,
       "read_at": null,
-      "created_at": "2026-09-24T19:27:06.842024Z"
+      "created_at": "2026-09-24T22:46:15.440841Z"
      },
      {
-      "id": 109362,
+      "id": 35993,
       "category": "short_term_rental",
       "notification_type": "short_term_rental.created",
       "severity": "INFO",
       "title": "Nouvelle location courte dur\u00e9e \u2014 lot A101",
       "body": "First14 Last14 a d\u00e9clar\u00e9 une location courte dur\u00e9e du 26/09/2026 au 28/09/2026 (1 occupant(s)).",
       "data": {
-       "unit_id": 22568,
-       "short_term_rental_id": 340
+       "unit_id": 7345,
+       "short_term_rental_id": 110
       },
       "target_type": "short_term_rental.shorttermrental",
-      "object_id": 340,
+      "object_id": 110,
       "is_read": false,
       "read_at": null,
-      "created_at": "2026-09-24T19:27:06.818223Z"
+      "created_at": "2026-09-24T22:46:15.414471Z"
      },
      {
-      "id": 109356,
+      "id": 35987,
       "category": "visitor",
       "notification_type": "visitor.arrived",
       "severity": "INFO",
       "title": "Visiteur \u2014 lot A101",
-      "body": "Sam Lee est arriv\u00e9(e) \u00e0 19:27.",
+      "body": "Sam Lee est arriv\u00e9(e) \u00e0 22:46.",
       "data": {
-       "unit_id": 22568,
-       "visitor_id": 181
+       "unit_id": 7345,
+       "visitor_id": 65
       },
       "target_type": "visitors.visitor",
-      "object_id": 181,
+      "object_id": 65,
       "is_read": false,
       "read_at": null,
-      "created_at": "2026-09-24T19:27:06.801569Z"
+      "created_at": "2026-09-24T22:46:15.392758Z"
      },
      {
-      "id": 109350,
+      "id": 35981,
       "category": "chat",
       "notification_type": "chat.message",
       "severity": "INFO",
-      "title": "Nouveau message \u2014 demande #797",
+      "title": "Nouveau message \u2014 demande #382",
       "body": "First14 Last14 : Still leaking",
       "data": {
-       "context_id": 797,
-       "chat_room_id": 387,
+       "context_id": 382,
+       "chat_room_id": 110,
        "context_type": "service_request"
       },
       "target_type": "chat.chatmessage",
-      "object_id": 418,
+      "object_id": 119,
       "is_read": false,
       "read_at": null,
-      "created_at": "2026-09-24T19:27:06.785920Z"
+      "created_at": "2026-09-24T22:46:15.373658Z"
      },
      {
-      "id": 109348,
+      "id": 35979,
       "category": "service_request",
       "notification_type": "service_request.in_progress",
       "severity": "INFO",
-      "title": "Demande #797 prise en charge",
+      "title": "Demande #382 prise en charge",
       "body": "Un intervenant a \u00e9t\u00e9 assign\u00e9 \u00e0 votre demande.",
       "data": {
-       "property_id": 12228,
-       "service_request_id": 797
+       "property_id": 4196,
+       "service_request_id": 382
       },
       "target_type": "service_requests.servicerequest",
-      "object_id": 797,
+      "object_id": 382,
       "is_read": false,
       "read_at": null,
-      "created_at": "2026-09-24T19:27:06.764403Z"
+      "created_at": "2026-09-24T22:46:15.347847Z"
      },
      {
-      "id": 109346,
+      "id": 35977,
       "category": "service_request",
       "notification_type": "service_request.assigned",
       "severity": "INFO",
-      "title": "Intervention assign\u00e9e \u2014 demande #797",
+      "title": "Intervention assign\u00e9e \u2014 demande #382",
       "body": "\u00ab Leak \u00bb \u2014 lot A101",
       "data": {
-       "property_id": 12228,
-       "service_request_id": 797
+       "property_id": 4196,
+       "service_request_id": 382
       },
       "target_type": "service_requests.servicerequest",
-      "object_id": 797,
+      "object_id": 382,
       "is_read": false,
       "read_at": null,
-      "created_at": "2026-09-24T19:27:06.758337Z"
+      "created_at": "2026-09-24T22:46:15.340767Z"
      },
      {
-      "id": 109343,
+      "id": 35974,
       "category": "service_request",
       "notification_type": "service_request.created",
       "severity": "INFO",
-      "title": "Demande #797 enregistr\u00e9e",
+      "title": "Demande #382 enregistr\u00e9e",
       "body": "\u00ab Leak \u00bb a \u00e9t\u00e9 transmise \u00e0 la gestion de Residence 4.",
       "data": {
-       "property_id": 12228,
-       "service_request_id": 797
+       "property_id": 4196,
+       "service_request_id": 382
       },
       "target_type": "service_requests.servicerequest",
-      "object_id": 797,
+      "object_id": 382,
       "is_read": false,
       "read_at": null,
-      "created_at": "2026-09-24T19:27:06.738597Z"
+      "created_at": "2026-09-24T22:46:15.317820Z"
      },
      {
-      "id": 109339,
+      "id": 35970,
       "category": "booking",
       "notification_type": "booking.created",
       "severity": "INFO",
-      "title": "R\u00e9servation #467 \u2014 Gym",
+      "title": "R\u00e9servation #137 \u2014 Gym",
       "body": "25/09/2026 10:00 \u2192 25/09/2026 11:00. Confirm\u00e9e.",
       "data": {
-       "amenity_id": 594,
-       "booking_id": 467
+       "amenity_id": 174,
+       "booking_id": 137
       },
       "target_type": "amenities.booking",
-      "object_id": 467,
+      "object_id": 137,
       "is_read": false,
       "read_at": null,
-      "created_at": "2026-09-24T19:27:06.723285Z"
+      "created_at": "2026-09-24T22:46:15.301981Z"
      },
      {
-      "id": 109336,
+      "id": 35967,
       "category": "event",
       "notification_type": "event.created",
       "severity": "INFO",
       "title": "[Residence 4] Nouvel \u00e9v\u00e9nement : BBQ",
-      "body": "Le 27/09/2026 \u00e0 19:27",
+      "body": "Le 27/09/2026 \u00e0 22:46",
       "data": {
-       "event_id": 183,
-       "property_id": 12228
+       "event_id": 66,
+       "property_id": 4196
       },
       "target_type": "events.event",
-      "object_id": 183,
+      "object_id": 66,
       "is_read": false,
       "read_at": null,
-      "created_at": "2026-09-24T19:27:06.706676Z"
+      "created_at": "2026-09-24T22:46:15.279433Z"
      },
      {
-      "id": 109332,
+      "id": 35963,
       "category": "announcement",
       "notification_type": "announcement.created",
       "severity": "INFO",
       "title": "[Residence 4] Water cut",
       "body": "Tomorrow.",
       "data": {
-       "property_id": 12228,
-       "announcement_id": 408
+       "property_id": 4196,
+       "announcement_id": 120
       },
       "target_type": "announcements.announcement",
-      "object_id": 408,
+      "object_id": 120,
       "is_read": false,
       "read_at": null,
-      "created_at": "2026-09-24T19:27:06.692524Z"
+      "created_at": "2026-09-24T22:46:15.260810Z"
      }
     ]
    }
@@ -1037,7 +1037,7 @@
     "previous": null,
     "results": [
      {
-      "id": 12362,
+      "id": 4233,
       "name": "Promoter 3",
       "legal_name": "",
       "registration_number": "",
@@ -1045,12 +1045,12 @@
       "contact_phone": "",
       "address": "",
       "representative_user": {
-       "id": 115288,
+       "id": 37719,
        "full_name": "Promoter 3",
        "email": "promoter3@example.test"
       },
-      "created_at": "2026-09-24T19:27:06.601227Z",
-      "updated_at": "2026-09-24T19:27:06.601238Z"
+      "created_at": "2026-09-24T22:46:15.143539Z",
+      "updated_at": "2026-09-24T22:46:15.143549Z"
      }
     ]
    }
@@ -1060,7 +1060,7 @@
    "path": "/api/v1/promoters/{promoter_id}/",
    "status": 200,
    "body": {
-    "id": 12362,
+    "id": 4233,
     "name": "Promoter 3",
     "legal_name": "",
     "registration_number": "",
@@ -1068,12 +1068,12 @@
     "contact_phone": "",
     "address": "",
     "representative_user": {
-     "id": 115288,
+     "id": 37719,
      "full_name": "Promoter 3",
      "email": "promoter3@example.test"
     },
-    "created_at": "2026-09-24T19:27:06.601227Z",
-    "updated_at": "2026-09-24T19:27:06.601238Z"
+    "created_at": "2026-09-24T22:46:15.143539Z",
+    "updated_at": "2026-09-24T22:46:15.143549Z"
    }
   },
   {
@@ -1086,9 +1086,9 @@
     "previous": null,
     "results": [
      {
-      "id": 12228,
-      "syndicat": 12024,
-      "promoter": 12362,
+      "id": 4196,
+      "syndicat": 3923,
+      "promoter": 4233,
       "name": "Residence 4",
       "description": "",
       "address": "",
@@ -1111,8 +1111,8 @@
        "chat": true
       },
       "logo": null,
-      "created_at": "2026-09-24T19:27:06.602651Z",
-      "updated_at": "2026-09-24T19:27:06.602662Z"
+      "created_at": "2026-09-24T22:46:15.144949Z",
+      "updated_at": "2026-09-24T22:46:15.144959Z"
      }
     ]
    }
@@ -1122,9 +1122,9 @@
    "path": "/api/v1/properties/{property_id}/",
    "status": 200,
    "body": {
-    "id": 12228,
-    "syndicat": 12024,
-    "promoter": 12362,
+    "id": 4196,
+    "syndicat": 3923,
+    "promoter": 4233,
     "name": "Residence 4",
     "description": "",
     "address": "",
@@ -1147,8 +1147,8 @@
      "chat": true
     },
     "logo": null,
-    "created_at": "2026-09-24T19:27:06.602651Z",
-    "updated_at": "2026-09-24T19:27:06.602662Z"
+    "created_at": "2026-09-24T22:46:15.144949Z",
+    "updated_at": "2026-09-24T22:46:15.144959Z"
    }
   },
   {
@@ -1161,26 +1161,26 @@
     "previous": null,
     "results": [
      {
-      "id": 22679,
-      "property": 12228,
+      "id": 7386,
+      "property": 4196,
       "name": "Bloc A",
       "address": "",
       "floors_count": null,
       "description": "",
       "units_count": 1,
-      "created_at": "2026-09-24T19:27:06.604123Z",
-      "updated_at": "2026-09-24T19:27:06.604135Z"
+      "created_at": "2026-09-24T22:46:15.146351Z",
+      "updated_at": "2026-09-24T22:46:15.146361Z"
      },
      {
-      "id": 22680,
-      "property": 12228,
+      "id": 7387,
+      "property": 4196,
       "name": "Bloc B",
       "address": "",
       "floors_count": null,
       "description": "",
       "units_count": 1,
-      "created_at": "2026-09-24T19:27:06.605372Z",
-      "updated_at": "2026-09-24T19:27:06.605384Z"
+      "created_at": "2026-09-24T22:46:15.147567Z",
+      "updated_at": "2026-09-24T22:46:15.147578Z"
      }
     ]
    }
@@ -1206,11 +1206,11 @@
     "previous": null,
     "results": [
      {
-      "id": 797,
-      "property": 12228,
-      "unit": 22568,
+      "id": 382,
+      "property": 4196,
+      "unit": 7345,
       "requester": {
-       "id": 115294,
+       "id": 37725,
        "full_name": "First14 Last14",
        "email": "tenant@example.test"
       },
@@ -1226,21 +1226,21 @@
       "cancellation_reason": "",
       "files": [
        {
-        "id": 1900,
+        "id": 736,
         "entity_type": "service_request",
-        "entity_id": 797,
-        "url": "http://testserver/media/attachments/service_request/2026/09/9380551d2e5de2060bba8b315a16d3f9.png",
+        "entity_id": 382,
+        "url": "http://testserver/api/v1/files/736.37718.1790337600:HGJwNIDrJ9CyJ3xOvTFkaja-RanIPzzZXCwW8MkRRwM/",
         "original_filename": "photo.png",
         "mime_type": "image/png",
         "size": 67,
         "checksum_sha256": "d0afbaf740ad2d35e78e6238ae16b5b17bdfd8d2b26351fc66bc2dfdf8e59f9f",
         "position": 0,
-        "uploaded_by": 115294,
-        "created_at": "2026-09-24T19:27:06.731854Z"
+        "uploaded_by": 37725,
+        "created_at": "2026-09-24T22:46:15.310952Z"
        }
       ],
-      "created_at": "2026-09-24T19:27:06.729140Z",
-      "updated_at": "2026-09-24T19:27:06.746759Z"
+      "created_at": "2026-09-24T22:46:15.308181Z",
+      "updated_at": "2026-09-24T22:46:15.328464Z"
      }
     ]
    }
@@ -1250,11 +1250,11 @@
    "path": "/api/v1/service-requests/{request_id}/",
    "status": 200,
    "body": {
-    "id": 797,
-    "property": 12228,
-    "unit": 22568,
+    "id": 382,
+    "property": 4196,
+    "unit": 7345,
     "requester": {
-     "id": 115294,
+     "id": 37725,
      "full_name": "First14 Last14",
      "email": "tenant@example.test"
     },
@@ -1270,21 +1270,21 @@
     "cancellation_reason": "",
     "files": [
      {
-      "id": 1900,
+      "id": 736,
       "entity_type": "service_request",
-      "entity_id": 797,
-      "url": "http://testserver/media/attachments/service_request/2026/09/9380551d2e5de2060bba8b315a16d3f9.png",
+      "entity_id": 382,
+      "url": "http://testserver/api/v1/files/736.37718.1790337600:HGJwNIDrJ9CyJ3xOvTFkaja-RanIPzzZXCwW8MkRRwM/",
       "original_filename": "photo.png",
       "mime_type": "image/png",
       "size": 67,
       "checksum_sha256": "d0afbaf740ad2d35e78e6238ae16b5b17bdfd8d2b26351fc66bc2dfdf8e59f9f",
       "position": 0,
-      "uploaded_by": 115294,
-      "created_at": "2026-09-24T19:27:06.731854Z"
+      "uploaded_by": 37725,
+      "created_at": "2026-09-24T22:46:15.310952Z"
      }
     ],
-    "created_at": "2026-09-24T19:27:06.729140Z",
-    "updated_at": "2026-09-24T19:27:06.746759Z"
+    "created_at": "2026-09-24T22:46:15.308181Z",
+    "updated_at": "2026-09-24T22:46:15.328464Z"
    }
   },
   {
@@ -1293,14 +1293,14 @@
    "status": 200,
    "body": [
     {
-     "id": 349,
+     "id": 110,
      "resolver": {
-      "id": 115292,
+      "id": 37723,
       "full_name": "First12 Last12",
       "email": "maintenance@example.test"
      },
      "resolution_round": 1,
-     "assigned_by": 115289,
+     "assigned_by": 37720,
      "is_resolved": false,
      "resolved_at": null,
      "resolution_note": "",
@@ -1309,7 +1309,7 @@
      "requester_rating": null,
      "requester_comment": "",
      "feedback_at": null,
-     "created_at": "2026-09-24T19:27:06.746160Z"
+     "created_at": "2026-09-24T22:46:15.327676Z"
     }
    ]
   },
@@ -1323,23 +1323,23 @@
     "previous": null,
     "results": [
      {
-      "id": 340,
-      "unit": 22568,
+      "id": 110,
+      "unit": 7345,
       "initiated_by": {
-       "id": 115294,
+       "id": 37725,
        "full_name": "First14 Last14",
        "email": "tenant@example.test"
       },
       "initiator_capacity": "TENANT",
-      "lease": 11533,
+      "lease": 3746,
       "checkin_date": "2026-09-26",
       "checkout_date": "2026-09-28",
       "status": "SCHEDULED",
-      "primary_member": 514,
+      "primary_member": 164,
       "members": [
        {
-        "id": 514,
-        "short_term_rental": 340,
+        "id": 164,
+        "short_term_rental": 110,
         "first_name": "Ana",
         "last_name": "Diaz",
         "gender": "UNDISCLOSED",
@@ -1349,7 +1349,7 @@
         "phone": "",
         "email": "",
         "id_card": null,
-        "created_at": "2026-09-24T19:27:06.810324Z"
+        "created_at": "2026-09-24T22:46:15.403547Z"
        }
       ],
       "notes": "",
@@ -1357,7 +1357,7 @@
       "completed_at": null,
       "cancelled_at": null,
       "cancellation_reason": "",
-      "created_at": "2026-09-24T19:27:06.808943Z"
+      "created_at": "2026-09-24T22:46:15.401939Z"
      }
     ]
    }
@@ -1367,23 +1367,23 @@
    "path": "/api/v1/short-term-rentals/{short_term_rental_id}/",
    "status": 200,
    "body": {
-    "id": 340,
-    "unit": 22568,
+    "id": 110,
+    "unit": 7345,
     "initiated_by": {
-     "id": 115294,
+     "id": 37725,
      "full_name": "First14 Last14",
      "email": "tenant@example.test"
     },
     "initiator_capacity": "TENANT",
-    "lease": 11533,
+    "lease": 3746,
     "checkin_date": "2026-09-26",
     "checkout_date": "2026-09-28",
     "status": "SCHEDULED",
-    "primary_member": 514,
+    "primary_member": 164,
     "members": [
      {
-      "id": 514,
-      "short_term_rental": 340,
+      "id": 164,
+      "short_term_rental": 110,
       "first_name": "Ana",
       "last_name": "Diaz",
       "gender": "UNDISCLOSED",
@@ -1393,7 +1393,7 @@
       "phone": "",
       "email": "",
       "id_card": null,
-      "created_at": "2026-09-24T19:27:06.810324Z"
+      "created_at": "2026-09-24T22:46:15.403547Z"
      }
     ],
     "notes": "",
@@ -1401,7 +1401,7 @@
     "completed_at": null,
     "cancelled_at": null,
     "cancellation_reason": "",
-    "created_at": "2026-09-24T19:27:06.808943Z"
+    "created_at": "2026-09-24T22:46:15.401939Z"
    }
   },
   {
@@ -1410,8 +1410,8 @@
    "status": 200,
    "body": [
     {
-     "id": 514,
-     "short_term_rental": 340,
+     "id": 164,
+     "short_term_rental": 110,
      "first_name": "Ana",
      "last_name": "Diaz",
      "gender": "UNDISCLOSED",
@@ -1421,7 +1421,7 @@
      "phone": "",
      "email": "",
      "id_card": null,
-     "created_at": "2026-09-24T19:27:06.810324Z"
+     "created_at": "2026-09-24T22:46:15.403547Z"
     }
    ]
   },
@@ -1435,11 +1435,11 @@
     "previous": null,
     "results": [
      {
-      "id": 218,
-      "property": 12228,
-      "unit": 22568,
+      "id": 65,
+      "property": 4196,
+      "unit": 7345,
       "orderer": {
-       "id": 115294,
+       "id": 37725,
        "full_name": "First14 Last14",
        "email": "tenant@example.test"
       },
@@ -1450,8 +1450,8 @@
       "staff_note": "",
       "items": [
        {
-        "id": 246,
-        "product": 340,
+        "id": 74,
+        "product": 101,
         "product_name": "Water pack",
         "unit_price": "4.50",
         "quantity": 2,
@@ -1462,7 +1462,7 @@
       "delivered_at": null,
       "cancelled_at": null,
       "cancellation_reason": "",
-      "created_at": "2026-09-24T19:27:06.867312Z"
+      "created_at": "2026-09-24T22:46:15.472902Z"
      }
     ]
    }
@@ -1472,11 +1472,11 @@
    "path": "/api/v1/store/orders/{order_id}/",
    "status": 200,
    "body": {
-    "id": 218,
-    "property": 12228,
-    "unit": 22568,
+    "id": 65,
+    "property": 4196,
+    "unit": 7345,
     "orderer": {
-     "id": 115294,
+     "id": 37725,
      "full_name": "First14 Last14",
      "email": "tenant@example.test"
     },
@@ -1487,8 +1487,8 @@
     "staff_note": "",
     "items": [
      {
-      "id": 246,
-      "product": 340,
+      "id": 74,
+      "product": 101,
       "product_name": "Water pack",
       "unit_price": "4.50",
       "quantity": 2,
@@ -1499,7 +1499,7 @@
     "delivered_at": null,
     "cancelled_at": null,
     "cancellation_reason": "",
-    "created_at": "2026-09-24T19:27:06.867312Z"
+    "created_at": "2026-09-24T22:46:15.472902Z"
    }
   },
   {
@@ -1512,8 +1512,8 @@
     "previous": null,
     "results": [
      {
-      "id": 340,
-      "property": 12228,
+      "id": 101,
+      "property": 4196,
       "name": "Water pack",
       "description": "",
       "category": "",
@@ -1522,8 +1522,8 @@
       "stock_quantity": 8,
       "is_active": true,
       "images": [],
-      "created_at": "2026-09-24T19:27:06.860398Z",
-      "updated_at": "2026-09-24T19:27:06.869382Z"
+      "created_at": "2026-09-24T22:46:15.464431Z",
+      "updated_at": "2026-09-24T22:46:15.474569Z"
      }
     ]
    }
@@ -1533,8 +1533,8 @@
    "path": "/api/v1/store/products/{product_id}/",
    "status": 200,
    "body": {
-    "id": 340,
-    "property": 12228,
+    "id": 101,
+    "property": 4196,
     "name": "Water pack",
     "description": "",
     "category": "",
@@ -1543,8 +1543,8 @@
     "stock_quantity": 8,
     "is_active": true,
     "images": [],
-    "created_at": "2026-09-24T19:27:06.860398Z",
-    "updated_at": "2026-09-24T19:27:06.869382Z"
+    "created_at": "2026-09-24T22:46:15.464431Z",
+    "updated_at": "2026-09-24T22:46:15.474569Z"
    }
   },
   {
@@ -1557,8 +1557,8 @@
     "previous": null,
     "results": [
      {
-      "id": 331,
-      "property": 12228,
+      "id": 110,
+      "property": 4196,
       "title": "Lobby",
       "description": "",
       "target_roles": [
@@ -1570,17 +1570,17 @@
       "closed_at": null,
       "questions": [
        {
-        "id": 499,
+        "id": 164,
         "text": "Repaint the lobby?",
         "position": 0,
         "options": [
          {
-          "id": 1165,
+          "id": 381,
           "text": "Yes",
           "position": 0
          },
          {
-          "id": 1166,
+          "id": 382,
           "text": "No",
           "position": 1
          }
@@ -1589,8 +1589,8 @@
       ],
       "files": [],
       "has_answered": false,
-      "created_at": "2026-09-24T19:27:06.822496Z",
-      "updated_at": "2026-09-24T19:27:06.822502Z"
+      "created_at": "2026-09-24T22:46:15.419657Z",
+      "updated_at": "2026-09-24T22:46:15.419668Z"
      }
     ]
    }
@@ -1600,8 +1600,8 @@
    "path": "/api/v1/surveys/{survey_id}/",
    "status": 200,
    "body": {
-    "id": 331,
-    "property": 12228,
+    "id": 110,
+    "property": 4196,
     "title": "Lobby",
     "description": "",
     "target_roles": [
@@ -1613,17 +1613,17 @@
     "closed_at": null,
     "questions": [
      {
-      "id": 499,
+      "id": 164,
       "text": "Repaint the lobby?",
       "position": 0,
       "options": [
        {
-        "id": 1165,
+        "id": 381,
         "text": "Yes",
         "position": 0
        },
        {
-        "id": 1166,
+        "id": 382,
         "text": "No",
         "position": 1
        }
@@ -1632,8 +1632,8 @@
     ],
     "files": [],
     "has_answered": false,
-    "created_at": "2026-09-24T19:27:06.822496Z",
-    "updated_at": "2026-09-24T19:27:06.822502Z"
+    "created_at": "2026-09-24T22:46:15.419657Z",
+    "updated_at": "2026-09-24T22:46:15.419668Z"
    }
   },
   {
@@ -1641,21 +1641,21 @@
    "path": "/api/v1/surveys/{survey_id}/results/",
    "status": 200,
    "body": {
-    "survey_id": 331,
+    "survey_id": 110,
     "participants": 0,
     "recipients": 0,
     "questions": [
      {
-      "id": 499,
+      "id": 164,
       "text": "Repaint the lobby?",
       "options": [
        {
-        "id": 1165,
+        "id": 381,
         "text": "Yes",
         "votes": 0
        },
        {
-        "id": 1166,
+        "id": 382,
         "text": "No",
         "votes": 0
        }
@@ -1674,7 +1674,7 @@
     "previous": null,
     "results": [
      {
-      "id": 12024,
+      "id": 3923,
       "name": "Syndicat 2",
       "legal_name": "",
       "registration_number": "",
@@ -1685,8 +1685,8 @@
       "country": "",
       "is_active": true,
       "logo": null,
-      "created_at": "2026-09-24T19:27:06.598789Z",
-      "updated_at": "2026-09-24T19:27:06.598805Z"
+      "created_at": "2026-09-24T22:46:15.140979Z",
+      "updated_at": "2026-09-24T22:46:15.140998Z"
      }
     ]
    }
@@ -1696,7 +1696,7 @@
    "path": "/api/v1/syndicats/{syndicat_id}/",
    "status": 200,
    "body": {
-    "id": 12024,
+    "id": 3923,
     "name": "Syndicat 2",
     "legal_name": "",
     "registration_number": "",
@@ -1707,8 +1707,8 @@
     "country": "",
     "is_active": true,
     "logo": null,
-    "created_at": "2026-09-24T19:27:06.598789Z",
-    "updated_at": "2026-09-24T19:27:06.598805Z"
+    "created_at": "2026-09-24T22:46:15.140979Z",
+    "updated_at": "2026-09-24T22:46:15.140998Z"
    }
   },
   {
@@ -1717,8 +1717,8 @@
    "status": 200,
    "body": [
     {
-     "id": 12228,
-     "syndicat": 12024,
+     "id": 4196,
+     "syndicat": 3923,
      "name": "Residence 4",
      "city": "",
      "country": "",
@@ -1745,7 +1745,7 @@
    "status": 200,
    "body": [
     {
-     "id": 12024,
+     "id": 3923,
      "name": "Syndicat 2",
      "city": "",
      "country": "",
@@ -1759,9 +1759,9 @@
    "path": "/api/v1/units/{unit_id}/",
    "status": 200,
    "body": {
-    "id": 22568,
-    "building": 22679,
-    "property": 12228,
+    "id": 7345,
+    "building": 7386,
+    "property": 4196,
     "number": "A101",
     "label": "",
     "floor": null,
@@ -1769,8 +1769,8 @@
     "area_sqm": null,
     "rooms_count": null,
     "notes": "",
-    "created_at": "2026-09-24T19:27:06.607331Z",
-    "updated_at": "2026-09-24T19:27:06.607344Z"
+    "created_at": "2026-09-24T22:46:15.149032Z",
+    "updated_at": "2026-09-24T22:46:15.149042Z"
    }
   },
   {
@@ -1783,10 +1783,10 @@
     "previous": null,
     "results": [
      {
-      "id": 34204,
-      "unit": 22568,
+      "id": 11122,
+      "unit": 7345,
       "owner": {
-       "id": 115293,
+       "id": 37724,
        "full_name": "First13 Last13",
        "email": "owner@example.test"
       },
@@ -1797,13 +1797,13 @@
       "is_promoter_default": false,
       "end_reason": "",
       "acquisition_reference": "",
-      "created_at": "2026-09-24T19:27:06.633312Z"
+      "created_at": "2026-09-24T22:46:15.177131Z"
      },
      {
-      "id": 34202,
-      "unit": 22568,
+      "id": 11120,
+      "unit": 7345,
       "owner": {
-       "id": 115288,
+       "id": 37719,
        "full_name": "Promoter 3",
        "email": "promoter3@example.test"
       },
@@ -1814,7 +1814,7 @@
       "is_promoter_default": true,
       "end_reason": "SALE",
       "acquisition_reference": "",
-      "created_at": "2026-09-24T19:27:06.609537Z"
+      "created_at": "2026-09-24T22:46:15.150801Z"
      }
     ]
    }
@@ -1840,7 +1840,7 @@
     "previous": null,
     "results": [
      {
-      "id": 115290,
+      "id": 37721,
       "email": "syndic@example.test",
       "first_name": "First10",
       "last_name": "Last10",
@@ -1851,12 +1851,12 @@
       "role": "syndic",
       "is_active": true,
       "is_activated": true,
-      "date_joined": "2026-09-24T19:27:06.619279Z",
+      "date_joined": "2026-09-24T22:46:15.161233Z",
       "last_login": null,
       "deactivated_at": null
      },
      {
-      "id": 115291,
+      "id": 37722,
       "email": "security@example.test",
       "first_name": "First11",
       "last_name": "Last11",
@@ -1867,12 +1867,12 @@
       "role": "security",
       "is_active": true,
       "is_activated": true,
-      "date_joined": "2026-09-24T19:27:06.621745Z",
+      "date_joined": "2026-09-24T22:46:15.163906Z",
       "last_login": null,
       "deactivated_at": null
      },
      {
-      "id": 115292,
+      "id": 37723,
       "email": "maintenance@example.test",
       "first_name": "First12",
       "last_name": "Last12",
@@ -1883,12 +1883,12 @@
       "role": "maintenance",
       "is_active": true,
       "is_activated": true,
-      "date_joined": "2026-09-24T19:27:06.624138Z",
+      "date_joined": "2026-09-24T22:46:15.166518Z",
       "last_login": null,
       "deactivated_at": null
      },
      {
-      "id": 115293,
+      "id": 37724,
       "email": "owner@example.test",
       "first_name": "First13",
       "last_name": "Last13",
@@ -1899,12 +1899,12 @@
       "role": "standard",
       "is_active": true,
       "is_activated": true,
-      "date_joined": "2026-09-24T19:27:06.625922Z",
+      "date_joined": "2026-09-24T22:46:15.168500Z",
       "last_login": null,
       "deactivated_at": null
      },
      {
-      "id": 115294,
+      "id": 37725,
       "email": "tenant@example.test",
       "first_name": "First14",
       "last_name": "Last14",
@@ -1915,12 +1915,12 @@
       "role": "standard",
       "is_active": true,
       "is_activated": true,
-      "date_joined": "2026-09-24T19:27:06.655161Z",
+      "date_joined": "2026-09-24T22:46:15.212632Z",
       "last_login": null,
       "deactivated_at": null
      },
      {
-      "id": 115295,
+      "id": 37726,
       "email": "cotenant@example.test",
       "first_name": "First15",
       "last_name": "Last15",
@@ -1931,12 +1931,12 @@
       "role": "standard",
       "is_active": true,
       "is_activated": true,
-      "date_joined": "2026-09-24T19:27:06.655859Z",
+      "date_joined": "2026-09-24T22:46:15.213461Z",
       "last_login": null,
       "deactivated_at": null
      },
      {
-      "id": 115289,
+      "id": 37720,
       "email": "manager@example.test",
       "first_name": "First9",
       "last_name": "Last9",
@@ -1947,7 +1947,7 @@
       "role": "manager",
       "is_active": true,
       "is_activated": true,
-      "date_joined": "2026-09-24T19:27:06.616631Z",
+      "date_joined": "2026-09-24T22:46:15.158478Z",
       "last_login": null,
       "deactivated_at": null
      }
@@ -1959,7 +1959,7 @@
    "path": "/api/v1/users/{user_id}/",
    "status": 200,
    "body": {
-    "id": 115294,
+    "id": 37725,
     "email": "tenant@example.test",
     "first_name": "First14",
     "last_name": "Last14",
@@ -1970,7 +1970,7 @@
     "role": "standard",
     "is_active": true,
     "is_activated": true,
-    "date_joined": "2026-09-24T19:27:06.655161Z",
+    "date_joined": "2026-09-24T22:46:15.212632Z",
     "last_login": null,
     "deactivated_at": null
    }
@@ -2003,26 +2003,26 @@
     "previous": null,
     "results": [
      {
-      "id": 181,
-      "property": 12228,
-      "unit": 22568,
+      "id": 65,
+      "property": 4196,
+      "unit": 7345,
       "first_name": "Sam",
       "last_name": "Lee",
       "phone": "",
       "visit_reason": "",
       "vehicle_plate": "",
       "status": "ARRIVED",
-      "arrived_at": "2026-09-24T19:27:06.793715Z",
+      "arrived_at": "2026-09-24T22:46:15.382290Z",
       "left_at": null,
       "denial_reason": "",
       "notes": "",
       "registered_by": {
-       "id": 115291,
+       "id": 37722,
        "full_name": "First11 Last11",
        "email": "security@example.test"
       },
       "id_card": null,
-      "created_at": "2026-09-24T19:27:06.793916Z"
+      "created_at": "2026-09-24T22:46:15.382627Z"
      }
     ]
    }
@@ -2032,26 +2032,26 @@
    "path": "/api/v1/visitors/{visitor_id}/",
    "status": 200,
    "body": {
-    "id": 181,
-    "property": 12228,
-    "unit": 22568,
+    "id": 65,
+    "property": 4196,
+    "unit": 7345,
     "first_name": "Sam",
     "last_name": "Lee",
     "phone": "",
     "visit_reason": "",
     "vehicle_plate": "",
     "status": "ARRIVED",
-    "arrived_at": "2026-09-24T19:27:06.793715Z",
+    "arrived_at": "2026-09-24T22:46:15.382290Z",
     "left_at": null,
     "denial_reason": "",
     "notes": "",
     "registered_by": {
-     "id": 115291,
+     "id": 37722,
      "full_name": "First11 Last11",
      "email": "security@example.test"
     },
     "id_card": null,
-    "created_at": "2026-09-24T19:27:06.793916Z"
+    "created_at": "2026-09-24T22:46:15.382627Z"
    }
   },
   {
@@ -2064,8 +2064,8 @@
     "previous": null,
     "results": [
      {
-      "id": 209,
-      "property": 12228,
+      "id": 74,
+      "property": 4196,
       "building": null,
       "unit": null,
       "service_request": null,
@@ -2084,9 +2084,9 @@
       "cancelled_at": null,
       "cancellation_reason": "",
       "files": [],
-      "created_by": 115289,
-      "created_at": "2026-09-24T19:27:06.790218Z",
-      "updated_at": "2026-09-24T19:27:06.790226Z"
+      "created_by": 37720,
+      "created_at": "2026-09-24T22:46:15.378248Z",
+      "updated_at": "2026-09-24T22:46:15.378259Z"
      }
     ]
    }
@@ -2096,8 +2096,8 @@
    "path": "/api/v1/work-orders/{work_order_id}/",
    "status": 200,
    "body": {
-    "id": 209,
-    "property": 12228,
+    "id": 74,
+    "property": 4196,
     "building": null,
     "unit": null,
     "service_request": null,
@@ -2116,9 +2116,9 @@
     "cancelled_at": null,
     "cancellation_reason": "",
     "files": [],
-    "created_by": 115289,
-    "created_at": "2026-09-24T19:27:06.790218Z",
-    "updated_at": "2026-09-24T19:27:06.790226Z"
+    "created_by": 37720,
+    "created_at": "2026-09-24T22:46:15.378248Z",
+    "updated_at": "2026-09-24T22:46:15.378259Z"
    }
   },
   {
@@ -2158,7 +2158,7 @@
      }
     },
     "user": {
-     "id": 115294,
+     "id": 37725,
      "email": "tenant@example.test",
      "first_name": "First14",
      "last_name": "Last14",
@@ -2185,8 +2185,8 @@
       "ownerships": [],
       "tenancies": [
        {
-        "lease_id": 11533,
-        "unit_id": 22568,
+        "lease_id": 3746,
+        "unit_id": 7345,
         "unit_number": "A101",
         "is_signatory": true
        }

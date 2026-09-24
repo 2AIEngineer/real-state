@@ -34,19 +34,19 @@ class SurveyListView(_AnsweredSurveys, BaseAPIView):
     )
     def get(self, request):
         query = self.parse_query_params(s.SurveysQueryParamsSerializer)
-        prop = self.property
         return self.render_page(
             s.SurveySerializer,
-            SurveyService.list_visible(actor=request.user, prop=prop, status=query.get("status")),
+            SurveyService.list_visible(
+                actor=request.user, prop=self.property, status=query.get("status")
+            ),
         )
 
     @extend_schema(request=s.SurveyCreateSerializer, responses={201: s.SurveySerializer})
     def post(self, request):
         data = dict(self.parse(s.SurveyCreateSerializer))
-        prop = self.property
         questions = _questions(data.pop("questions"))
         survey = SurveyService.create_draft(
-            actor=request.user, prop=prop, questions=questions, **data
+            actor=request.user, prop=self.property, questions=questions, **data
         )
         return self.render(
             s.SurveySerializer,

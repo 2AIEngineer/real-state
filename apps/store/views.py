@@ -20,10 +20,9 @@ class ProductListView(BaseAPIView):
     )
     def get(self, request):
         query = self.parse_query_params(s.ProductsQueryParamsSerializer)
-        prop = self.property
         qs = ProductService.list_visible(
             actor=request.user,
-            prop=prop,
+            prop=self.property,
             include_inactive=query["include_inactive"],
             search=query.get("search"),
         )
@@ -32,10 +31,9 @@ class ProductListView(BaseAPIView):
     @extend_schema(request=s.ProductCreateSerializer, responses={201: s.ProductSerializer})
     def post(self, request):
         data = dict(self.parse(s.ProductCreateSerializer))
-        prop = self.property
         return self.render(
             s.ProductSerializer,
-            ProductService.create(actor=request.user, prop=prop, data=data),
+            ProductService.create(actor=request.user, prop=self.property, data=data),
             status=status.HTTP_201_CREATED,
         )
 
@@ -111,7 +109,6 @@ class OrderListView(BaseAPIView):
     @extend_schema(request=s.OrderCreateSerializer, responses={201: s.OrderSerializer})
     def post(self, request):
         data = self.parse(s.OrderCreateSerializer)
-        prop = self.property
         unit = (
             UnitService.get_visible(actor=request.user, prop=self.property, unit_id=data["unit_id"])
             if data["unit_id"]
@@ -119,7 +116,7 @@ class OrderListView(BaseAPIView):
         )
         order = OrderService.place(
             actor=request.user,
-            prop=prop,
+            prop=self.property,
             unit=unit,
             lines=[OrderLine(**line) for line in data["items"]],
             delivery_instructions=data["delivery_instructions"],

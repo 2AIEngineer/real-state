@@ -8,6 +8,7 @@ import {
   loginRequestSchema,
   paginatedUserListSchema,
   passwordChangeRequestSchema,
+  logoutRequestSchema,
   passwordResetRequestSchema,
   passwordSetRequestSchema,
   patchedProviderProfileRequestSchema,
@@ -29,6 +30,19 @@ import {
 
 /** Endpoints of the accounts module. */
 export const accountsEndpoints = {
+  /** Ends the session: the refresh token can no longer be used. */
+  authLogoutCreate: {
+    method: "POST",
+    path: "/api/v1/auth/logout/",
+    tag: "Auth",
+    auth: false,
+    uiConfigStep: null,
+    requiredHeaders: [],
+    body: logoutRequestSchema,
+    bodyType: "json",
+    response: null,
+    status: 204,
+  },
   authPasswordResetCreate: {
     method: "POST",
     path: "/api/v1/auth/password/reset/",

@@ -35,7 +35,6 @@ class WorkOrderListView(BaseAPIView):
     def post(self, request):
         data = dict(self.parse(s.WorkOrderCreateSerializer))
         actor = request.user
-        prop = self.property
         building_id, unit_id, sr_id = (
             data.pop("building_id"),
             data.pop("unit_id"),
@@ -43,7 +42,7 @@ class WorkOrderListView(BaseAPIView):
         )
         wo = WorkOrderService.create(
             actor=actor,
-            prop=prop,
+            prop=self.property,
             title=data.pop("title"),
             building=BuildingService.get_visible(
                 actor=actor, prop=self.property, building_id=building_id

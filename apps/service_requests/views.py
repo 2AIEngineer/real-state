@@ -30,14 +30,13 @@ class ServiceRequestListView(BaseAPIView):
     )
     def post(self, request):
         data = dict(self.parse(s.ServiceRequestCreateSerializer))
-        prop = self.property
         unit_id = data.pop("unit_id")
         unit = (
             UnitService.get_visible(actor=request.user, prop=self.property, unit_id=unit_id)
             if unit_id
             else None
         )
-        sr = ServiceRequestService.submit(actor=request.user, prop=prop, unit=unit, **data)
+        sr = ServiceRequestService.submit(actor=request.user, prop=self.property, unit=unit, **data)
         return self.render(s.ServiceRequestSerializer, sr, status=status.HTTP_201_CREATED)
 
 

@@ -8,6 +8,7 @@ from apps.accounts.services.accounts import AccountService
 from apps.accounts.services.passwords import PasswordService
 from apps.accounts.services.providers import ProviderProfileService
 from apps.accounts.services.registration import OwnedUnit, RentedUnit
+from apps.accounts.services.status import AccountStatusService
 from apps.accounts.views.mixins import AccountMixin
 from apps.common.schema import property_header, syndicat_header
 from apps.common.views import ApiMixin
@@ -77,7 +78,7 @@ class UserDetailView(AccountMixin, ApiMixin, APIView):
         description="Closes the account: deactivation and erasure of personal data.",
     )
     def delete(self, request, user_id: str):
-        AccountService.close(actor=request.user, user=self.account(user_id))
+        AccountStatusService.close(actor=request.user, user=self.account(user_id))
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -145,7 +146,7 @@ class UserDeactivateView(AccountMixin, ApiMixin, APIView):
         data = self.parse(s.AccountDeactivationSerializer)
         return self.render(
             s.UserSerializer,
-            AccountService.deactivate(actor=request.user, user=user, reason=data["reason"]),
+            AccountStatusService.deactivate(actor=request.user, user=user, reason=data["reason"]),
         )
 
 
@@ -157,7 +158,7 @@ class UserReactivateView(AccountMixin, ApiMixin, APIView):
     def post(self, request, user_id: str):
         return self.render(
             s.UserSerializer,
-            AccountService.reactivate(actor=request.user, user=self.account(user_id)),
+            AccountStatusService.reactivate(actor=request.user, user=self.account(user_id)),
         )
 
 
