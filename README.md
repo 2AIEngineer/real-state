@@ -20,7 +20,7 @@ uv run python manage.py runserver         # OpenAPI : /api/docs/ (en mode DEBUG)
 | `uv run pytest` | Tests (PostgreSQL requis : les contraintes d'exclusion sont testées pour de vrai). Le profil de test est `config/settings_test.py`. |
 | `uv run ruff check .` / `uv run ruff format .` | Lint et formatage (100 colonnes). Le CI (`.github/workflows/ci.yml`) vérifie les deux, ainsi que les migrations, le schéma OpenAPI et les tests. |
 | `python manage.py outbox_worker` | Relais de l'outbox : envoi des e-mails et des push, avec reprises et back-off. |
-| `python manage.py run_scheduled_jobs` | Expiration des baux, clôture des événements et sondages échus, purge de l'outbox et des jetons de session expirés (idempotent, toutes les 15 min). |
+| `python manage.py run_scheduled_jobs` | Expiration des baux, clôture des événements et sondages échus, purge de l'outbox, des jetons de session expirés et des clés d'idempotence (idempotent, toutes les 15 min). |
 | `python manage.py purge_orphan_attachments` | Supprime les fichiers stockés sans ligne `Attachment` (quotidien). |
 
 Toutes les routes sont préfixées par `/api/v1/`. Sondes de la plateforme : `/healthz/` (processus vivant) et
@@ -125,13 +125,14 @@ ni en-tête, ni appel supplémentaire. C'est un lien signé vers `GET /api/v1/fi
 
 - fichier **public** (logos, photos du catalogue, des équipements et des annonces de la marketplace) :
   lien permanent, identique pour tous ;
-- fichier **privé** (tout le reste : pièces d'identité, justificatifs, documents) : lien personnel,
-  valable 12 à 24 h et identique pendant toute une fenêtre de 12 h (le navigateur le garde en cache).
-  Chaque réponse de l'API en redonne un frais : un client qui affiche ce que l'API renvoie n'a jamais à
-  gérer l'expiration. Le lien cesse de fonctionner si le compte est désactivé.
+- fichier **privé** (tout le reste : pièces d'identité, justificatifs, documents) : lien personnel, qui
+  n'expire pas avec le temps. Il cesse de fonctionner seulement quand le compte de son lecteur est
+  désactivé ou change de mot de passe (le moment où toutes ses sessions sont coupées). Le client n'a donc
+  jamais d'expiration à gérer, même dans un onglet resté ouvert des jours.
 
-En production, le conteneur Azure est privé : le lien redirige vers une URL SAS qui expire avec lui et
-impose le `Content-Type` et le `Content-Disposition` du fichier. En local, le fichier est servi directement.
+En production, le conteneur Azure est privé : le lien redirige vers une URL SAS courte, que le navigateur
+suit aussitôt (le client ne la manipule jamais), et qui impose le `Content-Type` et le
+`Content-Disposition` du fichier. En local, le fichier est servi directement.
 
 ### Autorisation
 

@@ -10,22 +10,25 @@ faut prévoir dans le code dès maintenant pour que la phase de déploiement se 
 |---|---|---|---|
 | S1 | Sélection syndicat/propriété non vérifiée | **Corrigé** : `BaseAPIView` résout `self.property`, chaque `get_visible` filtre sur elle | `apps/common/views.py`, `tests/test_selection.py` |
 | S2 | Extension de stockage choisie par le client | **Corrigé** : extension et `Content-Type` suivent le format détecté | `apps/common/files/rules.py`, `models/attachments.py` |
-| S3 | Fichiers privés publics | **Corrigé** : liens signés utilisables tels quels (`<img src>`), permanents pour les images publiques, personnels et valables 12–24 h pour le reste ; conteneur Azure privé + SAS ; route `/media/` supprimée | `apps/common/files/`, `tests/test_file_links.py` |
+| S3 | Fichiers privés publics | **Corrigé** : liens signés utilisables tels quels (`<img src>`), permanents pour les images publiques, personnels et sans expiration dans le temps pour le reste (révoqués à la désactivation ou au changement de mot de passe) ; conteneur Azure privé + SAS interne ; route `/media/` supprimée | `apps/common/files/`, `tests/test_file_links.py` |
 | S4 | Jetons non révocables | **Corrigé** : liste noire, `POST /auth/logout/`, révocation au changement de mot de passe et à la désactivation, lien de reset de 2 h | `apps/accounts/services/tokens.py`, `setup_links.py`, `tests/test_sessions.py` |
-| S5 | Throttling contournable | **Corrigé** : `NUM_PROXIES`, throttles globaux, limite de connexion par compte, cache Redis via `REDIS_URL` | `config/settings.py`, `apps/accounts/throttles.py` |
+| S5 | Throttling contournable | **Corrigé** : `NUM_PROXIES`, limite de connexion par compte, compteurs dans une table de cache PostgreSQL (pas de Redis) | `config/settings.py`, `apps/accounts/throttles.py` |
 | S6 | Secrets dans l'outbox | **Corrigé** : contenu effacé dès qu'un message est final, purge après 30 jours | `apps/notifications/services/delivery.py`, `retention.py` |
 | — | Corps JSON de 50 Mo en mémoire | **Corrigé** : 5 Mo | `config/settings.py` |
-| — | Effacement RGPD incomplet | **Corrigé** en partie : genre, langue, appareils, inbox, préférences. Reste à décider : conservation des pièces d'identité | `apps/accounts/services/status.py` |
+| — | Effacement RGPD incomplet | **Corrigé** : genre, langue, appareils, inbox, préférences | `apps/accounts/services/status.py` |
 | — | Push en doublon | **Corrigé** : un message par lot de 100 destinataires | `apps/notifications/services/dispatcher.py` |
 | — | Secrets courts / `ENVIRONMENT` inconnu | **Corrigé** : refus de démarrer en production | `config/env.py` |
 | — | CI absente | **Corrigé** : ruff, migrations, schéma OpenAPI, pytest, contrats TS | `.github/workflows/ci.yml` |
 | — | Sondes de santé | **Ajouté** : `/healthz/`, `/readyz/` | `apps/common/health.py` |
 | — | Lisibilité | **Fait** : modules découpés par ressource (voir section 11) | — |
+| §5.1 | Fuseau horaire unique | **Corrigé** : `Property.timezone` (IANA) pour « aujourd'hui », les horaires et les heures des notifications | `apps/properties/timezones.py` |
+| §5.5 | Doublons à la création | **Corrigé** : en-tête `Idempotency-Key` sur tout POST | `apps/common/idempotency.py` |
+| §5.6 | Suppression vs archivage | **Clos** : les deux actions existent et c'est l'utilisateur qui choisit | — |
+| — | orjson | `drf-orjson-renderer` (paquet), sans module maison | `config/settings.py` |
+| — | CORS | Les en-têtes `X-Syndicat-Id`, `X-Property-Id`, `X-UI-Config-Step`, `Idempotency-Key` étaient refusés par les navigateurs : autorisés | `config/settings.py` |
 
-Restent ouverts, parce qu'ils relèvent d'une décision produit ou de la phase déploiement :
-fuseau horaire par propriété (§5.1 ; en attendant, fixer `TIME_ZONE`), administrateurs en copie de
-tout (§5.2), clés d'idempotence (§5.5), suppression définitive vs archivage (§5.6), cache par requête
-d'`AccessService` (§6), mypy et couverture (§7), préparation ACA (§9).
+Restent ouverts : administrateurs en copie de tout (§5.2), cache par requête d'`AccessService` (§6),
+mypy et couverture (§7), préparation ACA (§9).
 
 ## 1. Synthèse
 
@@ -166,8 +169,8 @@ compteur `token_version` sur `User`) et la comparer dans une classe d'authentifi
   workers Gunicorn et de réplicas.
 - Seul le scope `auth` est limité ; le reste de l'API n'a aucune limite (`DEFAULT_THROTTLE_CLASSES: []`).
 
-**Recommandation** : `NUM_PROXIES = 1` (derrière l'ingress ACA, à valider au déploiement) ; cache Redis
-(Azure Cache for Redis / Managed Redis) ; throttles `user` et `anon` globaux ; pour le login, un
+**Recommandation** : `NUM_PROXIES = 1` (derrière l'ingress ACA, à valider au déploiement) ; un cache
+partagé entre instances (retenu : une table PostgreSQL, pas de Redis) ; pour le login, un
 throttle par identifiant (e-mail normalisé) en plus de l'IP pour freiner le credential stuffing.
 
 ### S6 — Secrets dans l'outbox, pas de rétention (élevée)
@@ -278,7 +281,7 @@ Ces points ne sont pas urgents, mais ils touchent le code et orientent la suite 
 - **Santé** : `/healthz` (processus vivant) et `/readyz` (base joignable) pour les sondes ACA.
 - **Secrets** : `AZURE_CONNECTION_STRING` avec clé de compte → identité managée + `DefaultAzureCredential`
   (django-storages le supporte) ; secrets dans Key Vault référencés par ACA.
-- **Cache partagé** : Redis, indispensable dès deux réplicas (throttling, S5).
+- **Cache partagé** : déjà réglé sans coût supplémentaire, par une table de cache PostgreSQL (§0).
 - **Proxy** : `NUM_PROXIES`, `SECURE_PROXY_SSL_HEADER` et `ALLOWED_HOSTS` à caler sur l'ingress ACA.
 - **Gunicorn** : `timeout = 220` et les commentaires visent App Service ; `cpu_count()` dans un
   conteneur renvoie les cœurs de l'hôte, pas le quota : fixer `GUNICORN_WORKERS` explicitement.
@@ -293,7 +296,7 @@ Ces points ne sont pas urgents, mais ils touchent le code et orientent la suite 
 | 2 | S2 : extension dérivée du MIME détecté + `Content-Disposition` | S |
 | 3 | S4 : `token_blacklist`, logout, invalidation au changement de mot de passe, durée du lien de reset | S–M |
 | 4 | S1 : résolution centrale de la sélection dans `BaseAPIView`, `get_visible(prop=…)`, test sur toutes les routes | M |
-| 5 | S5 / S6 : `NUM_PROXIES`, Redis, throttles globaux ; purge et nettoyage de l'outbox | S |
+| 5 | S5 / S6 : `NUM_PROXIES`, cache partagé, limite par compte ; purge et nettoyage de l'outbox | S |
 | 6 | CI (ruff, pytest, migrations, schéma OpenAPI, audit des dépendances) | S |
 | 7 | Fuseau horaire par propriété ; administrateurs retirés des copies par défaut | M |
 | 8 | Effacement RGPD exhaustif et durées de conservation des pièces d'identité | M |
@@ -306,8 +309,8 @@ S = moins d'une journée, M = quelques jours.
 
 **orjson.** Sur une liste de 100 demandes de service, le rendu JSON de DRF prend 0,31 ms pour une
 requête de 32 ms ; orjson le fait en 0,03 ms. Le gain est réel (×10 sur le rendu) mais marginal sur la
-requête (~1 %). Il est intégré (`apps/common/json.py`, sortie identique octet pour octet à DRF, testée),
-sans dépendre de `drf-orjson-renderer`. Le temps d'une requête est dans les serializers et la base.
+requête (~1 %). Il passe par le paquet `drf-orjson-renderer` ; les réponses des 63 endpoints échantillonnés
+gardent la même forme. Le temps d'une requête est dans les serializers et la base.
 
 **Requêtes SQL.** Sur toutes les listes du schéma, le nombre de requêtes reste constant quand le nombre
 de lignes augmente : pas de N+1. Les champs calculés utilisent des annotations et `AttachmentsField`
