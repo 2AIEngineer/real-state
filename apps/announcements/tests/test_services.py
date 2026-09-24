@@ -127,8 +127,8 @@ class TestRules:
             publish(world, [PropertyRole.TENANT])
 
     def test_attachments(self, world):
-        from apps.common.models import EntityType
-        from apps.common.services.attachments import AttachmentService
+        from apps.common.files.rules import EntityType
+        from apps.common.files.service import AttachmentService
 
         announcement = publish(world, [PropertyRole.TENANT], files=[f.pdf()])
         assert AttachmentService.count(EntityType.ANNOUNCEMENT, announcement.pk) == 1

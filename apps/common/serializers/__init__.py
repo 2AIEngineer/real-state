@@ -1,6 +1,5 @@
 """Serializer building blocks shared by every module (shape only, no rules)."""
 
-from apps.common.serializers.attachments import AttachmentSerializer, AttachmentsField
 from apps.common.serializers.shared import (
     ActionNoteSerializer,
     ActionReasonSerializer,
@@ -12,8 +11,6 @@ from apps.common.serializers.shared import (
 __all__ = [
     "ActionNoteSerializer",
     "ActionReasonSerializer",
-    "AttachmentSerializer",
-    "AttachmentsField",
     "UploadFileSerializer",
     "UploadFilesSerializer",
     "UserSummarySerializer",

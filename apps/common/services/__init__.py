@@ -1,1 +1,1 @@
-"""Services of the shared kernel: files (`attachments`) and the audit journal (`audit`)."""
+"""Services of the shared kernel: the audit journal. Files live in `apps.common.files`."""

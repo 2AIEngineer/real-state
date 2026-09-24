@@ -21,8 +21,8 @@ from apps.common.exceptions import (
     NotFound,
     PermissionDenied,
 )
-from apps.common.models import EntityType
-from apps.common.services.attachments import AttachmentService
+from apps.common.files.rules import EntityType
+from apps.common.files.service import AttachmentService
 from apps.common.services.audit import AuditService
 from apps.properties.enums import Feature
 from apps.properties.models import Building, Property

@@ -1,59 +1,27 @@
 """Single entry point for storing, listing and deleting files.
 
 A file is attached to an entity (`entity_type` + `entity_id`); the rules of
-each type (formats, number of files, size) are in `apps.common.models`.
-Reading needs no service: the serializer hands out the URL of the stored
-file, which the client uses directly.
+each type (formats, number of files, size, visibility) are in `rules.py`.
+Reading needs no service: the serializer hands out a signed link (`links.py`)
+that the client uses directly.
 """
 
 from __future__ import annotations
 
-import hashlib
 import logging
-import mimetypes
 from collections.abc import Sequence
 from pathlib import Path
 
-import filetype
 from django.core.files.uploadedfile import UploadedFile
 from django.db import transaction
 from django.db.models import QuerySet
 
 from apps.common.exceptions import InvalidInput, NotFound
-from apps.common.models import RULES, TEXT, Attachment, AttachmentRule
+from apps.common.files.formats import detect_mime_type, sha256_of
+from apps.common.files.rules import RULES, AttachmentRule
+from apps.common.models import Attachment
 
 logger = logging.getLogger(__name__)
-
-_EXTENSION_ALIASES = {"image/jpg": "image/jpeg"}
-
-
-def _sniff_mime_type(upload: UploadedFile) -> str | None:
-    """Detect the real type from content (magic numbers), never trust the client."""
-    upload.seek(0)
-    head = upload.read(8192)
-    upload.seek(0)
-    kind = filetype.guess(head)
-    if kind is not None:
-        return _EXTENSION_ALIASES.get(kind.mime, kind.mime)
-    # Plain-text formats have no signature: accept them by extension only when
-    # the content decodes as text.
-    guessed, _ = mimetypes.guess_type(upload.name or "")
-    if guessed in TEXT:
-        try:
-            head.decode("utf-8")
-        except UnicodeDecodeError:
-            return None
-        return guessed
-    return None
-
-
-def _checksum(upload: UploadedFile) -> str:
-    digest = hashlib.sha256()
-    upload.seek(0)
-    for chunk in upload.chunks():
-        digest.update(chunk)
-    upload.seek(0)
-    return digest.hexdigest()
 
 
 def _delete_stored_file_on_commit(storage_name: str, storage) -> None:
@@ -79,7 +47,7 @@ class AttachmentService:
             if upload.size > rule.max_size_bytes:
                 limit = rule.max_size_bytes // (1024 * 1024)
                 raise InvalidInput(f"'{upload.name}' exceeds the {limit} MB limit.", field=field)
-            mime = _sniff_mime_type(upload)
+            mime = detect_mime_type(upload)
             if mime is None or mime not in rule.allowed_types:
                 raise InvalidInput(
                     f"'{upload.name}' has an unsupported format. Allowed: {rule.describe_types()}.",
@@ -132,7 +100,7 @@ class AttachmentService:
                 mime_type=mime,
                 size=upload.size,
                 original_filename=Path(upload.name or "file").name[:255],
-                checksum_sha256=_checksum(upload),
+                checksum_sha256=sha256_of(upload),
                 position=next_position + offset,
                 uploaded_by=uploaded_by,
             )

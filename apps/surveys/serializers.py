@@ -2,8 +2,8 @@ from drf_spectacular.utils import extend_schema_serializer
 from rest_framework import serializers
 
 from apps.accounts.enums import PropertyRole
-from apps.common.models import EntityType
-from apps.common.serializers.attachments import AttachmentsField
+from apps.common.files.rules import EntityType
+from apps.common.files.serializers import AttachmentsField
 from apps.surveys.models import Survey, SurveyOption, SurveyQuestion, SurveyStatus
 
 

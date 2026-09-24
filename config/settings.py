@@ -149,27 +149,37 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = Path(env("MEDIA_ROOT", str(BASE_DIR / "media")))
 
+# Files. The container is private: every file is read through a signed link
+# (`apps.common.files.links`). Production refuses to start without it, so
+# personal documents can never end up on the server's disk.
 AZURE_CONNECTION_STRING = env("AZURE_CONNECTION_STRING")
 AZURE_CONTAINER = env("AZURE_CONTAINER")
-if IS_PRODUCTION and AZURE_CONNECTION_STRING and AZURE_CONTAINER:
+if AZURE_CONNECTION_STRING and AZURE_CONTAINER:
     STORAGES = {
         "default": {
-            "BACKEND": "storages.backends.azure_storage.AzureStorage",
+            "BACKEND": "apps.common.files.storage.AzureFileStorage",
             "OPTIONS": {
                 "connection_string": AZURE_CONNECTION_STRING,
                 "azure_container": AZURE_CONTAINER,
-                # Plain URLs (no signature): the container serves the files.
                 "expiration_secs": None,
                 "overwrite_files": False,
             },
         },
         "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
     }
+elif IS_PRODUCTION:
+    raise RuntimeError("AZURE_CONNECTION_STRING and AZURE_CONTAINER must be set in production.")
 else:
     STORAGES = {
         "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
         "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
     }
+
+FILES = {
+    # A private link stays the same for a window, and is valid for one to two
+    # windows: long enough for any page, short enough to leak little.
+    "LINK_WINDOW_HOURS": int(env("FILES_LINK_WINDOW_HOURS", "12")),
+}
 
 # Hard ceiling for any upload; module-specific policies are stricter.
 DATA_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024

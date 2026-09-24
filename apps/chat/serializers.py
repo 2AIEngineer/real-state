@@ -4,9 +4,9 @@ from rest_framework import serializers
 from apps.chat.contexts import CONTEXT_KINDS
 from apps.chat.models import ChatMessage, ChatRoom
 from apps.chat.services import ChatService
-from apps.common.models import EntityType
+from apps.common.files.rules import EntityType
+from apps.common.files.serializers import AttachmentsField
 from apps.common.serializers import UserSummarySerializer
-from apps.common.serializers.attachments import AttachmentsField
 
 
 class ChatRoomSerializer(serializers.ModelSerializer):

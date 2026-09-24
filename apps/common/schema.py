@@ -7,7 +7,7 @@ from drf_spectacular.openapi import AutoSchema
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter
 
-from apps.common.serializers.attachments import AttachmentSerializer
+from apps.common.files.serializers import AttachmentSerializer
 from apps.common.views import (
     PROPERTY_HEADER,
     STEP_HEADER,
@@ -71,7 +71,7 @@ class UIConfigAwareAutoSchema(AutoSchema):
 class AttachmentsFieldExtension(OpenApiSerializerFieldExtension):
     """OpenAPI description of `AttachmentsField`."""
 
-    target_class = "apps.common.serializers.attachments.AttachmentsField"
+    target_class = "apps.common.files.serializers.AttachmentsField"
 
     def map_serializer_field(self, auto_schema, direction):
         reference = auto_schema.resolve_serializer(AttachmentSerializer, direction).ref

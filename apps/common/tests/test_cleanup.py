@@ -8,8 +8,9 @@ a foreign key). Each service explicitly cleans up what it owns, in its own
 
 import pytest
 
-from apps.common.models import Attachment, EntityType
-from apps.common.services.attachments import AttachmentService
+from apps.common.files.rules import EntityType
+from apps.common.files.service import AttachmentService
+from apps.common.models import Attachment
 from apps.notifications.models import InboxNotification, RecipientSnapshot
 from apps.service_requests.models import ServiceRequest, ServiceRequestCategory
 from apps.service_requests.services import ServiceRequestService

@@ -44,22 +44,6 @@ def test_a_foreign_syndicat_header_is_rejected(api, world):
     assert response.status_code in (400, 404)
 
 
-@pytest.mark.xfail(strict=True, reason="AUDIT S2: stored extension comes from the client name")
-def test_the_stored_extension_follows_the_detected_format(api, world):
-    response = _submit(api, world, files=[f.pdf("evil.html")])
-
-    assert response.json()["files"][0]["url"].endswith(".pdf")
-
-
-@pytest.mark.xfail(strict=True, reason="AUDIT S3: private files are served without auth")
-def test_private_files_need_authentication(api, world):
-    url = _submit(api, world, files=[f.pdf("id.pdf")]).json()["files"][0]["url"]
-
-    response = APIClient().get(url.replace("http://testserver", ""))
-
-    assert response.status_code in (401, 403, 404)
-
-
 @pytest.mark.xfail(strict=True, reason="AUDIT S4: tokens outlive a password change")
 def test_a_password_change_revokes_existing_tokens(world):
     world.tenant.set_password("Old-Passw0rd!x")

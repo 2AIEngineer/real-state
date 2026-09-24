@@ -1,8 +1,8 @@
 from rest_framework import serializers
 
-from apps.common.models import EntityType
+from apps.common.files.rules import EntityType
+from apps.common.files.serializers import AttachmentsField
 from apps.common.serializers import UserSummarySerializer
-from apps.common.serializers.attachments import AttachmentsField
 from apps.service_requests.models import (
     RequesterNotice,
     ServiceRequest,

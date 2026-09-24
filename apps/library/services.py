@@ -7,8 +7,8 @@ from django.db.models import Count, QuerySet
 
 from apps.common.db import apply_changes, translate_integrity_errors
 from apps.common.exceptions import BusinessRuleViolation, InvalidInput, NotFound, PermissionDenied
-from apps.common.models import EntityType
-from apps.common.services.attachments import AttachmentService
+from apps.common.files.rules import EntityType
+from apps.common.files.service import AttachmentService
 from apps.common.services.audit import AuditService
 from apps.library import errors, notices
 from apps.library.audit import LibraryAudit

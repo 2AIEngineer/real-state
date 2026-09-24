@@ -1,9 +1,11 @@
 from django.conf import settings
-from django.urls import include, path, re_path
-from django.views.static import serve
+from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
+from apps.common import health
+
 API_MODULES = [
+    "apps.common.files.urls",
     "apps.accounts.urls",
     "apps.properties.urls",
     "apps.leasing.urls",
@@ -22,21 +24,11 @@ API_MODULES = [
     "apps.chat.urls",
 ]
 
-urlpatterns = [path("api/v1/", include(module)) for module in API_MODULES]
-
-
-def serve_media(request, path):
-    """Files kept on the server's disk, at the URL the serializers hand out.
-
-    With a storage service (Azure) that URL points at the service instead and
-    this route is not registered. The stored names are random, so a URL cannot
-    be guessed from the record it belongs to.
-    """
-    return serve(request, path, document_root=settings.MEDIA_ROOT)
-
-
-if settings.STORAGES["default"]["BACKEND"].endswith("FileSystemStorage"):
-    urlpatterns += [re_path(r"^media/(?P<path>.*)$", serve_media)]
+urlpatterns = [
+    path("healthz/", health.liveness, name="healthz"),
+    path("readyz/", health.readiness, name="readyz"),
+    *(path("api/v1/", include(module)) for module in API_MODULES),
+]
 
 if settings.DEBUG:
     urlpatterns += [

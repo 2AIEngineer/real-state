@@ -12,8 +12,8 @@ from apps.common.exceptions import (
     BusinessRuleViolation,
     NotFound,
 )
-from apps.common.models import EntityType
-from apps.common.services.attachments import AttachmentService
+from apps.common.files.rules import EntityType
+from apps.common.files.service import AttachmentService
 from apps.common.services.audit import AuditService
 from apps.short_term_rental.audit import ShortTermRentalAudit
 from apps.short_term_rental.models import (

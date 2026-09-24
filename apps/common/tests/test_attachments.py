@@ -2,8 +2,8 @@ import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from apps.common.exceptions import InvalidInput
-from apps.common.models import RULES, EntityType
-from apps.common.services.attachments import AttachmentService
+from apps.common.files.rules import RULES, EntityType
+from apps.common.files.service import AttachmentService
 from tests import factories as f
 
 pytestmark = pytest.mark.django_db
@@ -61,6 +61,7 @@ def test_formats_follow_the_entity_type(world):
         attach(world, EntityType.AMENITY, 1, [f.pdf()])  # images only
 
 
-def test_the_stored_file_has_a_usable_url(world):
-    (attachment,) = attach(world, EntityType.PROPERTY_LOGO, world.prop.pk, [f.png()])
-    assert attachment.file.url.startswith("/media/attachments/property_logo/")
+def test_the_stored_name_is_random_and_ends_with_the_detected_format(world):
+    (attachment,) = attach(world, EntityType.PROPERTY_LOGO, world.prop.pk, [f.png("brand.html")])
+    assert attachment.file.name.startswith("attachments/property_logo/")
+    assert attachment.file.name.endswith(".png") and "brand" not in attachment.file.name

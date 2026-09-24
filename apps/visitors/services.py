@@ -14,8 +14,8 @@ from django.utils import timezone
 
 from apps.common.db import apply_changes, deleting
 from apps.common.exceptions import InvalidInput, InvalidTransition, NotFound, PermissionDenied
-from apps.common.models import EntityType
-from apps.common.services.attachments import AttachmentService
+from apps.common.files.rules import EntityType
+from apps.common.files.service import AttachmentService
 from apps.common.services.audit import AuditService
 from apps.notifications.services import delete_notification_traces
 from apps.properties.enums import Feature

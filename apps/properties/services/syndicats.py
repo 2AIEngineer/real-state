@@ -8,8 +8,8 @@ from django.db.models import Count, Q, QuerySet
 from apps.accounts.services.authorization import AccessService
 from apps.common.db import apply_changes, deleting, translate_integrity_errors
 from apps.common.exceptions import NotFound
-from apps.common.models import EntityType
-from apps.common.services.attachments import AttachmentService
+from apps.common.files.rules import EntityType
+from apps.common.files.service import AttachmentService
 from apps.common.services.audit import AuditService
 from apps.notifications.services import delete_notification_traces
 from apps.properties import errors, notices

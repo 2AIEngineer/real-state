@@ -187,8 +187,8 @@ class TestInspections:
             on_check_date=TODAY,
             files=[f.png(), f.pdf()],
         )
-        from apps.common.models import EntityType
-        from apps.common.services.attachments import AttachmentService
+        from apps.common.files.rules import EntityType
+        from apps.common.files.service import AttachmentService
 
         assert AttachmentService.count(EntityType.LEASE_COMPONENT_STATE, component.pk) == 2
 
