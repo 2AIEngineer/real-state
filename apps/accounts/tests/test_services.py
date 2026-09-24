@@ -378,9 +378,17 @@ class TestCriticalChanges:
         LeaseService.terminate(
             actor=world.manager, lease=world.lease, effective_date=dt.date.today()
         )
+        world.co_tenant.phone = "+212600000000"
+        world.co_tenant.gender = "female"
+        world.co_tenant.save()
+        world.co_tenant.inbox_notifications.create(
+            category="account", notification_type="x", title="t", body="b"
+        )
         AccountService.close(actor=world.admin, user=world.co_tenant)
         world.co_tenant.refresh_from_db()
         assert world.co_tenant.email.endswith("@erased.invalid") and not world.co_tenant.is_active
+        assert world.co_tenant.phone == "" and world.co_tenant.gender == "UNDISCLOSED"
+        assert not world.co_tenant.inbox_notifications.exists()
         assert world.lease.members.filter(user=world.co_tenant).exists()
 
 

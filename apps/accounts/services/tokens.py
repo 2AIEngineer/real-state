@@ -10,6 +10,7 @@ same moment.
 
 from __future__ import annotations
 
+from django.utils import timezone
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -33,3 +34,9 @@ class TokenService:
             [BlacklistedToken(token=token) for token in live], ignore_conflicts=True
         )
         return len(revoked)
+
+    @staticmethod
+    def flush_expired() -> int:
+        """Forget the tokens that expired on their own (they are useless to keep)."""
+        deleted, _ = OutstandingToken.objects.filter(expires_at__lte=timezone.now()).delete()
+        return deleted

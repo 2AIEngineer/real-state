@@ -36,6 +36,7 @@ from apps.notifications.services.preferences import PreferenceService
 logger = logging.getLogger(__name__)
 
 BCC_CHUNK_SIZE = 50
+PUSH_BATCH_SIZE = 100  # one Expo request per message
 
 
 @dataclass
@@ -106,145 +107,171 @@ def _schedule_relay(outbox_ids: list[int]) -> None:
     transaction.on_commit(_relay)
 
 
+@dataclass
+class _Audience:
+    """Who receives a notification, once exclusions and preferences are applied."""
+
+    to: dict[int, Any]  # nominative: one personal e-mail each
+    bcc: dict[int, Any]  # grouped: e-mails in BCC
+    prefs: dict[int, NotificationPreference]
+
+    @property
+    def everyone(self) -> dict[int, Any]:
+        return {**self.bcc, **self.to}
+
+
+def _audience(intent: NotificationIntent) -> _Audience:
+    excluded = {getattr(u, "pk", u) for u in intent.exclude}
+    to = {u.pk: u for u in intent.to if u.pk not in excluded and u.is_active}
+    bcc = {u.pk: u for u in intent.bcc if u.pk not in excluded and u.is_active and u.pk not in to}
+    if intent.include_platform_admins:
+        for admin in UserDirectory.platform_admins():
+            if admin.pk not in excluded and admin.pk not in to:
+                bcc.setdefault(admin.pk, admin)
+    everyone = {**bcc, **to}
+    prefs = PreferenceService.resolve_many(everyone.keys()) if everyone else {}
+
+    def allowed(uid: int) -> bool:
+        return intent.transactional or _feature_allowed(prefs[uid], intent.category)
+
+    return _Audience(
+        to={uid: u for uid, u in to.items() if allowed(uid)},
+        bcc={uid: u for uid, u in bcc.items() if allowed(uid)},
+        prefs=prefs,
+    )
+
+
+def _outbox_message(intent: NotificationIntent, channel: str, payload: dict) -> OutboxMessage:
+    return OutboxMessage(
+        channel=channel,
+        notification_type=intent.event_type,
+        next_attempt_at=timezone.now(),
+        payload=payload,
+    )
+
+
+def _raw_address_emails(intent: NotificationIntent) -> list[OutboxMessage]:
+    """E-mails to addresses bound to no account (transactional only)."""
+    addresses = sorted(set(intent.to_addresses))
+    if addresses and not intent.transactional:
+        raise ValueError("Raw e-mail addresses are reserved for transactional notifications.")
+    if not addresses or "email" not in intent.channels:
+        return []
+    if not settings.NOTIFICATIONS["EMAIL_ENABLED"]:
+        return []
+    return [
+        _outbox_message(
+            intent,
+            OutboxChannel.EMAIL,
+            {"to": [address], "bcc": [], **_render_email(intent, None)},
+        )
+        for address in addresses
+    ]
+
+
+def _inbox_rows(intent: NotificationIntent, audience: _Audience) -> dict[int, int]:
+    """Writes the in-app notifications; returns {user id: inbox id}."""
+    if "inbox" not in intent.channels:
+        return {}
+    target = intent.target
+    content_type = ContentType.objects.get_for_model(target) if target is not None else None
+    rows = InboxNotification.objects.bulk_create(
+        [
+            InboxNotification(
+                user_id=uid,
+                category=intent.category,
+                notification_type=intent.event_type,
+                severity=intent.severity,
+                title=intent.title[:200],
+                body=intent.body,
+                data=intent.data,
+                content_type=content_type,
+                object_id=target.pk if target is not None else None,
+            )
+            for uid in audience.everyone
+        ]
+    )
+    return {row.user_id: row.pk for row in rows}
+
+
+def _push_messages(
+    intent: NotificationIntent, audience: _Audience, inbox_ids: dict[int, int]
+) -> list[OutboxMessage]:
+    """One message per batch of recipients: a failed batch is retried alone,
+    and the batches already delivered are not sent twice."""
+    if "push" not in intent.channels or not settings.NOTIFICATIONS["PUSH_ENABLED"]:
+        return []
+    user_ids = [
+        uid for uid in audience.everyone if intent.transactional or audience.prefs[uid].enabled_push
+    ]
+    data = {**intent.data, "type": intent.event_type, "category": intent.category}
+    return [
+        _outbox_message(
+            intent,
+            OutboxChannel.PUSH,
+            {
+                "user_ids": batch,
+                "title": intent.title,
+                "body": intent.body,
+                "data": data,
+                "inbox_ids": {str(uid): inbox_ids.get(uid) for uid in batch},
+            },
+        )
+        for batch in _batches(user_ids, PUSH_BATCH_SIZE)
+    ]
+
+
+def _email_messages(intent: NotificationIntent, audience: _Audience) -> list[OutboxMessage]:
+    """A personal e-mail per nominative recipient, and BCC batches for the others."""
+    if "email" not in intent.channels or not settings.NOTIFICATIONS["EMAIL_ENABLED"]:
+        return []
+
+    def wants_email(uid: int) -> bool:
+        return intent.transactional or audience.prefs[uid].enabled_email
+
+    messages = [
+        _outbox_message(
+            intent,
+            OutboxChannel.EMAIL,
+            {"to": [user.email], "bcc": [], **_render_email(intent, user.first_name)},
+        )
+        for uid, user in audience.to.items()
+        if wants_email(uid)
+    ]
+    bcc_emails = sorted(user.email for uid, user in audience.bcc.items() if wants_email(uid))
+    if bcc_emails:
+        rendered = _render_email(intent, None)
+        messages += [
+            _outbox_message(intent, OutboxChannel.EMAIL, {"to": [], "bcc": batch, **rendered})
+            for batch in _batches(bcc_emails, BCC_CHUNK_SIZE)
+        ]
+    return messages
+
+
+def _batches(items: list, size: int) -> list[list]:
+    return [items[start : start + size] for start in range(0, len(items), size)]
+
+
+def _enqueue(messages: list[OutboxMessage]) -> list[int]:
+    ids = [m.pk for m in OutboxMessage.objects.bulk_create(messages)] if messages else []
+    _schedule_relay(ids)
+    return ids
+
+
 class NotificationService:
     @staticmethod
     def notify(intent: NotificationIntent) -> DispatchResult:
-        excluded = {getattr(u, "pk", u) for u in intent.exclude}
-        to_users = {u.pk: u for u in intent.to if u.pk not in excluded and u.is_active}
-        bcc_users = {
-            u.pk: u
-            for u in intent.bcc
-            if u.pk not in excluded and u.is_active and u.pk not in to_users
-        }
-        if intent.include_platform_admins:
-            for admin in UserDirectory.platform_admins():
-                if admin.pk not in excluded and admin.pk not in to_users:
-                    bcc_users.setdefault(admin.pk, admin)
-        everyone = {**bcc_users, **to_users}
-        raw_addresses = sorted(set(intent.to_addresses))
-        if raw_addresses and not intent.transactional:
-            raise ValueError("Raw e-mail addresses are reserved for transactional notifications.")
-        if raw_addresses and "email" in intent.channels and settings.NOTIFICATIONS["EMAIL_ENABLED"]:
-            now = timezone.now()
-            created = OutboxMessage.objects.bulk_create(
-                [
-                    OutboxMessage(
-                        channel=OutboxChannel.EMAIL,
-                        notification_type=intent.event_type,
-                        next_attempt_at=now,
-                        payload={"to": [address], "bcc": [], **_render_email(intent, None)},
-                    )
-                    for address in raw_addresses
-                ]
-            )
-            _schedule_relay([m.pk for m in created])
-        if not everyone:
+        """Writes the inbox and queues the e-mails and pushes of one event.
+
+        Runs inside the caller's transaction: nothing leaves before it commits.
+        """
+        _enqueue(_raw_address_emails(intent))
+        audience = _audience(intent)
+        if not audience.everyone:
             return DispatchResult(0, ())
-
-        prefs = PreferenceService.resolve_many(everyone.keys())
-
-        def allowed(uid: int) -> bool:
-            return intent.transactional or _feature_allowed(prefs[uid], intent.category)
-
-        recipients = {uid: user for uid, user in everyone.items() if allowed(uid)}
-        if not recipients:
-            return DispatchResult(0, ())
-
         with transaction.atomic():
-            content_type = (
-                ContentType.objects.get_for_model(intent.target)
-                if intent.target is not None
-                else None
+            inbox_ids = _inbox_rows(intent, audience)
+            outbox_ids = _enqueue(
+                _push_messages(intent, audience, inbox_ids) + _email_messages(intent, audience)
             )
-            inbox_ids: dict[int, int] = {}
-            if "inbox" in intent.channels:
-                rows = InboxNotification.objects.bulk_create(
-                    [
-                        InboxNotification(
-                            user_id=uid,
-                            category=intent.category,
-                            notification_type=intent.event_type,
-                            severity=intent.severity,
-                            title=intent.title[:200],
-                            body=intent.body,
-                            data=intent.data,
-                            content_type=content_type,
-                            object_id=intent.target.pk if intent.target is not None else None,
-                        )
-                        for uid in recipients
-                    ]
-                )
-                inbox_ids = {row.user_id: row.pk for row in rows}
-
-            outbox: list[OutboxMessage] = []
-            now = timezone.now()
-            conf = settings.NOTIFICATIONS
-
-            if "push" in intent.channels and conf["PUSH_ENABLED"]:
-                push_ids = [
-                    uid for uid in recipients if intent.transactional or prefs[uid].enabled_push
-                ]
-                if push_ids:
-                    outbox.append(
-                        OutboxMessage(
-                            channel=OutboxChannel.PUSH,
-                            notification_type=intent.event_type,
-                            next_attempt_at=now,
-                            payload={
-                                "user_ids": push_ids,
-                                "title": intent.title,
-                                "body": intent.body,
-                                "data": {
-                                    **intent.data,
-                                    "type": intent.event_type,
-                                    "category": intent.category,
-                                },
-                                "inbox_ids": {str(uid): inbox_ids.get(uid) for uid in push_ids},
-                            },
-                        )
-                    )
-
-            if "email" in intent.channels and conf["EMAIL_ENABLED"]:
-
-                def wants_email(uid: int) -> bool:
-                    return intent.transactional or prefs[uid].enabled_email
-
-                for uid, user in to_users.items():
-                    if uid in recipients and wants_email(uid):
-                        outbox.append(
-                            OutboxMessage(
-                                channel=OutboxChannel.EMAIL,
-                                notification_type=intent.event_type,
-                                next_attempt_at=now,
-                                payload={
-                                    "to": [user.email],
-                                    "bcc": [],
-                                    **_render_email(intent, user.first_name),
-                                },
-                            )
-                        )
-                bcc_emails = sorted(
-                    user.email
-                    for uid, user in bcc_users.items()
-                    if uid in recipients and wants_email(uid)
-                )
-                if bcc_emails:
-                    rendered = _render_email(intent, None)
-                    for start in range(0, len(bcc_emails), BCC_CHUNK_SIZE):
-                        outbox.append(
-                            OutboxMessage(
-                                channel=OutboxChannel.EMAIL,
-                                notification_type=intent.event_type,
-                                next_attempt_at=now,
-                                payload={
-                                    "to": [],
-                                    "bcc": bcc_emails[start : start + BCC_CHUNK_SIZE],
-                                    **rendered,
-                                },
-                            )
-                        )
-
-            created = OutboxMessage.objects.bulk_create(outbox)
-            outbox_ids = [m.pk for m in created]
-            _schedule_relay(outbox_ids)
         return DispatchResult(len(inbox_ids), tuple(outbox_ids))

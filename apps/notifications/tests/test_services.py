@@ -20,6 +20,7 @@ from apps.notifications.services import (
     NotificationIntent,
     NotificationService,
     OutboxRelay,
+    OutboxRetention,
     PreferenceService,
     PushTokenService,
 )
@@ -142,7 +143,28 @@ class TestRelay:
         )
         assert OutboxRelay.run_once() == 1
         assert len(mail.outbox) == 1 and mail.outbox[0].to == [world.tenant.email]
-        assert OutboxMessage.objects.get().status == OutboxStatus.SENT
+        message = OutboxMessage.objects.get()
+        assert message.status == OutboxStatus.SENT
+        # Nothing of the body (a password link, say) nor of the addresses is kept.
+        assert message.payload == {"subject": "T", "recipients": 1, "redacted": True}
+
+    def test_delivered_messages_are_purged_after_the_retention_period(self, world, settings):
+        settings.NOTIFICATIONS = {**settings.NOTIFICATIONS, "OUTBOX_RETENTION_DAYS": 30}
+        NotificationService.notify(
+            intent(to=[world.tenant], include_platform_admins=False, channels=frozenset({"email"}))
+        )
+        OutboxRelay.run_once()
+        assert OutboxRetention.purge() == 0
+        assert OutboxRetention.purge(now=timezone.now() + dt.timedelta(days=31)) == 1
+
+    def test_pushes_are_queued_in_batches(self, world, monkeypatch):
+        monkeypatch.setattr("apps.notifications.services.dispatcher.PUSH_BATCH_SIZE", 2)
+        people = [world.tenant, world.co_tenant, world.owner]
+        NotificationService.notify(
+            intent(to=people, include_platform_admins=False, channels=frozenset({"push"}))
+        )
+        batches = [m.payload["user_ids"] for m in OutboxMessage.objects.order_by("id")]
+        assert sorted(map(len, batches)) == [1, 2]
 
     def test_transient_failure_is_retried_with_backoff_then_abandoned(self, world, settings):
         settings.NOTIFICATIONS = {**settings.NOTIFICATIONS, "OUTBOX_MAX_ATTEMPTS": 2}

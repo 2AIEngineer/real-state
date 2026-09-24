@@ -43,7 +43,7 @@ from apps.common.exceptions import (
 )
 from apps.common.services.audit import AuditService
 from apps.leasing.models import LeaseMember, LeaseStatus
-from apps.notifications.services import PushTokenService
+from apps.notifications.services import PushTokenService, erase_notifications_of
 from apps.properties.models import OwnershipStatus, UnitOwnership
 
 User = get_user_model()
@@ -351,7 +351,13 @@ class AccountService:
     @transaction.atomic
     def close(*, actor, user):
         """Account deletion. Rows referenced by history are kept but personal
-        data is erased (the account becomes an anonymous, inactive tombstone)."""
+        data is erased: the account becomes an anonymous, inactive tombstone.
+
+        Erased: identity (e-mail, names, phone, gender, language), password,
+        provider profile, devices, in-app notifications and preferences.
+        Kept: what other records point at (leases, requests, audit entries),
+        now attached to the tombstone.
+        """
         if user.is_active:
             AccountService.deactivate(actor=actor, user=user, reason="account_closed")
         elif not AccountPolicy.can_change_status(actor):
@@ -361,10 +367,22 @@ class AccountService:
         user.first_name = "Compte"
         user.last_name = "supprimé"
         user.phone = ""
+        user.gender = User._meta.get_field("gender").default
+        user.preferred_language = User._meta.get_field("preferred_language").default
         user.set_unusable_password()
         user.save(
-            update_fields=["email", "first_name", "last_name", "phone", "password", "updated_at"]
+            update_fields=[
+                "email",
+                "first_name",
+                "last_name",
+                "phone",
+                "gender",
+                "preferred_language",
+                "password",
+                "updated_at",
+            ]
         )
         ProviderProfile.objects.filter(user=user).delete()
+        erase_notifications_of(user)
         AuditService.record(actor=actor, action=AccountAudit.CLOSED, target=user)
         return user

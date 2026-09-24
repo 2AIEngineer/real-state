@@ -104,6 +104,21 @@ class ExpoPushTransport:
 TRANSPORTS = {OutboxChannel.EMAIL: EmailTransport, OutboxChannel.PUSH: ExpoPushTransport}
 
 
+def redacted(payload: dict) -> dict:
+    """What is kept of a message once it will never be sent again.
+
+    The body can hold a secret (a password link) and the recipients are
+    personal data: only the subject and the number of recipients remain.
+    """
+    recipients = len(payload.get("to") or []) + len(payload.get("bcc") or [])
+    recipients += len(payload.get("user_ids") or [])
+    return {
+        "subject": payload.get("subject") or payload.get("title", ""),
+        "recipients": recipients,
+        "redacted": True,
+    }
+
+
 def _backoff(attempts: int) -> timedelta:
     return min(timedelta(minutes=2**attempts), MAX_BACKOFF)
 
@@ -145,8 +160,17 @@ class OutboxRelay:
                 message.status = OutboxStatus.SENT
                 message.sent_at = timezone.now()
                 message.last_error = ""
+            if message.status != OutboxStatus.PENDING:
+                message.payload = redacted(message.payload)
             message.save(
-                update_fields=["status", "attempts", "next_attempt_at", "last_error", "sent_at"]
+                update_fields=[
+                    "status",
+                    "attempts",
+                    "next_attempt_at",
+                    "last_error",
+                    "sent_at",
+                    "payload",
+                ]
             )
             return True
 

@@ -7,21 +7,25 @@ import logging
 
 from django.core.management.base import BaseCommand, CommandError
 
+from apps.accounts.services.tokens import TokenService
 from apps.events.services import EventService
 from apps.leasing.services import LeaseService
+from apps.notifications.services import OutboxRetention
 from apps.surveys.services import SurveyService
 
 logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    help = "Expire leases, complete past events and close due surveys."
+    help = "Time-driven transitions and housekeeping (idempotent)."
 
     def handle(self, *args, **options):
         jobs = {
             "leases terminated at term": LeaseService.expire_due,
             "events completed": EventService.complete_past,
             "surveys closed": SurveyService.close_expired,
+            "outbox messages purged": OutboxRetention.purge,
+            "expired session tokens flushed": TokenService.flush_expired,
         }
         failures = []
         for label, job in jobs.items():

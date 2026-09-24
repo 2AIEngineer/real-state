@@ -2,7 +2,6 @@ from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
@@ -11,16 +10,12 @@ from apps.accounts import serializers as s
 from apps.accounts.services.passwords import PasswordService
 from apps.accounts.services.session import SessionService
 from apps.accounts.services.tokens import TokenService
+from apps.accounts.throttles import AuthThrottleMixin, LoginThrottleMixin
 from apps.common.views import ApiMixin
 
 
-class AuthThrottleMixin:
-    throttle_classes = [ScopedRateThrottle]
-    throttle_scope = "auth"
-
-
 @extend_schema(tags=["Auth"])
-class LoginView(AuthThrottleMixin, TokenObtainPairView):
+class LoginView(LoginThrottleMixin, TokenObtainPairView):
     """Logs in and configures the session: the response is the `SessionContext`."""
 
     serializer_class = s.LoginSerializer
