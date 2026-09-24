@@ -191,22 +191,19 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": ["rest_framework_simplejwt.authentication.JWTAuthentication"],
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
     "DEFAULT_PARSER_CLASSES": [
-        "apps.common.json.ORJSONParser",
+        "drf_orjson_renderer.parsers.ORJSONParser",
         "rest_framework.parsers.MultiPartParser",
         "rest_framework.parsers.FormParser",
     ],
-    "DEFAULT_RENDERER_CLASSES": ["apps.common.json.ORJSONRenderer"],
+    "DEFAULT_RENDERER_CLASSES": ["drf_orjson_renderer.renderers.ORJSONRenderer"],
     "DEFAULT_PAGINATION_CLASS": "apps.common.pagination.StandardPagination",
     "PAGE_SIZE": 20,
     "EXCEPTION_HANDLER": "apps.common.api.exception_handler",
     "DEFAULT_SCHEMA_CLASS": "apps.common.schema.UIConfigAwareAutoSchema",
-    "DEFAULT_THROTTLE_CLASSES": [
-        "rest_framework.throttling.AnonRateThrottle",
-        "rest_framework.throttling.UserRateThrottle",
-    ],
+    # Only the authentication endpoints are rate-limited: they are the ones an
+    # attacker hammers, and a counter on every request would cost a write each.
+    "DEFAULT_THROTTLE_CLASSES": [],
     "DEFAULT_THROTTLE_RATES": {
-        "anon": env("ANON_THROTTLE_RATE", "60/min"),
-        "user": env("USER_THROTTLE_RATE", "600/min"),
         # Per client address, on every authentication endpoint.
         "auth": env("AUTH_THROTTLE_RATE", "20/min"),
         # Per account, on login: slows password guessing spread over addresses.
@@ -237,15 +234,16 @@ SIMPLE_JWT = {
 }
 
 # --- Cache -------------------------------------------------------------------
-# Throttling counts in the cache: with several processes or replicas it must be
-# shared (Redis), otherwise each process counts on its own.
-REDIS_URL = env("REDIS_URL")
-if REDIS_URL:
-    CACHES = {
-        "default": {"BACKEND": "django.core.cache.backends.redis.RedisCache", "LOCATION": REDIS_URL}
+# Throttling counts live in the cache, so every process and replica must share
+# it. A table of the PostgreSQL database does that at no extra cost: only the
+# authentication endpoints write to it (see REST_FRAMEWORK below).
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "cache_entries",
+        "OPTIONS": {"MAX_ENTRIES": 50_000},
     }
-else:
-    CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
+}
 
 # --- E-mail ------------------------------------------------------------------
 EMAIL_BACKEND = env(
@@ -306,6 +304,3 @@ if IS_TEST:
     EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
     MEDIA_ROOT = Path(env("TEST_MEDIA_ROOT", "/tmp/residential-test-media"))
     NOTIFICATIONS["DELIVER_ON_COMMIT"] = False
-    # Hundreds of requests per test run come from the same client: only the
-    # throttles a test asks for (the authentication ones) apply.
-    REST_FRAMEWORK["DEFAULT_THROTTLE_CLASSES"] = []
