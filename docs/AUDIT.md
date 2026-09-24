@@ -4,6 +4,29 @@ Périmètre : tout le dépôt (`apps/`, `config/`, `scripts/`, `tests/`, `api-co
 Le déploiement Azure (ACR/ACA) n'est pas au cœur de cet audit ; la section 8 liste seulement ce qu'il
 faut prévoir dans le code dès maintenant pour que la phase de déploiement se passe bien.
 
+## 0. État au 24 septembre 2026 (après corrections)
+
+| # | Constat | État | Où |
+|---|---|---|---|
+| S1 | Sélection syndicat/propriété non vérifiée | **Corrigé** : `BaseAPIView` résout `self.property`, chaque `get_visible` filtre sur elle | `apps/common/views.py`, `tests/test_selection.py` |
+| S2 | Extension de stockage choisie par le client | **Corrigé** : extension et `Content-Type` suivent le format détecté | `apps/common/files/rules.py`, `models/attachments.py` |
+| S3 | Fichiers privés publics | **Corrigé** : liens signés utilisables tels quels (`<img src>`), permanents pour les images publiques, personnels et valables 12–24 h pour le reste ; conteneur Azure privé + SAS ; route `/media/` supprimée | `apps/common/files/`, `tests/test_file_links.py` |
+| S4 | Jetons non révocables | **Corrigé** : liste noire, `POST /auth/logout/`, révocation au changement de mot de passe et à la désactivation, lien de reset de 2 h | `apps/accounts/services/tokens.py`, `setup_links.py`, `tests/test_sessions.py` |
+| S5 | Throttling contournable | **Corrigé** : `NUM_PROXIES`, throttles globaux, limite de connexion par compte, cache Redis via `REDIS_URL` | `config/settings.py`, `apps/accounts/throttles.py` |
+| S6 | Secrets dans l'outbox | **Corrigé** : contenu effacé dès qu'un message est final, purge après 30 jours | `apps/notifications/services/delivery.py`, `retention.py` |
+| — | Corps JSON de 50 Mo en mémoire | **Corrigé** : 5 Mo | `config/settings.py` |
+| — | Effacement RGPD incomplet | **Corrigé** en partie : genre, langue, appareils, inbox, préférences. Reste à décider : conservation des pièces d'identité | `apps/accounts/services/status.py` |
+| — | Push en doublon | **Corrigé** : un message par lot de 100 destinataires | `apps/notifications/services/dispatcher.py` |
+| — | Secrets courts / `ENVIRONMENT` inconnu | **Corrigé** : refus de démarrer en production | `config/env.py` |
+| — | CI absente | **Corrigé** : ruff, migrations, schéma OpenAPI, pytest, contrats TS | `.github/workflows/ci.yml` |
+| — | Sondes de santé | **Ajouté** : `/healthz/`, `/readyz/` | `apps/common/health.py` |
+| — | Lisibilité | **Fait** : modules découpés par ressource (voir section 11) | — |
+
+Restent ouverts, parce qu'ils relèvent d'une décision produit ou de la phase déploiement :
+fuseau horaire par propriété (§5.1 ; en attendant, fixer `TIME_ZONE`), administrateurs en copie de
+tout (§5.2), clés d'idempotence (§5.5), suppression définitive vs archivage (§5.6), cache par requête
+d'`AccessService` (§6), mypy et couverture (§7), préparation ACA (§9).
+
 ## 1. Synthèse
 
 Le code est d'un niveau nettement supérieur à la moyenne : architecture en couches tenue partout
@@ -278,3 +301,28 @@ Ces points ne sont pas urgents, mais ils touchent le code et orientent la suite 
 | 10 | mypy progressif, couverture, tests de nombre de requêtes | S–M |
 
 S = moins d'une journée, M = quelques jours.
+
+## 11. Performance mesurée et refactor (après corrections)
+
+**orjson.** Sur une liste de 100 demandes de service, le rendu JSON de DRF prend 0,31 ms pour une
+requête de 32 ms ; orjson le fait en 0,03 ms. Le gain est réel (×10 sur le rendu) mais marginal sur la
+requête (~1 %). Il est intégré (`apps/common/json.py`, sortie identique octet pour octet à DRF, testée),
+sans dépendre de `drf-orjson-renderer`. Le temps d'une requête est dans les serializers et la base.
+
+**Requêtes SQL.** Sur toutes les listes du schéma, le nombre de requêtes reste constant quand le nombre
+de lignes augmente : pas de N+1. Les champs calculés utilisent des annotations et `AttachmentsField`
+charge les fichiers d'une page en une requête.
+
+**Découpage.** Un fichier = une responsabilité :
+
+| Avant | Après |
+|---|---|
+| `common/models.py` (modèles de base, règles de fichiers, pièces jointes, audit) | `common/models/` (`base`, `attachments`, `audit`) et `common/files/` (`rules`, `formats`, `service`, `links`, `delivery`, `storage`, `serializers`, `views`) |
+| `service_requests/services.py` (demande + tours) | `services/requests.py`, `services/rounds.py` (`RoundService`) |
+| `library/services.py` | `services/folders.py`, `services/documents.py` |
+| `surveys/services.py` | `services/surveys.py`, `services/participation.py` (`ParticipationService`) |
+| `accounts/services/accounts.py` (création … fermeture) | `accounts.py` + `status.py` (`AccountStatusService`) |
+| `accounts/serializers.py`, `properties/serializers.py` | paquets calqués sur `views/` |
+| `views.py` de `leasing`, `amenities`, `store`, `short_term_rental` | paquets `views/` par ressource |
+| `NotificationService.notify` (≈150 lignes) | étapes nommées : audience, inbox, push, e-mails, mise en file |
+| `config/settings.py` | sections nommées ; lecture de l'environnement dans `config/env.py`, OpenAPI dans `config/openapi.py` |

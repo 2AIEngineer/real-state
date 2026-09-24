@@ -18,13 +18,13 @@ uv run python manage.py runserver         # OpenAPI : /api/docs/ (en mode DEBUG)
 | Commande | Rôle |
 |---|---|
 | `uv run pytest` | Tests (PostgreSQL requis : les contraintes d'exclusion sont testées pour de vrai). Le profil de test est `config/settings_test.py`. |
-| `uv run ruff check .` / `uv run ruff format .` | Lint et formatage (100 colonnes). Le CI vérifie les deux. |
+| `uv run ruff check .` / `uv run ruff format .` | Lint et formatage (100 colonnes). Le CI (`.github/workflows/ci.yml`) vérifie les deux, ainsi que les migrations, le schéma OpenAPI et les tests. |
 | `python manage.py outbox_worker` | Relais de l'outbox : envoi des e-mails et des push, avec reprises et back-off. |
-| `python manage.py run_scheduled_jobs` | Expiration des baux, clôture des événements et sondages échus (idempotent, toutes les 15 min). |
+| `python manage.py run_scheduled_jobs` | Expiration des baux, clôture des événements et sondages échus, purge de l'outbox et des jetons de session expirés (idempotent, toutes les 15 min). |
 | `python manage.py purge_orphan_attachments` | Supprime les fichiers stockés sans ligne `Attachment` (quotidien). |
 
-Production : `scripts/startup.sh` migre puis lance `supervisord` (`web`, `outbox_worker`, `scheduled_jobs`).
-Toutes les routes sont préfixées par `/api/v1/`.
+Toutes les routes sont préfixées par `/api/v1/`. Sondes de la plateforme : `/healthz/` (processus vivant) et
+`/readyz/` (base joignable). Le déploiement (Azure Container Apps) est documenté à part.
 
 ## Organisation du code
 
@@ -38,8 +38,8 @@ apps/<module>/
 ├─ services/          les règles métier : un fichier par ressource (ou services.py si une seule)
 ├─ notices.py         ce que les gens sont prévenus (textes et destinataires des notifications)
 ├─ audit.py           les actions écrites dans le journal d'audit
-├─ serializers.py     la forme des entrées et des sorties, sans règle
-├─ views.py | views/  parse → appelle le service → rend la réponse
+├─ serializers.py | serializers/  la forme des entrées et des sorties, sans règle
+├─ views.py | views/  parse → appelle le service → rend la réponse (un module par ressource)
 ├─ urls.py
 └─ tests/             test_services.py (règles), test_api.py (HTTP)
 ```
@@ -66,7 +66,7 @@ apps/<module>/
 
 | App | Responsabilité |
 |---|---|
-| `common` | Noyau technique sans métier : erreurs, gestionnaire d'erreurs HTTP, vues de base (`BaseAPIView`, `UIConfigStepView`), schéma OpenAPI, modèles abstraits, helpers DB (`apply_changes`, `translate_integrity_errors`), fichiers (`attachments`) et journal (`audit`). |
+| `common` | Noyau technique sans métier : erreurs, gestionnaire d'erreurs HTTP, vues de base (`BaseAPIView`, `UIConfigStepView`), JSON (orjson), schéma OpenAPI, modèles abstraits, helpers DB (`apply_changes`, `translate_integrity_errors`), fichiers (`files/`), journal (`audit`) et sondes (`health`). |
 | `accounts` | Identité **et** autorisation : `User`, rôle unique, assignations (syndicat, propriété, bâtiment), `AccessService` (les faits : qui gère, qui travaille sur place, qui habite), inscription, mots de passe. |
 | `properties` | Référentiel : syndicats, promoteurs, propriétés, bâtiments, lots, registre de propriété, activation des modules par propriété (`FeatureGate`), navigation de configuration (`SyndicatService.list_reachable`, `PropertyService.list_reachable_in`) et statistiques du tableau de bord. |
 | `leasing` | Baux, occupants, états des lieux. |
@@ -113,9 +113,25 @@ with deleting("service request"):
 ```
 
 Une suppression qui contourne le service (ORM brut, une cascade non prévue) laisse ces fichiers orphelins ;
-`purge_orphan_attachments` les récupère. Les règles de chaque type de fichier (formats, nombre, taille)
-sont dans `apps/common/attachments/rules.py`. Le format est détecté d'après le contenu, jamais d'après
-l'extension.
+`purge_orphan_attachments` les récupère. Les règles de chaque type de fichier (formats, nombre, taille,
+public ou privé) sont dans `apps/common/files/rules.py`. Le format est détecté d'après le contenu, jamais
+d'après l'extension, et le fichier est stocké et servi sous ce format.
+
+### Lire un fichier
+
+Le champ `url` d'une pièce jointe s'utilise tel quel (`<img src>`, `<iframe>`, lien de téléchargement) :
+ni en-tête, ni appel supplémentaire. C'est un lien signé vers `GET /api/v1/files/<jeton>/`
+(`apps/common/files/links.py`) :
+
+- fichier **public** (logos, photos du catalogue, des équipements et des annonces de la marketplace) :
+  lien permanent, identique pour tous ;
+- fichier **privé** (tout le reste : pièces d'identité, justificatifs, documents) : lien personnel,
+  valable 12 à 24 h et identique pendant toute une fenêtre de 12 h (le navigateur le garde en cache).
+  Chaque réponse de l'API en redonne un frais : un client qui affiche ce que l'API renvoie n'a jamais à
+  gérer l'expiration. Le lien cesse de fonctionner si le compte est désactivé.
+
+En production, le conteneur Azure est privé : le lien redirige vers une URL SAS qui expire avec lui et
+impose le `Content-Type` et le `Content-Disposition` du fichier. En local, le fichier est servi directement.
 
 ### Autorisation
 
@@ -142,15 +158,21 @@ client choisit donc son syndicat puis sa propriété en trois étapes, chacune a
 | `dashboard` | + `X-Property-Id` | Toute route du tableau de bord. |
 
 Une fois la paire choisie, **toute requête de tableau de bord porte les trois** : `X-Syndicat-Id`,
-`X-Property-Id`, et `X-UI-Config-Step: dashboard`. La propriété ne circule jamais en paramètre d'URL ni
-dans un corps de requête ; le serveur n'a donc jamais à deviner dans quelle propriété il se trouve. Trois
-bases portent la règle :
+`X-Property-Id`, et `X-UI-Config-Step: dashboard`. La propriété sélectionnée vient toujours de ces
+en-têtes ; le serveur n'a donc jamais à deviner dans quelle propriété il se trouve. Trois bases portent la
+règle :
 
 | Base | Exige |
 |---|---|
 | `ApiMixin` + `APIView` (DRF) | rien — connexion, `/me/`, notifications, console d'administration |
 | `apps.common.views.UIConfigStepView` | `X-UI-Config-Step` égal à l'étape déclarée par la vue (`syndicat` ou `property`) |
 | `apps.common.views.BaseAPIView` | `X-Syndicat-Id`, `X-Property-Id`, `X-UI-Config-Step: dashboard` |
+
+`BaseAPIView` résout la sélection avant la vue : la propriété doit exister, être visible du compte et
+appartenir au syndicat choisi. La vue travaille ensuite avec `self.property`, qu'elle passe aux services ;
+ceux-ci cherchent chaque enregistrement *dans* cette propriété (`get_visible(prop=…)`). Un enregistrement
+d'une autre propriété répond 404, même à un compte qui gère les deux. Une route qui porte aussi la
+propriété dans son URL (`/properties/{id}/…`) exige qu'elle soit la propriété sélectionnée.
 
 La connexion (`POST /auth/token/`) renvoie le `SessionContext` que le client attend : `credentials` (les jetons),
 `ui_config` (mode de l'app, étape, syndicat et propriété choisis, modules activés) et `user` (identité, rôle,
@@ -172,5 +194,6 @@ le stock est réservé à la commande.
    explicitement les fichiers (`AttachmentService.delete_for_entity`) et les traces de notification
    (`delete_notification_traces`) du ou des types que le module possède.
 3. `serializers.py`, `views.py`, `urls.py` (à déclarer dans `config/urls.py`, l'app dans `INSTALLED_APPS`).
-   Une vue de tableau de bord hérite de `apps.common.views.BaseAPIView`.
+   Une vue de tableau de bord hérite de `apps.common.views.BaseAPIView` et passe `prop=self.property` au
+   `get_visible` de ses services, qui filtre sur cette propriété.
 4. `tests/test_services.py` pour les règles, `test_api.py` pour l'orchestration HTTP.
