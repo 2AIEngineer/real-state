@@ -8,6 +8,7 @@ from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter
 
 from apps.common.files.serializers import AttachmentSerializer
+from apps.common.idempotency import HEADER
 from apps.common.views import (
     PROPERTY_HEADER,
     STEP_HEADER,
@@ -47,6 +48,16 @@ def ui_config_step_header(step: str) -> OpenApiParameter:
     )
 
 
+def idempotency_key_header() -> OpenApiParameter:
+    return _header(
+        HEADER,
+        "Optional. A value generated once per intended action (a UUID) and reused on every "
+        "retry: a retry answers like the first request instead of repeating it.",
+        required=False,
+        type=OpenApiTypes.STR,
+    )
+
+
 _BASE_VIEWS = (ApiMixin, UIConfigStepView, BaseAPIView)
 
 
@@ -59,6 +70,8 @@ class UIConfigAwareAutoSchema(AutoSchema):
 
     def get_override_parameters(self):
         parameters = super().get_override_parameters()
+        if isinstance(self.view, ApiMixin) and self.method == "POST":
+            parameters = [*parameters, idempotency_key_header()]
         if isinstance(self.view, BaseAPIView):
             parameters = [
                 *parameters,

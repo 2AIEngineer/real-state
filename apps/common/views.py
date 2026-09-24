@@ -25,6 +25,7 @@ from rest_framework import serializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.common import idempotency
 from apps.common.enums import UIConfigStep
 from apps.common.exceptions import InvalidInput, NotFound
 from apps.common.pagination import StandardPagination
@@ -35,9 +36,28 @@ STEP_HEADER = "X-UI-Config-Step"
 
 
 class ApiMixin:
-    """Validating input, reading the selection headers, rendering output."""
+    """Validating input, reading the selection headers, rendering output, and
+    answering the retries of a POST sent with an `Idempotency-Key`."""
 
     pagination_class = StandardPagination
+    _idempotency_claim = None
+
+    # ------------------------------------------------------------ idempotency
+    def initial(self, request, *args, **kwargs) -> None:
+        super().initial(request, *args, **kwargs)  # authentication first
+        self._idempotency_claim = idempotency.claim(request)
+
+    def handle_exception(self, exc):
+        if isinstance(exc, idempotency.Replay):
+            return exc.response
+        return super().handle_exception(exc)
+
+    def finalize_response(self, request, response, *args, **kwargs):
+        response = super().finalize_response(request, response, *args, **kwargs)
+        if self._idempotency_claim is not None:
+            idempotency.settle(self._idempotency_claim, response)
+            self._idempotency_claim = None
+        return response
 
     # ------------------------------------------------------------ input / output
     def parse(

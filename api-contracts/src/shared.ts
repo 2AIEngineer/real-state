@@ -28,6 +28,14 @@ export type ApiError = z.infer<typeof apiErrorSchema>;
  * `endpoints[...].uiConfigStep`).
  */
 export const uiConfigSteps = ["logged_in", "syndicat", "property", "dashboard"] as const;
+
+/**
+ * Optional header of every POST: a value generated once per intended action
+ * (`crypto.randomUUID()`) and reused on each retry of that action. A retry is
+ * answered like the first request (header `Idempotent-Replayed: true`) instead
+ * of creating a second record.
+ */
+export const IDEMPOTENCY_KEY_HEADER = "Idempotency-Key";
 export type UIConfigStepName = (typeof uiConfigSteps)[number];
 
 /** Error codes the backend can return (the list may grow: codes are strings). */
@@ -47,6 +55,7 @@ export const knownErrorCodes = [
   "email_taken",
   "feature_disabled",
   "folder_not_empty",
+  "idempotency_key_reused",
   "insufficient_stock",
   "invalid",
   "invalid_password",
@@ -76,6 +85,7 @@ export const knownErrorCodes = [
   "property_inactive",
   "property_outside_syndicat",
   "reference_taken",
+  "request_in_progress",
   "resource_in_use",
   "role_takes_no_assignment",
   "role_takes_no_unit",

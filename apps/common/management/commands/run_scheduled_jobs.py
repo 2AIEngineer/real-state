@@ -8,6 +8,7 @@ import logging
 from django.core.management.base import BaseCommand, CommandError
 
 from apps.accounts.services.tokens import TokenService
+from apps.common import idempotency
 from apps.events.services import EventService
 from apps.leasing.services import LeaseService
 from apps.notifications.services import OutboxRetention
@@ -26,6 +27,7 @@ class Command(BaseCommand):
             "surveys closed": SurveyService.close_expired,
             "outbox messages purged": OutboxRetention.purge,
             "expired session tokens flushed": TokenService.flush_expired,
+            "idempotency keys purged": idempotency.purge_expired,
         }
         failures = []
         for label, job in jobs.items():

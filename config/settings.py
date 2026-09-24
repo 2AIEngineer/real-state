@@ -9,6 +9,8 @@ cannot run safely without is missing.
 from datetime import timedelta
 from pathlib import Path
 
+from corsheaders.defaults import default_headers
+
 from config.env import (
     env,
     env_bool,
@@ -181,6 +183,15 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
 
 # --- API ---------------------------------------------------------------------
 CORS_ALLOWED_ORIGINS = env_list("CORS_ALLOWED_ORIGINS", "http://localhost:5173")
+# A browser only sends the headers the API declares: the selection and idempotency ones too.
+CORS_ALLOW_HEADERS = (
+    *default_headers,
+    "x-syndicat-id",
+    "x-property-id",
+    "x-ui-config-step",
+    "idempotency-key",
+)
+CORS_EXPOSE_HEADERS = ("idempotent-replayed",)
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": ["rest_framework_simplejwt.authentication.JWTAuthentication"],
