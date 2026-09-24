@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from apps.common.serializers import UploadFilesSerializer
 from apps.common.views import BaseAPIView
 from apps.surveys import serializers as s
-from apps.surveys.services import QuestionInput, SurveyService
+from apps.surveys.services import ParticipationService, QuestionInput, SurveyService
 
 
 def _questions(raw) -> list[QuestionInput] | None:
@@ -19,7 +19,7 @@ class _AnsweredSurveys:
 
     def get_serializer_context(self) -> dict:
         context = super().get_serializer_context()
-        context["answered_survey_ids"] = SurveyService.answered_ids(user=self.request.user)
+        context["answered_survey_ids"] = ParticipationService.answered_ids(user=self.request.user)
         return context
 
 
@@ -122,7 +122,7 @@ class SurveyResponseView(BaseAPIView):
         )
         data = self.parse(s.SurveyResponseSerializer)
         answers = {a["question_id"]: a["option_id"] for a in data["answers"]}
-        response = SurveyService.respond(actor=request.user, survey=survey, answers=answers)
+        response = ParticipationService.respond(actor=request.user, survey=survey, answers=answers)
         return self.render(
             s.SurveyParticipationSerializer, response, status=status.HTTP_201_CREATED
         )
@@ -136,7 +136,8 @@ class SurveyResultsView(BaseAPIView):
             actor=request.user, prop=self.property, survey_id=survey_id
         )
         return self.render(
-            s.SurveyResultsSerializer, SurveyService.results(actor=request.user, survey=survey)
+            s.SurveyResultsSerializer,
+            ParticipationService.results(actor=request.user, survey=survey),
         )
 
 

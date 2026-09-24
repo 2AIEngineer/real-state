@@ -31,7 +31,7 @@ from apps.marketplace.models import ListingCategory
 from apps.marketplace.services import ListingService
 from apps.properties.models import UnitOwnership
 from apps.service_requests.models import ServiceRequestCategory
-from apps.service_requests.services import ServiceRequestService
+from apps.service_requests.services import RoundService, ServiceRequestService
 from apps.short_term_rental.services import ShortTermRentalMemberInput, ShortTermRentalService
 from apps.store.services import OrderLine, OrderService, ProductService
 from apps.surveys.services import QuestionInput, SurveyService
@@ -93,7 +93,7 @@ def _seed(world) -> dict:
         category=ServiceRequestCategory.PLUMBING,
         files=[f.png()],
     )
-    ServiceRequestService.assign(actor=world.manager, sr=request, resolvers=[world.maintenance])
+    RoundService.assign(actor=world.manager, sr=request, resolvers=[world.maintenance])
     room = ChatService.open_room(actor=world.tenant, kind="service_request", object_id=request.pk)
     message = ChatService.post(actor=world.tenant, room=room, body="Still leaking")
     work_order = WorkOrderService.create(actor=world.manager, prop=world.prop, title="Repaint hall")

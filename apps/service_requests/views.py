@@ -7,7 +7,7 @@ from apps.common.serializers import ActionReasonSerializer, UploadFilesSerialize
 from apps.common.views import BaseAPIView
 from apps.properties.services import UnitService
 from apps.service_requests import serializers as s
-from apps.service_requests.services import Feedback, ServiceRequestService
+from apps.service_requests.services import Feedback, RoundService, ServiceRequestService
 
 
 @extend_schema(tags=["Service requests"])
@@ -98,7 +98,7 @@ class AssignmentListView(BaseAPIView):
         )
         return self.render(
             s.ServiceRequestAssignmentSerializer,
-            ServiceRequestService.assignments(actor=request.user, sr=sr),
+            RoundService.assignments(actor=request.user, sr=sr),
             many=True,
         )
 
@@ -112,7 +112,7 @@ class AssignmentListView(BaseAPIView):
         )
         data = self.parse(s.ServiceRequestAssignSerializer)
         resolvers = AccountService.resolve_many(user_ids=data["resolver_ids"], field="resolver_ids")
-        created = ServiceRequestService.assign(actor=request.user, sr=sr, resolvers=resolvers)
+        created = RoundService.assign(actor=request.user, sr=sr, resolvers=resolvers)
         return self.render(
             s.ServiceRequestAssignmentSerializer, created, many=True, status=status.HTTP_201_CREATED
         )
@@ -130,7 +130,7 @@ class ResolveView(BaseAPIView):
         data = self.parse(s.ServiceRequestResolveSerializer)
         return self.render(
             s.ServiceRequestAssignmentSerializer,
-            ServiceRequestService.resolve(actor=request.user, sr=sr, **data),
+            RoundService.resolve(actor=request.user, sr=sr, **data),
         )
 
 
@@ -144,9 +144,7 @@ class FeedbackView(BaseAPIView):
         data = self.parse(s.ServiceRequestFeedbackSerializer)
         return self.render(
             s.ServiceRequestSerializer,
-            ServiceRequestService.give_feedback(
-                actor=request.user, sr=sr, feedback=Feedback(**data)
-            ),
+            RoundService.give_feedback(actor=request.user, sr=sr, feedback=Feedback(**data)),
         )
 
 

@@ -13,7 +13,7 @@ from apps.common.files.service import AttachmentService
 from apps.common.models import Attachment
 from apps.notifications.models import InboxNotification, RecipientSnapshot
 from apps.service_requests.models import ServiceRequest, ServiceRequestCategory
-from apps.service_requests.services import ServiceRequestService
+from apps.service_requests.services import RoundService, ServiceRequestService
 from tests import factories as f
 
 pytestmark = pytest.mark.django_db
@@ -44,8 +44,8 @@ def test_deleting_a_row_takes_its_own_files_with_it(world, request_with_files):
 def test_deleting_a_row_takes_the_files_of_what_it_cascades(world, request_with_files):
     """The files of a round hang on the assignment, which the request cascades to."""
     sr = request_with_files
-    ServiceRequestService.assign(actor=world.manager, sr=sr, resolvers=[world.maintenance])
-    ServiceRequestService.resolve(actor=world.maintenance, sr=sr, files=[f.png()])
+    RoundService.assign(actor=world.manager, sr=sr, resolvers=[world.maintenance])
+    RoundService.resolve(actor=world.maintenance, sr=sr, files=[f.png()])
     assert Attachment.objects.filter(entity_type=EntityType.SERVICE_REQUEST_RESOLUTION).exists()
 
     ServiceRequestService.delete(actor=world.manager, sr=sr)

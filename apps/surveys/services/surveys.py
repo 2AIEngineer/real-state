@@ -2,8 +2,8 @@
 
     DRAFT ──publish──▶ PUBLISHED ──close (or closes_at reached)──▶ CLOSED
 
-Questions are editable in DRAFT only. Each user participates once, answering
-every question in one submission.
+Questions are editable in DRAFT only. Answering and results are in
+`participation.py`.
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ from django.db import transaction
 from django.db.models import Count, Prefetch, QuerySet
 from django.utils import timezone
 
-from apps.common.db import apply_changes, deleting, translate_integrity_errors
+from apps.common.db import apply_changes, deleting
 from apps.common.exceptions import (
     BusinessRuleViolation,
     InvalidInput,
@@ -30,14 +30,12 @@ from apps.notifications.services import SnapshotService, delete_notification_tra
 from apps.properties.enums import Feature
 from apps.properties.models import Property
 from apps.properties.services import FeatureGate
-from apps.surveys import errors, notices
+from apps.surveys import notices
 from apps.surveys.audit import SurveyAudit
 from apps.surveys.models import (
     Survey,
-    SurveyAnswer,
     SurveyOption,
     SurveyQuestion,
-    SurveyResponse,
     SurveyStatus,
 )
 from apps.surveys.policies import SurveyPolicy
@@ -72,6 +70,12 @@ def _prefetched() -> QuerySet[Survey]:
     )
 
 
+def effective_status(survey: Survey, now: dt.datetime) -> str:
+    if survey.status == SurveyStatus.PUBLISHED and survey.closes_at and survey.closes_at <= now:
+        return SurveyStatus.CLOSED
+    return survey.status
+
+
 class SurveyService:
     # ---------------------------------------------------------------- queries
     @staticmethod
@@ -92,20 +96,6 @@ class SurveyService:
         if survey is None or not SurveyPolicy.can_view(actor, survey):
             raise NotFound("Survey not found.")
         return survey
-
-    @staticmethod
-    def answered_ids(*, user) -> set[int]:
-        return set(SurveyResponse.objects.filter(user=user).values_list("survey_id", flat=True))
-
-    @staticmethod
-    def has_answered(user, survey: Survey) -> bool:
-        return SurveyResponse.objects.filter(survey=survey, user=user).exists()
-
-    @staticmethod
-    def _effective_status(survey: Survey, now: dt.datetime) -> str:
-        if survey.status == SurveyStatus.PUBLISHED and survey.closes_at and survey.closes_at <= now:
-            return SurveyStatus.CLOSED
-        return survey.status
 
     # -------------------------------------------------------------- authoring
     @staticmethod
@@ -269,61 +259,3 @@ class SurveyService:
             AttachmentService.delete_for_entity(EntityType.SURVEY, survey.pk)
             delete_notification_traces(survey)
             survey.delete()
-
-    # ----------------------------------------------------------- participation
-    @staticmethod
-    @transaction.atomic
-    def respond(*, actor, survey: Survey, answers: dict[int, int]) -> SurveyResponse:
-        """`answers` maps question id -> selected option id; all questions are required."""
-        survey = Survey.objects.select_related("property").get(pk=survey.pk)
-        if SurveyService._effective_status(survey, timezone.now()) != SurveyStatus.PUBLISHED:
-            raise InvalidTransition("This survey is not open for answers.")
-        if not SurveyPolicy.can_respond(actor, survey):
-            raise PermissionDenied("This survey is not addressed to you.")
-        questions = {q.pk: q for q in survey.questions.prefetch_related("options")}
-        if set(answers) != set(questions):
-            raise InvalidInput("Every question must be answered exactly once.", field="answers")
-        for question_id, option_id in answers.items():
-            if option_id not in {o.pk for o in questions[question_id].options.all()}:
-                raise InvalidInput(
-                    f"Option {option_id} does not belong to question {question_id}.",
-                    field="answers",
-                )
-        with translate_integrity_errors({"unique_survey_participation": errors.already_answered}):
-            response = SurveyResponse.objects.create(survey=survey, user=actor)
-        SurveyAnswer.objects.bulk_create(
-            [
-                SurveyAnswer(response=response, question_id=qid, selected_option_id=oid)
-                for qid, oid in answers.items()
-            ]
-        )
-        return response
-
-    @staticmethod
-    def results(*, actor, survey: Survey) -> dict:
-        """Aggregated counts. Managers anytime; the people it is addressed to once it is closed."""
-        closed = SurveyService._effective_status(survey, timezone.now()) == SurveyStatus.CLOSED
-        if not SurveyPolicy.can_view_results(actor, survey, is_closed=closed):
-            raise PermissionDenied("Results are available once the survey is closed.")
-        counts = dict(
-            SurveyAnswer.objects.filter(response__survey=survey)
-            .values_list("selected_option_id")
-            .annotate(n=Count("id"))
-            .values_list("selected_option_id", "n")
-        )
-        return {
-            "survey_id": survey.pk,
-            "participants": survey.responses.count(),
-            "recipients": SnapshotService.count(survey),
-            "questions": [
-                {
-                    "id": q.pk,
-                    "text": q.text,
-                    "options": [
-                        {"id": o.pk, "text": o.text, "votes": counts.get(o.pk, 0)}
-                        for o in q.options.all()
-                    ],
-                }
-                for q in survey.questions.prefetch_related("options")
-            ],
-        }

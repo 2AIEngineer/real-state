@@ -7,7 +7,7 @@ from apps.service_requests.models import (
     ServiceRequestCategory,
     ServiceRequestStatus,
 )
-from apps.service_requests.services import Feedback, ServiceRequestService
+from apps.service_requests.services import Feedback, RoundService, ServiceRequestService
 from tests import factories as f
 
 pytestmark = pytest.mark.django_db
@@ -56,14 +56,12 @@ class TestSubmission:
 class TestLifecycle:
     def test_full_round_trip(self, world):
         sr = submit(world)
-        ServiceRequestService.assign(actor=world.manager, sr=sr, resolvers=[world.maintenance])
+        RoundService.assign(actor=world.manager, sr=sr, resolvers=[world.maintenance])
         assert world.maintenance.pk in notified("service_request.assigned")
-        ServiceRequestService.resolve(
-            actor=world.maintenance, sr=sr, note="Seal replaced", files=[f.png()]
-        )
+        RoundService.resolve(actor=world.maintenance, sr=sr, note="Seal replaced", files=[f.png()])
         sr.refresh_from_db()
         assert sr.status == ServiceRequestStatus.RESOLVED
-        sr = ServiceRequestService.give_feedback(
+        sr = RoundService.give_feedback(
             actor=world.tenant, sr=sr, feedback=Feedback(RequesterNotice.DONE, rating=5)
         )
         assert sr.status == ServiceRequestStatus.CLOSED
@@ -71,51 +69,47 @@ class TestLifecycle:
 
     def test_not_done_reopens_a_new_round(self, world):
         sr = submit(world)
-        ServiceRequestService.assign(actor=world.manager, sr=sr, resolvers=[world.maintenance])
-        ServiceRequestService.resolve(actor=world.maintenance, sr=sr)
-        sr = ServiceRequestService.give_feedback(
+        RoundService.assign(actor=world.manager, sr=sr, resolvers=[world.maintenance])
+        RoundService.resolve(actor=world.maintenance, sr=sr)
+        sr = RoundService.give_feedback(
             actor=world.tenant, sr=sr, feedback=Feedback(RequesterNotice.NOT_DONE, rating=2)
         )
         assert sr.status == ServiceRequestStatus.OPEN and sr.current_round == 2
-        ServiceRequestService.assign(actor=world.manager, sr=sr, resolvers=[world.maintenance])
+        RoundService.assign(actor=world.manager, sr=sr, resolvers=[world.maintenance])
         assert sr.assignments.filter(resolver=world.maintenance).count() == 2
 
     def test_request_is_resolved_only_when_every_resolver_is_done(self, world):
         second = f.make_user()
         f.assign_role(second, "maintenance", world.prop)
         sr = submit(world)
-        ServiceRequestService.assign(
-            actor=world.manager, sr=sr, resolvers=[world.maintenance, second]
-        )
-        ServiceRequestService.resolve(actor=world.maintenance, sr=sr)
+        RoundService.assign(actor=world.manager, sr=sr, resolvers=[world.maintenance, second])
+        RoundService.resolve(actor=world.maintenance, sr=sr)
         sr.refresh_from_db()
         assert sr.status == ServiceRequestStatus.IN_PROGRESS
 
     def test_resolver_must_hold_maintenance_role(self, world):
         with pytest.raises(InvalidInput):
-            ServiceRequestService.assign(
-                actor=world.manager, sr=submit(world), resolvers=[world.security]
-            )
+            RoundService.assign(actor=world.manager, sr=submit(world), resolvers=[world.security])
 
     def test_only_assigned_resolver_resolves(self, world):
         sr = submit(world)
-        ServiceRequestService.assign(actor=world.manager, sr=sr, resolvers=[world.maintenance])
+        RoundService.assign(actor=world.manager, sr=sr, resolvers=[world.maintenance])
         with pytest.raises(PermissionDenied):
-            ServiceRequestService.resolve(actor=world.manager, sr=sr)
+            RoundService.resolve(actor=world.manager, sr=sr)
 
     def test_only_requester_gives_feedback(self, world):
         sr = submit(world)
-        ServiceRequestService.assign(actor=world.manager, sr=sr, resolvers=[world.maintenance])
-        ServiceRequestService.resolve(actor=world.maintenance, sr=sr)
+        RoundService.assign(actor=world.manager, sr=sr, resolvers=[world.maintenance])
+        RoundService.resolve(actor=world.maintenance, sr=sr)
         with pytest.raises(PermissionDenied):
-            ServiceRequestService.give_feedback(
+            RoundService.give_feedback(
                 actor=world.co_tenant, sr=sr, feedback=Feedback(RequesterNotice.DONE)
             )
 
     def test_cancelled_request_cannot_be_assigned(self, world):
         sr = ServiceRequestService.cancel(actor=world.tenant, sr=submit(world))
         with pytest.raises(InvalidTransition):
-            ServiceRequestService.assign(actor=world.manager, sr=sr, resolvers=[world.maintenance])
+            RoundService.assign(actor=world.manager, sr=sr, resolvers=[world.maintenance])
 
     def test_visibility(self, world):
         sr = submit(world)
@@ -128,7 +122,7 @@ class TestLifecycle:
         assert list(
             ServiceRequestService.list_visible(actor=world.manager, property_id=world.prop.pk)
         ) == [sr]
-        ServiceRequestService.assign(actor=world.manager, sr=sr, resolvers=[world.maintenance])
+        RoundService.assign(actor=world.manager, sr=sr, resolvers=[world.maintenance])
         assert list(
             ServiceRequestService.list_visible(actor=world.maintenance, property_id=world.prop.pk)
         ) == [sr]

@@ -33,7 +33,7 @@ from apps.properties.services import (
 from apps.store.models import Product
 from apps.store.services import OrderLine, OrderService, ProductService
 from apps.surveys.models import Survey
-from apps.surveys.services import QuestionInput, SurveyService
+from apps.surveys.services import ParticipationService, QuestionInput, SurveyService
 from apps.visitors.models import Visitor
 from apps.visitors.services import VisitorService
 from tests import factories as f
@@ -175,7 +175,7 @@ class TestFeatureModules:
         )
         SurveyService.publish(actor=world.manager, survey=survey)
         question = survey.questions.get()
-        SurveyService.respond(
+        ParticipationService.respond(
             actor=world.owner, survey=survey, answers={question.pk: question.options.first().pk}
         )
         with pytest.raises(BusinessRuleViolation) as exc:
@@ -245,7 +245,7 @@ class TestTransactionalRecords:
         from apps.chat.services import ChatService
         from apps.notifications.models import InboxNotification
         from apps.service_requests.models import ServiceRequest, ServiceRequestCategory
-        from apps.service_requests.services import ServiceRequestService
+        from apps.service_requests.services import RoundService, ServiceRequestService
 
         sr = ServiceRequestService.submit(
             actor=world.tenant,
@@ -256,8 +256,8 @@ class TestTransactionalRecords:
             category=ServiceRequestCategory.OTHER,
             files=[f.png()],
         )
-        ServiceRequestService.assign(actor=world.manager, sr=sr, resolvers=[world.maintenance])
-        ServiceRequestService.resolve(actor=world.maintenance, sr=sr, files=[f.png()])
+        RoundService.assign(actor=world.manager, sr=sr, resolvers=[world.maintenance])
+        RoundService.resolve(actor=world.maintenance, sr=sr, files=[f.png()])
         room = ChatService.open_room(actor=world.tenant, kind="service_request", object_id=sr.pk)
         ChatService.post(actor=world.tenant, room=room, media=f.pdf())
         assert InboxNotification.objects.filter(
@@ -426,12 +426,12 @@ class TestTransactionalRecords:
     def test_chat_message_deletion(self, world):
         from apps.chat.models import ChatMessage
         from apps.chat.services import ChatService
-        from apps.service_requests.services import ServiceRequestService
+        from apps.service_requests.services import RoundService, ServiceRequestService
 
         sr = ServiceRequestService.submit(
             actor=world.tenant, prop=world.prop, title="d", description="d", category="other"
         )
-        ServiceRequestService.assign(actor=world.manager, sr=sr, resolvers=[world.maintenance])
+        RoundService.assign(actor=world.manager, sr=sr, resolvers=[world.maintenance])
         room = ChatService.open_room(actor=world.tenant, kind="service_request", object_id=sr.pk)
         message = ChatService.post(actor=world.tenant, room=room, body="oops", media=f.png())
 
