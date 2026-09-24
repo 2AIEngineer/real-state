@@ -1,9 +1,10 @@
 """Azure Blob storage for attachments: a private container, read through short SAS URLs.
 
 The container is never public. A file is read through the signed link of
-`links.py`, which redirects to a SAS URL expiring with that link; the SAS also
-fixes the `Content-Type` and `Content-Disposition` the blob is served with, so
-a stored file is always shown as the format it was detected as.
+`links.py`, which redirects to a short-lived SAS URL (the browser follows it at
+once; the client never sees it). The SAS also fixes the `Content-Type` and
+`Content-Disposition` the blob is served with, so a stored file is always
+shown as the format it was detected as.
 """
 
 from __future__ import annotations
@@ -38,7 +39,7 @@ class AzureFileStorage(AzureStorage):
         return f"{self.client.get_blob_client(self._get_valid_path(name)).url}?{sas}"
 
     def _delegation_key(self, expires_at: int):
-        # One key per link window (managed identity, no account key): asking
+        # One key per storage URL window (managed identity, no account key): asking
         # Azure AD for a key on every read would cost a round trip each time.
         return _cached_delegation_key(self, expires_at)
 

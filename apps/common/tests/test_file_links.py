@@ -1,11 +1,13 @@
-"""Signed links: usable as they are, personal for private files, bounded in time."""
+"""Signed links: usable as they are, personal for private files, never expiring on a timer."""
 
 import time
+from unittest import mock
 
 import pytest
 from django.utils import timezone
 from rest_framework.test import APIClient
 
+from apps.accounts.services.passwords import PasswordService
 from apps.common.files import links
 from apps.common.files.rules import EntityType
 from apps.common.files.service import AttachmentService
@@ -45,10 +47,13 @@ def test_a_file_is_served_as_its_detected_format_whatever_its_name(world):
     assert response["Content-Type"] == "application/pdf"
 
 
-def test_a_private_link_is_stable_within_a_window(world):
+def test_a_private_link_never_changes_nor_expires(world):
     attachment = attach(world, EntityType.SERVICE_REQUEST, 1, f.pdf())
+    path = links.path_of(attachment, world.tenant)
 
-    assert links.path_of(attachment, world.tenant) == links.path_of(attachment, world.tenant)
+    with mock.patch("time.time", return_value=time.time() + 365 * 24 * 3600):
+        assert links.path_of(attachment, world.tenant) == path
+        assert get(path).status_code == 200
 
 
 def test_a_private_link_is_personal(world):
@@ -66,18 +71,9 @@ def test_a_public_link_never_expires_and_is_the_same_for_everyone(world):
     assert get(path)["Cache-Control"].startswith("public, max-age=")
 
 
-def test_an_expired_link_is_refused(world):
-    attachment = attach(world, EntityType.SERVICE_REQUEST, 1, f.pdf())
-    token = links.token_of(links.FileLink(attachment.pk, world.tenant.pk, int(time.time()) - 1))
-
-    response = get(f"/api/v1/files/{token}/")
-
-    assert response.status_code == 403 and response.json()["error"]["code"] == "link_expired"
-
-
 def test_a_tampered_link_is_unknown(world):
     attachment = attach(world, EntityType.SERVICE_REQUEST, 1, f.pdf())
-    token = links.token_of(links.FileLink(attachment.pk, world.tenant.pk, 2**40))
+    token = links.token_of(links.FileLink(attachment.pk, world.tenant.pk))
     forged = token.replace(str(world.tenant.pk), str(world.manager.pk), 1)
 
     assert get(f"/api/v1/files/{forged}/").status_code == 404
@@ -92,6 +88,22 @@ def test_a_link_dies_with_the_reader_account(world):
     )
 
     assert get(path).status_code == 404
+
+
+def test_a_link_dies_when_the_reader_changes_password(world):
+    attachment = attach(world, EntityType.SERVICE_REQUEST, 1, f.pdf())
+    world.tenant.set_password("Old-Passw0rd!x")
+    world.tenant.save()
+    path = links.path_of(attachment, world.tenant)
+    PasswordService.change_password(
+        actor=world.tenant,
+        user=world.tenant,
+        current_password="Old-Passw0rd!x",
+        new_password="N3w-Passw0rd!zz",
+    )
+
+    assert get(path).status_code == 404
+    assert get(links.path_of(attachment, world.tenant)).status_code == 200
 
 
 def test_stored_files_are_not_served_by_path(world):
@@ -111,3 +123,20 @@ def test_api_responses_hand_out_signed_links(api, world):
 
     assert url.startswith("http://testserver/api/v1/files/")
     assert get(url.removeprefix("http://testserver")).status_code == 200
+
+
+def test_with_a_storage_service_the_link_redirects_to_a_short_storage_url(world, monkeypatch):
+    attachment = attach(world, EntityType.SERVICE_REQUEST, 1, f.pdf("scan.pdf"))
+    signed = {}
+
+    def signed_url(name, **options):
+        signed.update(options)
+        return "https://acct.blob.core.windows.net/files/x.pdf?sig=abc"
+
+    monkeypatch.setattr(attachment.file.storage, "signed_url", signed_url, raising=False)
+
+    response = get(links.path_of(attachment, world.tenant))
+
+    assert response.status_code == 302 and response["Location"].endswith("?sig=abc")
+    assert signed["content_type"] == "application/pdf"
+    assert signed["expires_at"] - time.time() > 3600  # the browser follows it at once

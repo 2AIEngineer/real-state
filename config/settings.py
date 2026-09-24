@@ -173,11 +173,6 @@ else:
         "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
     }
 
-FILES = {
-    # A private link stays the same for a window, and is valid for one to two
-    # windows: long enough for any page, short enough to leak little.
-    "LINK_WINDOW_HOURS": env_int("FILES_LINK_WINDOW_HOURS", 12),
-}
 
 # A request body other than files (JSON, form fields) is read in memory: keep it
 # small. Files have their own limits, per kind, in `apps.common.files.rules`.

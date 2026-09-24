@@ -7,9 +7,16 @@ from urllib.parse import quote
 
 from django.http import FileResponse, HttpResponse, HttpResponseRedirect
 
-from apps.common.files.links import FileLink, expiry_for
+from apps.common.files.links import FileLink
 from apps.common.files.rules import SHOWN_INLINE
 from apps.common.models import Attachment
+
+# The storage URL a link redirects to (Azure SAS) is internal and short-lived:
+# the browser follows it at once. Its expiry is rounded to the hour so the same
+# redirect is handed out for a while and the browser can cache it.
+STORAGE_URL_WINDOW = 3600
+# Stored names are random and never rewritten: what a link points to never changes.
+FILE_MAX_AGE = 7 * 24 * 3600
 
 
 def content_disposition(attachment: Attachment) -> str:
@@ -19,12 +26,13 @@ def content_disposition(attachment: Attachment) -> str:
 
 
 def respond(attachment: Attachment, link: FileLink) -> HttpResponse:
-    now = int(time.time())
-    expires_at = link.expires_at or expiry_for(now)
     storage = attachment.file.storage
     disposition = content_disposition(attachment)
+    scope = "public" if link.is_public else "private"
 
     if hasattr(storage, "signed_url"):
+        now = int(time.time())
+        expires_at = (now // STORAGE_URL_WINDOW + 2) * STORAGE_URL_WINDOW
         response: HttpResponse = HttpResponseRedirect(
             storage.signed_url(
                 attachment.file.name,
@@ -33,12 +41,11 @@ def respond(attachment: Attachment, link: FileLink) -> HttpResponse:
                 content_disposition=disposition,
             )
         )
-    else:
-        response = FileResponse(attachment.file.open("rb"), content_type=attachment.mime_type)
-        response["Content-Disposition"] = disposition
+        # Kept no longer than the storage URL it points to stays valid.
+        response["Cache-Control"] = f"{scope}, max-age={expires_at - now - 60}"
+        return response
 
-    # Stored names are random and never rewritten: the content behind a link
-    # never changes, so the browser keeps it for as long as the link is valid.
-    scope = "public" if link.is_public else "private"
-    response["Cache-Control"] = f"{scope}, max-age={max(expires_at - now, 0)}"
+    response = FileResponse(attachment.file.open("rb"), content_type=attachment.mime_type)
+    response["Content-Disposition"] = disposition
+    response["Cache-Control"] = f"{scope}, max-age={FILE_MAX_AGE}"
     return response

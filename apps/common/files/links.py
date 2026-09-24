@@ -1,26 +1,24 @@
 """Links to stored files that work as they are: in an `<img src>`, an `<iframe>`, a download.
 
-The client never sends a header nor fetches anything first: the URL carries its
-own signature.
+The client never sends a header, never fetches anything first, and never
+handles an expiry: the URL carries its own signature and does not expire.
 
-- A **public** file (see `rules.py`) has a link that never changes nor expires.
-- A **private** file has a link personal to the reader, valid for a bounded
-  time. The expiry is rounded up to a time window, so the link stays the same
-  for the whole window: the browser caches the file, and two API calls in a row
-  hand out the same URL. Any later API response carries a fresh link, so a
-  client that renders what the API returns never handles expiry itself.
+- A **public** file (see `rules.py`) has one link, the same for everyone.
+- A **private** file has a link personal to its reader. It stays valid as long
+  as the reader's account does: it stops working when the account is
+  deactivated or its password changes (the moments a stolen session is cut,
+  see `apps.accounts.services.tokens`), and never on a timer.
 
-A link names the attachment, the reader and the end of validity, signed with
-the project's secret: it cannot be forged, and it stops working when it expires
-or when the reader's account is deactivated.
+A link names the attachment and, for a private file, the reader and the date
+of their last password change, all signed with the project's secret: it
+cannot be forged nor transferred to another attachment.
 """
 
 from __future__ import annotations
 
-import time
 from dataclasses import dataclass
 
-from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.core import signing
 from django.urls import reverse
 
@@ -34,33 +32,28 @@ _signer = signing.Signer(salt="apps.common.files.links")
 class FileLink:
     attachment_id: int
     reader_id: int | None = None  # None: public file
-    expires_at: int | None = None  # epoch seconds; None: public file
+    password_stamp: int = 0  # the reader's last password change, epoch seconds
 
     @property
     def is_public(self) -> bool:
         return self.reader_id is None
 
 
-def window_seconds() -> int:
-    return int(settings.FILES["LINK_WINDOW_HOURS"]) * 3600
-
-
-def expiry_for(now: float) -> int:
-    """End of validity of a link issued at `now`: between one and two windows ahead."""
-    window = window_seconds()
-    return (int(now) // window + 2) * window
+def _password_stamp(user) -> int:
+    changed = getattr(user, "password_changed_at", None)
+    return int(changed.timestamp()) if changed else 0
 
 
 def issue(attachment: Attachment, reader) -> FileLink:
     if RULES[attachment.entity_type].public or reader is None or not reader.is_authenticated:
         return FileLink(attachment.pk)
-    return FileLink(attachment.pk, reader.pk, expiry_for(time.time()))
+    return FileLink(attachment.pk, reader.pk, _password_stamp(reader))
 
 
 def token_of(link: FileLink) -> str:
     if link.is_public:
         return _signer.sign(str(link.attachment_id))
-    return _signer.sign(f"{link.attachment_id}.{link.reader_id}.{link.expires_at}")
+    return _signer.sign(f"{link.attachment_id}.{link.reader_id}.{link.password_stamp}")
 
 
 def path_of(attachment: Attachment, reader) -> str:
@@ -68,15 +61,11 @@ def path_of(attachment: Attachment, reader) -> str:
 
 
 class InvalidLink(Exception):
-    pass
+    """Forged, damaged, or revoked (reader deactivated or password changed)."""
 
 
-class ExpiredLink(Exception):
-    pass
-
-
-def read(token: str, *, now: float | None = None) -> FileLink:
-    """The link a token stands for; raises `InvalidLink` or `ExpiredLink`."""
+def read(token: str) -> FileLink:
+    """The link a token stands for, still honoured; raises `InvalidLink` otherwise."""
     try:
         parts = [int(part) for part in _signer.unsign(token).split(".")]
     except (signing.BadSignature, ValueError):
@@ -86,6 +75,7 @@ def read(token: str, *, now: float | None = None) -> FileLink:
     if len(parts) != 3:
         raise InvalidLink
     link = FileLink(*parts)
-    if link.expires_at <= (time.time() if now is None else now):
-        raise ExpiredLink
+    reader = get_user_model().objects.filter(pk=link.reader_id, is_active=True).first()
+    if reader is None or _password_stamp(reader) != link.password_stamp:
+        raise InvalidLink
     return link
