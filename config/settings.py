@@ -83,6 +83,9 @@ INSTALLED_APPS = [
     "apps.visitors",
     "apps.chat",
 ]
+if not IS_PRODUCTION:
+    # `manage.py seed_demo`: development data only.
+    INSTALLED_APPS.append("apps.demo")
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

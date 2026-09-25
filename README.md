@@ -21,6 +21,7 @@ uv run python manage.py runserver         # OpenAPI : /api/docs/ (en mode DEBUG)
 | `uv run ruff check .` / `uv run ruff format .` | Lint et formatage (100 colonnes). Le CI (`.github/workflows/ci.yml`) vérifie les deux, ainsi que les migrations, le schéma OpenAPI et les tests. |
 | `python manage.py outbox_worker` | Relais de l'outbox : envoi des e-mails et des push, avec reprises et back-off. |
 | `python manage.py run_scheduled_jobs` | Expiration des baux, clôture des événements, sondages, réservations et locations courte durée échus, purge de l'outbox, des jetons de session expirés et des clés d'idempotence (idempotent, toutes les 15 min). |
+| `python manage.py seed_demo [--reset] [--seed N]` | Données de démo complètes pour le développement (2 syndicats, 4 propriétés, 8 bâtiments, 400 lots, résidents, baux, et tous les modules). Tous les comptes ont le mot de passe `Demo@2026!`. Refusé en production. |
 | `python manage.py purge_orphan_attachments` | Supprime les fichiers stockés sans ligne `Attachment` (quotidien). |
 
 Toutes les routes sont préfixées par `/api/v1/`. Sondes de la plateforme : `/healthz/` (processus vivant) et
