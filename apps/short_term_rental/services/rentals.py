@@ -32,10 +32,12 @@ from apps.leasing.models import Lease
 from apps.properties import timezones
 from apps.properties.enums import Feature
 from apps.properties.models import Property, Unit
+from apps.properties.policies import HousekeepingPolicy
 from apps.properties.services import FeatureGate
 from apps.short_term_rental import errors, notices
 from apps.short_term_rental.audit import ShortTermRentalAudit
 from apps.short_term_rental.models import (
+    BLOCKING_SHORT_TERM_RENTAL_STATUSES,
     InitiatorCapacity,
     ShortTermRental,
     ShortTermRentalStatus,
@@ -202,6 +204,41 @@ class ShortTermRentalService:
         )
         notices.completed(rental, actor=actor)
         return rental
+
+    @staticmethod
+    def complete_past(*, today: dt.date | None = None, prop: Property | None = None) -> int:
+        """Rentals whose checkout date has passed become COMPLETED (all properties, or `prop`).
+
+        Checked in or still scheduled, the stay is over either way and the unit
+        is free again. "Past" is read in the time zone of each property. Run by
+        `run_scheduled_jobs`, and on demand by `complete_past_in`.
+        """
+        horizon = today or timezone.now().date() + dt.timedelta(days=1)
+        candidates = ShortTermRental.objects.filter(
+            status__in=BLOCKING_SHORT_TERM_RENTAL_STATUSES, checkout_date__lt=horizon
+        ).select_related("unit__building__property")
+        if prop is not None:
+            candidates = candidates.filter(unit__building__property=prop)
+        completed = 0
+        for rental in candidates:
+            if rental.checkout_date >= (today or timezones.today(rental.unit.building.property)):
+                continue
+            with transaction.atomic():
+                rental = lock_rental(rental)
+                if rental.status not in BLOCKING_SHORT_TERM_RENTAL_STATUSES:
+                    continue
+                rental.status = ShortTermRentalStatus.COMPLETED
+                rental.completed_at = timezone.now()
+                rental.save(update_fields=["status", "completed_at", "updated_at"])
+                notices.completed(rental, actor=None)
+                completed += 1
+        return completed
+
+    @staticmethod
+    def complete_past_in(*, actor, prop: Property) -> int:
+        """Bulk action: complete now every rental of the property past its checkout date."""
+        HousekeepingPolicy.require(actor, prop)
+        return ShortTermRentalService.complete_past(prop=prop)
 
     @staticmethod
     @transaction.atomic

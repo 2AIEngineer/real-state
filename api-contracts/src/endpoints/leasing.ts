@@ -1,10 +1,21 @@
 // Contracts of the backend API, kept in sync with its OpenAPI schema (see README).
 import { z } from "zod";
 import { leaseComponentStateInputRequestSchema, leaseComponentStateSchema, leaseCreateRequestSchema, leaseMemberDepartureRequestSchema, leaseMemberInputRequestSchema, leaseMemberSchema, leaseSchema, leaseTerminationRequestSchema, leasesLeaseComponentStatesListQueryParamsSchema, leasesListQueryParamsSchema, paginatedLeaseComponentStateListSchema, paginatedLeaseListSchema, patchedLeaseComponentStateRequestSchema, patchedLeaseMemberRequestSchema, patchedLeaseRequestSchema } from "../leasing";
-import { actionReasonRequestSchema, patchedUploadFileRequestSchema, uploadFilesRequestSchema } from "../shared";
+import { actionReasonRequestSchema, bulkActionResultSchema, patchedUploadFileRequestSchema, uploadFilesRequestSchema } from "../shared";
 
 /** Endpoints of the leasing module. */
 export const leasingEndpoints = {
+  /** Bulk action (admin, syndic, manager): terminates at term every active lease of the selected property whose end date has passed. */
+  leasesExpireDueCreate: {
+    method: "POST",
+    path: "/api/v1/leases/expire-due/",
+    tag: "Leases",
+    auth: true,
+    uiConfigStep: "dashboard",
+    requiredHeaders: ["X-Syndicat-Id", "X-Property-Id"],
+    response: bulkActionResultSchema,
+    status: 200,
+  },
   leaseMembersDepartureCreate: {
     method: "POST",
     path: "/api/v1/lease-members/{member_id}/departure/",

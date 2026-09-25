@@ -1,10 +1,21 @@
 // Contracts of the backend API, kept in sync with its OpenAPI schema (see README).
 import { z } from "zod";
 import { eventCreateRequestSchema, eventSchema, eventsListQueryParamsSchema, paginatedEventListSchema, patchedEventRequestSchema } from "../events";
-import { actionReasonRequestSchema, uploadFilesRequestSchema } from "../shared";
+import { actionReasonRequestSchema, bulkActionResultSchema, uploadFilesRequestSchema } from "../shared";
 
 /** Endpoints of the events module. */
 export const eventsEndpoints = {
+  /** Bulk action (admin, syndic, manager): completes every scheduled event of the selected property that has ended. */
+  eventsCompletePastCreate: {
+    method: "POST",
+    path: "/api/v1/events/complete-past/",
+    tag: "Events",
+    auth: true,
+    uiConfigStep: "dashboard",
+    requiredHeaders: ["X-Syndicat-Id", "X-Property-Id"],
+    response: bulkActionResultSchema,
+    status: 200,
+  },
   /** Archives the event: it leaves the feed but the record stays. */
   eventsArchiveCreate: {
     method: "POST",

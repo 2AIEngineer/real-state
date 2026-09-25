@@ -2,7 +2,11 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.response import Response
 
-from apps.common.serializers import ActionReasonSerializer, UploadFilesSerializer
+from apps.common.serializers import (
+    ActionReasonSerializer,
+    BulkActionResultSerializer,
+    UploadFilesSerializer,
+)
 from apps.common.views import BaseAPIView
 from apps.events import serializers as s
 from apps.events.services import EventService
@@ -110,3 +114,15 @@ class EventFileDetailView(BaseAPIView):
         event = EventService.get_visible(actor=request.user, prop=self.property, event_id=event_id)
         EventService.remove_file(actor=request.user, event=event, attachment_id=attachment_id)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@extend_schema(tags=["Events"])
+class EventCompletePastView(BaseAPIView):
+    @extend_schema(
+        request=None,
+        responses=BulkActionResultSerializer,
+        description="Bulk action (admin, syndic, manager): completes every scheduled event of the selected property that has ended.",
+    )
+    def post(self, request):
+        count = EventService.complete_past_in(actor=request.user, prop=self.property)
+        return self.render(BulkActionResultSerializer, {"count": count})

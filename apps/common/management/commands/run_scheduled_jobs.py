@@ -8,10 +8,12 @@ import logging
 from django.core.management.base import BaseCommand, CommandError
 
 from apps.accounts.services.tokens import TokenService
+from apps.amenities.services import BookingService
 from apps.common import idempotency
 from apps.events.services import EventService
 from apps.leasing.services import LeaseService
 from apps.notifications.services import OutboxRetention
+from apps.short_term_rental.services import ShortTermRentalService
 from apps.surveys.services import SurveyService
 
 logger = logging.getLogger(__name__)
@@ -25,6 +27,8 @@ class Command(BaseCommand):
             "leases terminated at term": LeaseService.expire_due,
             "events completed": EventService.complete_past,
             "surveys closed": SurveyService.close_expired,
+            "bookings settled": BookingService.complete_past,
+            "short-term rentals completed": ShortTermRentalService.complete_past,
             "outbox messages purged": OutboxRetention.purge,
             "expired session tokens flushed": TokenService.flush_expired,
             "idempotency keys purged": idempotency.purge_expired,

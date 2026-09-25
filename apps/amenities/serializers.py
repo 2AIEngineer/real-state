@@ -68,6 +68,7 @@ class BookingSerializer(serializers.ModelSerializer):
             "decided_at",
             "cancelled_at",
             "cancellation_reason",
+            "completed_at",
             "created_at",
         ]
         read_only_fields = fields

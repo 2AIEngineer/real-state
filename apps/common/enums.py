@@ -10,10 +10,10 @@ class UIConfigStep(models.TextChoices):
     followed after every login: the syndicat page lists the syndicats the
     account may open, the property page lists the properties of the chosen
     syndicat, and the dashboard works inside the chosen pair (`X-Syndicat-Id`,
-    `X-Property-Id`).
+    `X-Property-Id`). Before the first step, right after login, the client
+    sends no step header (the session reports `step: null`).
     """
 
-    LOGGED_IN = "logged_in", "Logged in, nothing chosen yet"
     SYNDICAT = "syndicat", "Choosing a syndicat"
     PROPERTY = "property", "Choosing a property of the chosen syndicat"
     DASHBOARD = "dashboard", "Session configured"

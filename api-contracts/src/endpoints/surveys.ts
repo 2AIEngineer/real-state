@@ -1,10 +1,21 @@
 // Contracts of the backend API, kept in sync with its OpenAPI schema (see README).
 import { z } from "zod";
-import { uploadFilesRequestSchema } from "../shared";
+import { bulkActionResultSchema, uploadFilesRequestSchema } from "../shared";
 import { paginatedSurveyListSchema, patchedSurveyRequestSchema, surveyCreateRequestSchema, surveyParticipationSchema, surveyResponseRequestSchema, surveyResultsSchema, surveySchema, surveysListQueryParamsSchema } from "../surveys";
 
 /** Endpoints of the surveys module. */
 export const surveysEndpoints = {
+  /** Bulk action (admin, syndic, manager): closes every published survey of the selected property past its closing date. */
+  surveysCloseExpiredCreate: {
+    method: "POST",
+    path: "/api/v1/surveys/close-expired/",
+    tag: "Surveys",
+    auth: true,
+    uiConfigStep: "dashboard",
+    requiredHeaders: ["X-Syndicat-Id", "X-Property-Id"],
+    response: bulkActionResultSchema,
+    status: 200,
+  },
   /** Tells the serializer which surveys the reader already answered. */
   surveysCloseCreate: {
     method: "POST",

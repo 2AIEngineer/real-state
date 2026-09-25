@@ -4,6 +4,11 @@ from apps.surveys import views
 
 urlpatterns = [
     path("surveys/", views.SurveyListView.as_view(), name="survey-list"),
+    path(
+        "surveys/close-expired/",
+        views.SurveyCloseExpiredView.as_view(),
+        name="survey-close-expired",
+    ),
     path("surveys/<int:survey_id>/", views.SurveyDetailView.as_view(), name="survey-detail"),
     path(
         "surveys/<int:survey_id>/publish/", views.SurveyPublishView.as_view(), name="survey-publish"

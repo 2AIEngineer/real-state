@@ -30,6 +30,7 @@ from apps.common.services.audit import AuditService
 from apps.notifications.services import SnapshotService
 from apps.properties.enums import Feature
 from apps.properties.models import Property
+from apps.properties.policies import HousekeepingPolicy
 from apps.properties.services import FeatureGate
 from apps.surveys import notices
 from apps.surveys.audit import SurveyAudit
@@ -210,11 +211,14 @@ class SurveyService:
         return survey
 
     @staticmethod
-    def close_expired(*, now: dt.datetime | None = None) -> int:
-        """Scheduled job: surveys past `closes_at` become CLOSED and their
-        recipients are told the results are available."""
+    def close_expired(*, now: dt.datetime | None = None, prop: Property | None = None) -> int:
+        """Surveys past `closes_at` become CLOSED (all properties, or `prop`) and
+        their recipients are told the results are available. Run by
+        `run_scheduled_jobs`, and on demand by `close_expired_in`."""
         now = now or timezone.now()
         due = Survey.objects.filter(status=SurveyStatus.PUBLISHED, closes_at__lte=now)
+        if prop is not None:
+            due = due.filter(property=prop)
         closed = 0
         for survey_id in due.values_list("id", flat=True):
             with transaction.atomic():
@@ -232,6 +236,12 @@ class SurveyService:
                 notices.closed(survey, actor=None)
                 closed += 1
         return closed
+
+    @staticmethod
+    def close_expired_in(*, actor, prop: Property) -> int:
+        """Bulk action: close now every survey of the property past its closing date."""
+        HousekeepingPolicy.require(actor, prop)
+        return SurveyService.close_expired(prop=prop)
 
     @staticmethod
     @transaction.atomic

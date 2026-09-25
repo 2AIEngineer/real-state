@@ -9,6 +9,7 @@ from apps.amenities.views.amenities import (  # noqa: F401
 )
 from apps.amenities.views.bookings import (  # noqa: F401
     BookingCancelView,
+    BookingCompletePastView,
     BookingDecisionView,
     BookingDetailView,
     BookingListView,

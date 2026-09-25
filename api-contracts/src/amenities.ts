@@ -76,6 +76,7 @@ export const bookingSchema = z.object({
   decided_at: z.iso.datetime({ offset: true }).nullable(),
   cancelled_at: z.iso.datetime({ offset: true }).nullable(),
   cancellation_reason: z.string(),
+  completed_at: z.iso.datetime({ offset: true }).nullable(),
   created_at: z.iso.datetime({ offset: true }),
 });
 export type Booking = z.infer<typeof bookingSchema>;

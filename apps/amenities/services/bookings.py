@@ -42,9 +42,13 @@ from apps.common.services.audit import AuditService
 from apps.properties import timezones
 from apps.properties.enums import Feature
 from apps.properties.models import Property
+from apps.properties.policies import HousekeepingPolicy
 from apps.properties.services import FeatureGate
 
 BOOKING_CONSTRAINTS = {"booking_no_overlap_on_exclusive_amenity": errors.slot_taken}
+
+
+EXPIRED_BEFORE_APPROVAL = "The slot ended before the booking was approved."
 
 
 class BookingService:
@@ -273,3 +277,53 @@ class BookingService:
         )
         notices.cancelled(booking, actor=actor, reason=reason)
         return booking
+
+    # ----------------------------------------------------------- housekeeping
+    @staticmethod
+    def complete_past(*, now: dt.datetime | None = None, prop: Property | None = None) -> int:
+        """Bookings whose slot has ended (all properties, or `prop`).
+
+        A confirmed booking becomes COMPLETED. One still waiting for approval can
+        no longer be approved: it is cancelled and its booker told why. Run by
+        `run_scheduled_jobs`, and on demand by `complete_past_in`.
+        """
+        now = now or timezone.now()
+        due = Booking.objects.filter(end_datetime__lt=now, status__in=BLOCKING_BOOKING_STATUSES)
+        if prop is not None:
+            due = due.filter(amenity__property=prop)
+        handled = 0
+        for booking_id in due.values_list("id", flat=True):
+            with transaction.atomic():
+                booking = (
+                    Booking.objects.select_for_update(of=("self",), skip_locked=True)
+                    .select_related("amenity__property", "booker")
+                    .filter(pk=booking_id, status__in=BLOCKING_BOOKING_STATUSES)
+                    .first()
+                )
+                if booking is None:
+                    continue  # handled meanwhile, or by another run
+                if booking.status == BookingStatus.CONFIRMED:
+                    booking.status = BookingStatus.COMPLETED
+                    booking.completed_at = now
+                    booking.save(update_fields=["status", "completed_at", "updated_at"])
+                else:
+                    booking.status = BookingStatus.CANCELLED
+                    booking.cancelled_at = now
+                    booking.cancellation_reason = EXPIRED_BEFORE_APPROVAL
+                    booking.save(
+                        update_fields=[
+                            "status",
+                            "cancelled_at",
+                            "cancellation_reason",
+                            "updated_at",
+                        ]
+                    )
+                    notices.cancelled(booking, actor=None, reason=EXPIRED_BEFORE_APPROVAL)
+                handled += 1
+        return handled
+
+    @staticmethod
+    def complete_past_in(*, actor, prop: Property) -> int:
+        """Bulk action: settle now every booking of the property whose slot has ended."""
+        HousekeepingPolicy.require(actor, prop)
+        return BookingService.complete_past(prop=prop)

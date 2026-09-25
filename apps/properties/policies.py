@@ -14,6 +14,7 @@ and ownerships.
 from django.db.models import Q
 
 from apps.accounts.services.authorization import AccessService
+from apps.common.exceptions import PermissionDenied
 from apps.properties.models import Building, Property, Syndicat, Unit, UnitOwnership
 
 
@@ -173,3 +174,17 @@ class OwnershipPolicy:
     def can_delete(user, ownership: UnitOwnership) -> bool:
         """Erase a line recorded by mistake."""
         return AccessService.manages_syndicat(user, ownership.unit.building.property.syndicat)
+
+
+class HousekeepingPolicy:
+    """Bulk actions of the dashboard (completing what is past, closing what is
+    due): the management of the property, i.e. an admin, its syndic, its manager."""
+
+    @staticmethod
+    def can_run(user, prop: Property) -> bool:
+        return AccessService.manages_property(user, prop)
+
+    @staticmethod
+    def require(user, prop: Property) -> None:
+        if not HousekeepingPolicy.can_run(user, prop):
+            raise PermissionDenied("Only the property management can run bulk actions.")

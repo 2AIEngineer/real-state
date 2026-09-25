@@ -8,6 +8,7 @@ from apps.leasing.views.inspections import (  # noqa: F401
 from apps.leasing.views.leases import (  # noqa: F401
     LeaseCancelView,
     LeaseDetailView,
+    LeaseExpireDueView,
     LeaseListView,
     LeaseTerminateView,
 )

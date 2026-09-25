@@ -10,6 +10,7 @@ from apps.short_term_rental.views.rentals import (  # noqa: F401
     CheckInView,
     CompleteView,
     RescheduleView,
+    ShortTermRentalCompletePastView,
     ShortTermRentalDetailView,
     ShortTermRentalListView,
 )

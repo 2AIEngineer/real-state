@@ -30,6 +30,7 @@ from apps.leasing.services.rules import (
 )
 from apps.properties import timezones
 from apps.properties.models import Property, Unit
+from apps.properties.policies import HousekeepingPolicy
 
 LEASE_CONSTRAINTS = {
     "lease_no_overlapping_active_per_unit": errors.lease_overlap,
@@ -304,6 +305,12 @@ class LeaseService:
         return lease
 
     @staticmethod
+    def expire_due_in(*, actor, prop: Property) -> int:
+        """Bulk action: terminate now every lease of the property past its end date."""
+        HousekeepingPolicy.require(actor, prop)
+        return LeaseService.expire_due(prop=prop)
+
+    @staticmethod
     @transaction.atomic
     def end_if_unoccupied(*, actor, lease: Lease) -> Lease:
         """An active lease left without any occupant (their account was deleted)
@@ -320,17 +327,20 @@ class LeaseService:
         return LeaseService.terminate(actor=actor, lease=lease, effective_date=effective)
 
     @staticmethod
-    def expire_due(*, today: dt.date | None = None) -> int:
-        """Scheduled job: leases past their end date are terminated at term.
+    def expire_due(*, today: dt.date | None = None, prop: Property | None = None) -> int:
+        """Leases past their end date are terminated at term (all properties, or `prop`).
 
         "Past" is read in the time zone of each property (`today` forces one
         date for all, in tests). No time zone is more than a day ahead of UTC,
         so the leases ending before tomorrow in UTC are the only candidates.
+        Run by `run_scheduled_jobs`, and on demand by `expire_due_in`.
         """
         horizon = today or timezone.now().date() + dt.timedelta(days=1)
         candidates = Lease.objects.filter(
             status=LeaseStatus.ACTIVE, end_date__lt=horizon
         ).select_related("unit__building__property")
+        if prop is not None:
+            candidates = candidates.filter(unit__building__property=prop)
         due = [
             lease
             for lease in candidates

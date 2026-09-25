@@ -1,10 +1,21 @@
 // Contracts of the backend API, kept in sync with its OpenAPI schema (see README).
 import { z } from "zod";
-import { actionReasonRequestSchema, patchedUploadFileRequestSchema } from "../shared";
+import { actionReasonRequestSchema, bulkActionResultSchema, patchedUploadFileRequestSchema } from "../shared";
 import { paginatedShortTermRentalListSchema, patchedShortTermRentalMemberRequestSchema, shortTermRentalCreateRequestSchema, shortTermRentalMemberCreateRequestSchema, shortTermRentalMemberSchema, shortTermRentalRescheduleRequestSchema, shortTermRentalSchema, shortTermRentalsListQueryParamsSchema } from "../short-term-rentals";
 
 /** Endpoints of the short-term-rentals module. */
 export const shortTermRentalsEndpoints = {
+  /** Bulk action (admin, syndic, manager): completes every scheduled or checked-in rental of the selected property whose checkout date has passed. */
+  shortTermRentalsCompletePastCreate: {
+    method: "POST",
+    path: "/api/v1/short-term-rentals/complete-past/",
+    tag: "Short-term rentals",
+    auth: true,
+    uiConfigStep: "dashboard",
+    requiredHeaders: ["X-Syndicat-Id", "X-Property-Id"],
+    response: bulkActionResultSchema,
+    status: 200,
+  },
   shortTermRentalMembersDestroy: {
     method: "DELETE",
     path: "/api/v1/short-term-rental-members/{short_term_rental_member_id}/",

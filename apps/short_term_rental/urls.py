@@ -4,6 +4,11 @@ from apps.short_term_rental import views
 
 urlpatterns = [
     path(
+        "short-term-rentals/complete-past/",
+        views.ShortTermRentalCompletePastView.as_view(),
+        name="short-term-rental-complete-past",
+    ),
+    path(
         "short-term-rentals/",
         views.ShortTermRentalListView.as_view(),
         name="short-term-rental-list",

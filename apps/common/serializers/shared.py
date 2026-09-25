@@ -23,3 +23,9 @@ class ActionReasonSerializer(serializers.Serializer):
 
 class ActionNoteSerializer(serializers.Serializer):
     note = serializers.CharField(required=False, allow_blank=True, default="", max_length=4000)
+
+
+class BulkActionResultSerializer(serializers.Serializer):
+    """Outcome of a bulk action: how many records it changed (0 when nothing was due)."""
+
+    count = serializers.IntegerField(min_value=0)

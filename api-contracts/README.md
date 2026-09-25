@@ -48,7 +48,7 @@ Chaque entrée de `endpoints` indique :
 
 La connexion (`endpoints.authTokenCreate`) renvoie le `SessionContext` : `credentials`, `ui_config` et `user`. Ce que le backend ne peut pas décider (`app_mode`, `step`, syndicat et propriété choisis) vaut `null`, les listes sont vides.
 
-Le client choisit ensuite un syndicat puis une propriété, en annonçant l'étape où il se trouve dans `X-UI-Config-Step` (`uiConfigSteps` : `logged_in`, `syndicat`, `property`, `dashboard`) :
+Le client choisit ensuite un syndicat puis une propriété, en annonçant l'étape où il se trouve dans `X-UI-Config-Step` (`uiConfigStepSchema` : `syndicat`, `property`, `dashboard` ; aucun en-tête juste après la connexion) :
 
 ```ts
 import { endpoints } from "@/api-contracts";
@@ -64,6 +64,8 @@ Quelques conventions de l'API reflétées dans les schémas :
 - les dates-heures sont en ISO 8601 avec fuseau, les dates en `AAAA-MM-JJ` ;
 - les montants et pourcentages sont des chaînes décimales (`"12.50"`) pour garder leur précision ;
 - un e-mail ou une URL facultatifs valent `""` quand ils ne sont pas renseignés ;
+- un POST peut porter l'en-tête facultatif `Idempotency-Key` (`IDEMPOTENCY_KEY_HEADER`) : un UUID généré une fois par action et renvoyé à chaque nouvel essai, pour ne jamais créer de doublon ;
+- les actions en masse du tableau de bord (`leasesExpireDueCreate`, `eventsCompletePastCreate`, `surveysCloseExpiredCreate`, `bookingsCompletePastCreate`, `shortTermRentalsCompletePastCreate`) s'appellent sans corps, sur la propriété sélectionnée, et répondent `{ count }` (`bulkActionResultSchema`) ;
 - toutes les listes sont paginées (`count`, `next`, `previous`, `results`), sauf les listes courtes documentées comme tableaux simples (les deux pages `ui-config/`, créneaux d'un équipement, tours d'une demande, membres d'une location courte durée).
 
 ## Mettre à jour après un changement du backend
@@ -85,6 +87,7 @@ npm test
 ```
 
 - `tests/routes.test.ts` compare les contrats au schéma OpenAPI : mêmes routes (aucune en trop, aucune manquante), mêmes en-têtes requis, même code de succès, mêmes champs dans chaque corps de requête et chaque réponse.
+- `tests/schemas.test.ts` va au fond de chaque opération : paramètres de chemin et d'URL, corps et réponse, champ par champ et à tous les niveaux d'imbrication — obligatoire ou facultatif, `null` possible ou non, type, valeurs d'énumération, encodage `json`/`multipart`.
 - `tests/contracts.test.ts` passe de vraies réponses de l'API (étape 1 : chaque GET, plus la connexion) dans le schéma de leur endpoint.
 
 Un échec signale un contrat qui ne correspond plus à ce que l'API expose ou renvoie.

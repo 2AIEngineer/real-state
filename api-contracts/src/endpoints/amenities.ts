@@ -1,10 +1,21 @@
 // Contracts of the backend API, kept in sync with its OpenAPI schema (see README).
 import { z } from "zod";
 import { amenitiesListQueryParamsSchema, amenitiesScheduleListQueryParamsSchema, amenityCreateRequestSchema, amenitySchema, amenitySlotSchema, bookingCreateRequestSchema, bookingDecisionRequestSchema, bookingSchema, bookingsListQueryParamsSchema, paginatedAmenityListSchema, paginatedBookingListSchema, patchedAmenityRequestSchema } from "../amenities";
-import { actionReasonRequestSchema, uploadFilesRequestSchema } from "../shared";
+import { actionReasonRequestSchema, bulkActionResultSchema, uploadFilesRequestSchema } from "../shared";
 
 /** Endpoints of the amenities module. */
 export const amenitiesEndpoints = {
+  /** Bulk action (admin, syndic, manager): every booking of the selected property whose slot has ended is settled: a confirmed one becomes COMPLETED, one still pending is CANCELLED. */
+  bookingsCompletePastCreate: {
+    method: "POST",
+    path: "/api/v1/bookings/complete-past/",
+    tag: "Bookings",
+    auth: true,
+    uiConfigStep: "dashboard",
+    requiredHeaders: ["X-Syndicat-Id", "X-Property-Id"],
+    response: bulkActionResultSchema,
+    status: 200,
+  },
   amenitiesCreate: {
     method: "POST",
     path: "/api/v1/amenities/",

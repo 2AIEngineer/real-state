@@ -48,7 +48,7 @@ export type BookingMode = z.infer<typeof bookingModeSchema>;
  * * `REJECTED` - Rejected
  * * `CANCELLED` - Cancelled
  */
-export const bookingStatusSchema = z.enum(["PENDING", "CONFIRMED", "REJECTED", "CANCELLED"]);
+export const bookingStatusSchema = z.enum(["PENDING", "CONFIRMED", "REJECTED", "CANCELLED", "COMPLETED"]);
 export type BookingStatus = z.infer<typeof bookingStatusSchema>;
 
 /**
@@ -383,9 +383,13 @@ export const sessionAppModeSchema = z.enum(["web", "mobile"]);
 export type SessionAppMode = z.infer<typeof sessionAppModeSchema>;
 
 /**
- * * `syndicat` - syndicat
- * * `property` - property
- * * `dashboard` - dashboard
+ * Steps of the UI configuration, the values of `X-UI-Config-Step` (and of
+ * `SessionContext.ui_config.step`). After logging in the client lists the
+ * syndicats it may open (`syndicat`), then the properties of the one it chose
+ * (`property`, with `X-Syndicat-Id`), then works in the dashboard
+ * (`dashboard`), where every call carries `X-Syndicat-Id`, `X-Property-Id` and
+ * this header. Before the first step no header is sent (`step: null`). Each
+ * endpoint says which step it belongs to in `endpoints[...].uiConfigStep`.
  */
 export const uiConfigStepSchema = z.enum(["syndicat", "property", "dashboard"]);
 export type UIConfigStep = z.infer<typeof uiConfigStepSchema>;

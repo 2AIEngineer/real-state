@@ -3,6 +3,7 @@
 from apps.common.serializers.shared import (
     ActionNoteSerializer,
     ActionReasonSerializer,
+    BulkActionResultSerializer,
     UploadFileSerializer,
     UploadFilesSerializer,
     UserSummarySerializer,
@@ -11,6 +12,7 @@ from apps.common.serializers.shared import (
 __all__ = [
     "ActionNoteSerializer",
     "ActionReasonSerializer",
+    "BulkActionResultSerializer",
     "UploadFileSerializer",
     "UploadFilesSerializer",
     "UserSummarySerializer",

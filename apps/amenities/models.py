@@ -92,6 +92,7 @@ class BookingStatus(models.TextChoices):
     CONFIRMED = "CONFIRMED", "Confirmed"
     REJECTED = "REJECTED", "Rejected"
     CANCELLED = "CANCELLED", "Cancelled"
+    COMPLETED = "COMPLETED", "Completed"
 
 
 BLOCKING_BOOKING_STATUSES = (BookingStatus.PENDING, BookingStatus.CONFIRMED)
@@ -122,6 +123,7 @@ class Booking(TimeStampedModel):
     )
     cancelled_at = models.DateTimeField(null=True, blank=True)
     cancellation_reason = models.TextField(blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         ordering = ["-start_datetime", "-id"]

@@ -2,7 +2,7 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.response import Response
 
-from apps.common.serializers import UploadFilesSerializer
+from apps.common.serializers import BulkActionResultSerializer, UploadFilesSerializer
 from apps.common.views import BaseAPIView
 from apps.surveys import serializers as s
 from apps.surveys.services import ParticipationService, QuestionInput, SurveyService
@@ -151,3 +151,15 @@ class SurveyFilesView(_SurveyView):
         data = self.parse(UploadFilesSerializer)
         SurveyService.add_files(actor=request.user, survey=survey, files=data["files"])
         return self.render(s.SurveySerializer, survey, status=status.HTTP_201_CREATED)
+
+
+@extend_schema(tags=["Surveys"])
+class SurveyCloseExpiredView(BaseAPIView):
+    @extend_schema(
+        request=None,
+        responses=BulkActionResultSerializer,
+        description="Bulk action (admin, syndic, manager): closes every published survey of the selected property past its closing date.",
+    )
+    def post(self, request):
+        count = SurveyService.close_expired_in(actor=request.user, prop=self.property)
+        return self.render(BulkActionResultSerializer, {"count": count})

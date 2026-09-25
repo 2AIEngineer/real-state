@@ -125,9 +125,7 @@ export const providerProfileSchema = z.object({
   service_description: z.string().optional(),
   address: z.string().optional(),
   business_phone: z.string().max(32).optional(),
-  website: z
-    .union([z.union([z.url(), z.literal("")]), z.literal("")])
-    .optional(),
+  website: z.union([z.url(), z.literal("")]).optional(),
   registration_number: z.string().max(64).optional(),
   updated_at: z.iso.datetime({ offset: true }),
 });
@@ -158,7 +156,7 @@ export type TokenRefreshRequest = z.infer<typeof tokenRefreshRequestSchema>;
 
 export const userSchema = z.object({
   id: z.number().int(),
-  email: z.union([z.email(), z.literal("")]),
+  email: z.email(),
   first_name: z.string(),
   last_name: z.string(),
   full_name: z.string(),

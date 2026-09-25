@@ -4,7 +4,7 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.response import Response
 
-from apps.common.serializers import ActionReasonSerializer
+from apps.common.serializers import ActionReasonSerializer, BulkActionResultSerializer
 from apps.common.views import BaseAPIView
 from apps.properties.services import UnitService
 from apps.short_term_rental import serializers as s
@@ -119,3 +119,15 @@ class CancelView(BaseAPIView):
             s.ShortTermRentalSerializer,
             ShortTermRentalService.cancel(actor=request.user, rental=rental, reason=data["reason"]),
         )
+
+
+@extend_schema(tags=["Short-term rentals"])
+class ShortTermRentalCompletePastView(BaseAPIView):
+    @extend_schema(
+        request=None,
+        responses=BulkActionResultSerializer,
+        description="Bulk action (admin, syndic, manager): completes every scheduled or checked-in rental of the selected property whose checkout date has passed.",
+    )
+    def post(self, request):
+        count = ShortTermRentalService.complete_past_in(actor=request.user, prop=self.property)
+        return self.render(BulkActionResultSerializer, {"count": count})

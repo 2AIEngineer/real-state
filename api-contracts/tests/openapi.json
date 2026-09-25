@@ -1337,12 +1337,13 @@
                                 "PENDING",
                                 "CONFIRMED",
                                 "REJECTED",
-                                "CANCELLED"
+                                "CANCELLED",
+                                "COMPLETED"
                             ],
                             "type": "string",
                             "minLength": 1
                         },
-                        "description": "* `PENDING` - Pending approval\n* `CONFIRMED` - Confirmed\n* `REJECTED` - Rejected\n* `CANCELLED` - Cancelled"
+                        "description": "* `PENDING` - Pending approval\n* `CONFIRMED` - Confirmed\n* `REJECTED` - Rejected\n* `CANCELLED` - Cancelled\n* `COMPLETED` - Completed"
                     }
                 ],
                 "tags": [
@@ -1689,6 +1690,60 @@
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/Booking"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/bookings/complete-past/": {
+            "post": {
+                "operationId": "v1_bookings_complete_past_create",
+                "description": "Bulk action (admin, syndic, manager): every booking of the selected property whose slot has ended is settled: a confirmed one becomes COMPLETED, one still pending is CANCELLED.",
+                "parameters": [
+                    {
+                        "in": "header",
+                        "name": "Idempotency-Key",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Optional. A value generated once per intended action (a UUID) and reused on every retry: a retry answers like the first request instead of repeating it."
+                    },
+                    {
+                        "in": "header",
+                        "name": "X-Property-Id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Selected property.",
+                        "required": true
+                    },
+                    {
+                        "in": "header",
+                        "name": "X-Syndicat-Id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Selected syndicat.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Bookings"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BulkActionResult"
                                 }
                             }
                         },
@@ -3217,6 +3272,60 @@
                 }
             }
         },
+        "/api/v1/events/complete-past/": {
+            "post": {
+                "operationId": "v1_events_complete_past_create",
+                "description": "Bulk action (admin, syndic, manager): completes every scheduled event of the selected property that has ended.",
+                "parameters": [
+                    {
+                        "in": "header",
+                        "name": "Idempotency-Key",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Optional. A value generated once per intended action (a UUID) and reused on every retry: a retry answers like the first request instead of repeating it."
+                    },
+                    {
+                        "in": "header",
+                        "name": "X-Property-Id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Selected property.",
+                        "required": true
+                    },
+                    {
+                        "in": "header",
+                        "name": "X-Syndicat-Id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Selected syndicat.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BulkActionResult"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/api/v1/lease-members/{member_id}/": {
             "get": {
                 "operationId": "v1_lease_members_retrieve",
@@ -4496,6 +4605,60 @@
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/Lease"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/leases/expire-due/": {
+            "post": {
+                "operationId": "v1_leases_expire_due_create",
+                "description": "Bulk action (admin, syndic, manager): terminates at term every active lease of the selected property whose end date has passed.",
+                "parameters": [
+                    {
+                        "in": "header",
+                        "name": "Idempotency-Key",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Optional. A value generated once per intended action (a UUID) and reused on every retry: a retry answers like the first request instead of repeating it."
+                    },
+                    {
+                        "in": "header",
+                        "name": "X-Property-Id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Selected property.",
+                        "required": true
+                    },
+                    {
+                        "in": "header",
+                        "name": "X-Syndicat-Id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Selected syndicat.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Leases"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BulkActionResult"
                                 }
                             }
                         },
@@ -9025,6 +9188,60 @@
                 }
             }
         },
+        "/api/v1/short-term-rentals/complete-past/": {
+            "post": {
+                "operationId": "v1_short_term_rentals_complete_past_create",
+                "description": "Bulk action (admin, syndic, manager): completes every scheduled or checked-in rental of the selected property whose checkout date has passed.",
+                "parameters": [
+                    {
+                        "in": "header",
+                        "name": "Idempotency-Key",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Optional. A value generated once per intended action (a UUID) and reused on every retry: a retry answers like the first request instead of repeating it."
+                    },
+                    {
+                        "in": "header",
+                        "name": "X-Property-Id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Selected property.",
+                        "required": true
+                    },
+                    {
+                        "in": "header",
+                        "name": "X-Syndicat-Id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Selected syndicat.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Short-term rentals"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BulkActionResult"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/api/v1/store/orders/": {
             "get": {
                 "operationId": "v1_store_orders_list",
@@ -10625,6 +10842,60 @@
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/SurveyResults"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/surveys/close-expired/": {
+            "post": {
+                "operationId": "v1_surveys_close_expired_create",
+                "description": "Bulk action (admin, syndic, manager): closes every published survey of the selected property past its closing date.",
+                "parameters": [
+                    {
+                        "in": "header",
+                        "name": "Idempotency-Key",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Optional. A value generated once per intended action (a UUID) and reused on every retry: a retry answers like the first request instead of repeating it."
+                    },
+                    {
+                        "in": "header",
+                        "name": "X-Property-Id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Selected property.",
+                        "required": true
+                    },
+                    {
+                        "in": "header",
+                        "name": "X-Syndicat-Id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Selected syndicat.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Surveys"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BulkActionResult"
                                 }
                             }
                         },
@@ -14368,6 +14639,12 @@
                         "type": "string",
                         "readOnly": true
                     },
+                    "completed_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true,
+                        "nullable": true
+                    },
                     "created_at": {
                         "type": "string",
                         "format": "date-time",
@@ -14381,6 +14658,7 @@
                     "booker_note",
                     "cancellation_reason",
                     "cancelled_at",
+                    "completed_at",
                     "created_at",
                     "decided_at",
                     "decision_note",
@@ -14452,10 +14730,11 @@
                     "PENDING",
                     "CONFIRMED",
                     "REJECTED",
-                    "CANCELLED"
+                    "CANCELLED",
+                    "COMPLETED"
                 ],
                 "type": "string",
-                "description": "* `PENDING` - Pending approval\n* `CONFIRMED` - Confirmed\n* `REJECTED` - Rejected\n* `CANCELLED` - Cancelled"
+                "description": "* `PENDING` - Pending approval\n* `CONFIRMED` - Confirmed\n* `REJECTED` - Rejected\n* `CANCELLED` - Cancelled\n* `COMPLETED` - Completed"
             },
             "Building": {
                 "type": "object",
@@ -14551,6 +14830,19 @@
                 },
                 "required": [
                     "name"
+                ]
+            },
+            "BulkActionResult": {
+                "type": "object",
+                "description": "Outcome of a bulk action: how many records it changed (0 when nothing was due).",
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "minimum": 0
+                    }
+                },
+                "required": [
+                    "count"
                 ]
             },
             "ChatContextTypeEnum": {

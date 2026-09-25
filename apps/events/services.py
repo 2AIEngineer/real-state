@@ -20,6 +20,7 @@ from apps.events.policies import EventPolicy
 from apps.notifications.services import SnapshotService
 from apps.properties.enums import Feature
 from apps.properties.models import Building, Property
+from apps.properties.policies import HousekeepingPolicy
 from apps.properties.services import FeatureGate
 
 EDITABLE_FIELDS = ("title", "description", "location", "start_at", "end_at")
@@ -248,16 +249,19 @@ class EventService:
         )
 
     @staticmethod
-    def complete_past(*, now: dt.datetime | None = None) -> int:
-        """Scheduled job: events whose end has passed become COMPLETED.
+    def complete_past(*, now: dt.datetime | None = None, prop: Property | None = None) -> int:
+        """Events whose end has passed become COMPLETED (all properties, or `prop`).
 
         The people the event was addressed to are told it is over, each event
-        in its own transaction so one failure does not block the others.
+        in its own transaction so one failure does not block the others. Run by
+        `run_scheduled_jobs`, and on demand by `complete_past_in`.
         """
         now = now or timezone.now()
         due = Event.objects.filter(
             status=EventStatus.SCHEDULED, end_at__lt=now, archived_at__isnull=True
         )
+        if prop is not None:
+            due = due.filter(property=prop)
         completed = 0
         for event_id in due.values_list("id", flat=True):
             with transaction.atomic():
@@ -275,3 +279,9 @@ class EventService:
                 notices.completed(event)
                 completed += 1
         return completed
+
+    @staticmethod
+    def complete_past_in(*, actor, prop: Property) -> int:
+        """Bulk action: complete now every event of the property that has ended."""
+        HousekeepingPolicy.require(actor, prop)
+        return EventService.complete_past(prop=prop)

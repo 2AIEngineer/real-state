@@ -6,7 +6,7 @@ from rest_framework.response import Response
 
 from apps.amenities import serializers as s
 from apps.amenities.services import AmenityService, BookingService
-from apps.common.serializers import ActionReasonSerializer
+from apps.common.serializers import ActionReasonSerializer, BulkActionResultSerializer
 from apps.common.views import BaseAPIView
 
 
@@ -86,3 +86,15 @@ class BookingCancelView(BaseAPIView):
             s.BookingSerializer,
             BookingService.cancel(actor=request.user, booking=booking, reason=data["reason"]),
         )
+
+
+@extend_schema(tags=["Bookings"])
+class BookingCompletePastView(BaseAPIView):
+    @extend_schema(
+        request=None,
+        responses=BulkActionResultSerializer,
+        description="Bulk action (admin, syndic, manager): every booking of the selected property whose slot has ended is settled: a confirmed one becomes COMPLETED, one still pending is CANCELLED.",
+    )
+    def post(self, request):
+        count = BookingService.complete_past_in(actor=request.user, prop=self.property)
+        return self.render(BulkActionResultSerializer, {"count": count})

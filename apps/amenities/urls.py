@@ -21,6 +21,11 @@ urlpatterns = [
         name="amenity-image-detail",
     ),
     path("bookings/", views.BookingListView.as_view(), name="booking-list"),
+    path(
+        "bookings/complete-past/",
+        views.BookingCompletePastView.as_view(),
+        name="booking-complete-past",
+    ),
     path("bookings/<int:booking_id>/", views.BookingDetailView.as_view(), name="booking-detail"),
     path(
         "bookings/<int:booking_id>/decision/",

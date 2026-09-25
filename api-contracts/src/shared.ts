@@ -20,23 +20,12 @@ export const apiErrorSchema = z.object({
 export type ApiError = z.infer<typeof apiErrorSchema>;
 
 /**
- * Steps of the UI configuration, sent in `X-UI-Config-Step`.
- * The client walks through them after logging in: it lists the syndicats it may
- * open (`syndicat`), then the properties of the one it chose (`property`, with
- * `X-Syndicat-Id`), then works in the dashboard (`dashboard`), where every call
- * carries `X-Syndicat-Id`, `X-Property-Id` and this header (see
- * `endpoints[...].uiConfigStep`).
- */
-export const uiConfigSteps = ["logged_in", "syndicat", "property", "dashboard"] as const;
-
-/**
  * Optional header of every POST: a value generated once per intended action
  * (`crypto.randomUUID()`) and reused on each retry of that action. A retry is
  * answered like the first request (header `Idempotent-Replayed: true`) instead
  * of creating a second record.
  */
 export const IDEMPOTENCY_KEY_HEADER = "Idempotency-Key";
-export type UIConfigStepName = (typeof uiConfigSteps)[number];
 
 /** Error codes the backend can return (the list may grow: codes are strings). */
 export const knownErrorCodes = [
@@ -129,6 +118,12 @@ export const decimalString = (pattern: RegExp) => z.string().regex(pattern);
 
 // --------------------------------------------- schemas used by several domains
 
+/** Outcome of a bulk action: how many records it changed (0 when nothing was due). */
+export const bulkActionResultSchema = z.object({
+  count: z.number().int().min(0),
+});
+export type BulkActionResult = z.infer<typeof bulkActionResultSchema>;
+
 export const actionReasonRequestSchema = z.object({
   reason: z.string().max(2000).optional(),
 });
@@ -165,6 +160,6 @@ export type UploadFilesRequest = z.infer<typeof uploadFilesRequestSchema>;
 export const userSummarySchema = z.object({
   id: z.number().int(),
   full_name: z.string(),
-  email: z.union([z.email(), z.literal("")]),
+  email: z.email(),
 });
 export type UserSummary = z.infer<typeof userSummarySchema>;
