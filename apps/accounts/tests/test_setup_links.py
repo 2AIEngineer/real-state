@@ -16,6 +16,12 @@ def token_aged(user, monkeypatch, hours: int) -> str:
     return token
 
 
+@pytest.fixture(autouse=True)
+def _lifetimes(settings):
+    settings.PASSWORD_RESET_LINK_TIMEOUT = 2 * 3600
+    settings.PASSWORD_RESET_TIMEOUT = 72 * 3600
+
+
 def test_a_reset_link_is_short_lived(monkeypatch):
     user = f.make_user()
     user.set_password("Some-Passw0rd!")

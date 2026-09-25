@@ -2,20 +2,35 @@
 
 The `.env` file at the repository root (or next to it) is loaded for local
 development only when present; a value already in the environment wins.
+
+The test suite reads nothing from it but the database connection: whatever a
+developer's `.env` says (a storage account, a time zone, token lifetimes…),
+tests run on the same settings everywhere.
 """
 
 import os
 from pathlib import Path
 
-from dotenv import load_dotenv
+from dotenv import dotenv_values
 
 ENVIRONMENTS = ("development", "test", "production")
 
 
+# What the test profile takes from a local `.env`: how to reach the database.
+TEST_KEYS_PREFIX = "POSTGRES_"
+
+
 def load_dotenv_files(base_dir: Path) -> None:
+    only_database = os.environ.get("ENVIRONMENT") == "test"
     for candidate in (base_dir / ".env", base_dir.parent / ".env"):
-        if candidate.exists():
-            load_dotenv(candidate, override=False)
+        if not candidate.exists():
+            continue
+        for name, value in dotenv_values(candidate).items():
+            if value is None or name in os.environ:
+                continue
+            if only_database and not name.startswith(TEST_KEYS_PREFIX):
+                continue
+            os.environ[name] = value
 
 
 def env(name: str, default: str | None = None) -> str | None:

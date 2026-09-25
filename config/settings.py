@@ -310,4 +310,9 @@ if IS_TEST:
     PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
     EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
     MEDIA_ROOT = Path(env("TEST_MEDIA_ROOT", "/tmp/residential-test-media"))
+    # Tests never reach a storage service, even when the shell defines one.
+    STORAGES = {
+        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+        "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+    }
     NOTIFICATIONS["DELIVER_ON_COMMIT"] = False

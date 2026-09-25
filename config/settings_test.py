@@ -1,8 +1,9 @@
 """Settings of the test suite: the regular settings under the `test` profile.
 
-The profile is chosen before `config.settings` reads the environment, so the
-fast password hasher, the in-memory mailbox and the temporary media root apply
-whatever the local `.env` says.
+The profile is chosen before `config.settings` reads the environment, so only
+the database connection is taken from a local `.env` (see `config/env.py`):
+local storage, UTC, default token lifetimes, fast password hasher, in-memory
+mailbox and a temporary media root, whatever the `.env` says.
 """
 
 import os
