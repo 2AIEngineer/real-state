@@ -63,6 +63,8 @@ def environment() -> str:
 def required_secret(name: str, *, production: bool, min_length: int = 32) -> str | None:
     """A secret that production must provide, long enough to sign with."""
     value = env(name)
-    if production and (not value or len(value) < min_length):
-        raise RuntimeError(f"{name} must be set to at least {min_length} characters in production.")
+    if production and not value:
+        raise RuntimeError(f"{name} must be set in production.")
+    if production and len(value) < min_length:
+        raise RuntimeError(f"{name} must be at least {min_length} characters long in production.")
     return value

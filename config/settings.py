@@ -153,28 +153,32 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = Path(env("MEDIA_ROOT", str(BASE_DIR / "media")))
 
-# Files are stored in Azure Blob in production and served from their plain
-# URL (the container is readable); on the local disk otherwise, served by the
-# development route of `config/urls.py`.
-AZURE_CONNECTION_STRING = env("AZURE_CONNECTION_STRING")
-AZURE_CONTAINER = env("AZURE_CONTAINER")
-if AZURE_CONNECTION_STRING and AZURE_CONTAINER:
+# Where files are stored follows the environment, never the presence of
+# credentials: Azure Blob in production (served from their plain URL, the
+# container is readable), the local disk in development and test (served by the
+# development route of `config/urls.py`), whatever the `.env` holds.
+static_storage = {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"}
+if IS_PRODUCTION:
     STORAGES = {
         "default": {
             "BACKEND": "storages.backends.azure_storage.AzureStorage",
             "OPTIONS": {
-                "connection_string": AZURE_CONNECTION_STRING,
-                "azure_container": AZURE_CONTAINER,
+                "connection_string": required_secret(
+                    "AZURE_CONNECTION_STRING", production=True, min_length=1
+                ),
+                "azure_container": required_secret(
+                    "AZURE_CONTAINER", production=True, min_length=1
+                ),
                 "expiration_secs": None,
                 "overwrite_files": False,
             },
         },
-        "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+        "staticfiles": static_storage,
     }
 else:
     STORAGES = {
         "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
-        "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+        "staticfiles": static_storage,
     }
 
 # A request body other than files (JSON, form fields) is read in memory: keep it
@@ -310,9 +314,4 @@ if IS_TEST:
     PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
     EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
     MEDIA_ROOT = Path(env("TEST_MEDIA_ROOT", "/tmp/residential-test-media"))
-    # Tests never reach a storage service, even when the shell defines one.
-    STORAGES = {
-        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
-        "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
-    }
     NOTIFICATIONS["DELIVER_ON_COMMIT"] = False
