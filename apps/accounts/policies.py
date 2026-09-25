@@ -13,11 +13,17 @@ Three questions live here, in that order:
    never the actor's own account — is `can_assign_account`, and the assignment
    services ask both.
 
-The rules, in one paragraph: admins do anything, and are the only ones to
-create admins and providers. A syndic hands out the syndic, manager and field
-roles (maintenance, security, cleaning) on the syndicats they run. A manager
-hands out the field roles only, on the properties they manage. Nobody changes
-their own role or their own assignments.
+The rules, in one table (`roles_handled_by`):
+
+| Actor   | Creates, edits, deactivates and deletes the accounts of the roles |
+|---------|-------------------------------------------------------------------|
+| admin   | every role, admin and provider included (only admins handle those) |
+| syndic  | syndic, manager, security, cleaning, maintenance, standard         |
+| manager | manager, security, cleaning, maintenance, standard                 |
+
+A syndic or a manager acts on the accounts they can see (tied to the
+properties they manage, or created by them), never on their own account for
+its role, status or deletion; everyone edits their own profile.
 """
 
 from django.contrib.auth import get_user_model
@@ -70,15 +76,33 @@ def users_linked_to_properties(property_ids) -> QuerySet:
     ).distinct()
 
 
+def _has_active_assignment(account) -> bool:
+    return any(
+        model.objects.filter(user=account, is_active=True).exists()
+        for model in (UserSyndicat, UserProperty, UserBuilding)
+    )
+
+
+def _was_assigned_in(account, property_ids) -> bool:
+    """Whether `account` held an assignment, even revoked, in one of these properties."""
+    syndicats = Property.objects.filter(id__in=property_ids).values("syndicat_id")
+    return (
+        UserSyndicat.objects.filter(user=account, syndicat_id__in=syndicats).exists()
+        or UserProperty.objects.filter(user=account, property_id__in=property_ids).exists()
+        or UserBuilding.objects.filter(
+            user=account, building__property_id__in=property_ids
+        ).exists()
+    )
+
+
 # --------------------------------------------------------------------- accounts
 
 
 class AccountPolicy:
     """Account management is open to admins and to syndics and managers
     assigned somewhere. Staff see the accounts tied to the properties they
-    manage and the accounts they created. Everyone edits their own profile;
-    only platform administrators edit someone else's, change their e-mail, or
-    deactivate and close accounts."""
+    manage and the accounts they created, and manage those holding a role they
+    handle (`can_manage_account`). Everyone edits their own profile."""
 
     @staticmethod
     def can_manage_accounts(user) -> bool:
@@ -120,54 +144,79 @@ class AccountPolicy:
         if account.created_by_id == user.pk:
             return True
         managed = AccessService.managed_property_ids(user)
-        return users_linked_to_properties(managed).filter(pk=account.pk).exists()
+        if users_linked_to_properties(managed).filter(pk=account.pk).exists():
+            return True
+        # An account left without any active assignment (deactivated, or revoked
+        # everywhere) stays in the reach of whoever ran the places it was assigned
+        # to, so it can be reactivated, reassigned or deleted. One working
+        # elsewhere now is out of their reach.
+        return not _has_active_assignment(account) and _was_assigned_in(account, managed)
+
+    @staticmethod
+    def can_manage_account(user, account) -> bool:
+        """Edit, invite, deactivate, reactivate or delete someone else's account:
+        an admin, or a syndic or manager who sees the account and handles its role."""
+        if AccessService.is_platform_admin(user):
+            return True
+        return (
+            user.is_active
+            and user.pk != account.pk
+            and account.role in roles_handled_by(user)
+            and AccountPolicy.can_view(user, account)
+        )
 
     @staticmethod
     def can_invite(user, account) -> bool:
-        return AccountPolicy.can_manage_accounts(user) and AccountPolicy.can_view(user, account)
+        return AccountPolicy.can_manage_account(user, account)
 
     @staticmethod
     def can_edit_profile(user, account) -> bool:
-        return user.pk == account.pk or AccessService.is_platform_admin(user)
+        return user.pk == account.pk or AccountPolicy.can_manage_account(user, account)
 
     @staticmethod
     def can_change_email(user, account) -> bool:
-        """The owner of the account (who must confirm their password) or an admin."""
-        return user.pk == account.pk or AccessService.is_platform_admin(user)
+        """The holder (who confirms their password) or whoever manages the account."""
+        return user.pk == account.pk or AccountPolicy.can_manage_account(user, account)
 
     @staticmethod
-    def can_change_status(user) -> bool:
-        """Deactivate, reactivate and close accounts."""
-        return AccessService.is_platform_admin(user)
+    def can_change_status(user, account) -> bool:
+        """Deactivate, reactivate and delete an account (never one's own)."""
+        return user.pk != account.pk and AccountPolicy.can_manage_account(user, account)
 
     @staticmethod
     def can_edit_provider_profile(user, account) -> bool:
-        if user.pk == account.pk:
-            return True
-        return AccountPolicy.can_manage_accounts(user) and AccountPolicy.can_view(user, account)
+        """Providers are handled by admins only, besides the provider themselves."""
+        return user.pk == account.pk or AccountPolicy.can_manage_account(user, account)
 
 
 # ------------------------------------------------------------------------ roles
 
 
 def roles_handled_by(user) -> tuple[str, ...]:
-    """The staff roles a syndic or a manager may give and assign."""
+    """The roles whose accounts a syndic or a manager creates, edits, deactivates,
+    deletes and assigns. Admins handle every role (checked before this is asked);
+    admin and provider accounts are theirs alone."""
     if user.role == StructuralRole.SYNDIC:
-        return (StructuralRole.SYNDIC, StructuralRole.MANAGER, *FIELD_STAFF)
+        return (
+            StructuralRole.SYNDIC,
+            StructuralRole.MANAGER,
+            *FIELD_STAFF,
+            StructuralRole.STANDARD,
+        )
     if user.role == StructuralRole.MANAGER:
-        return FIELD_STAFF
+        return (StructuralRole.MANAGER, *FIELD_STAFF, StructuralRole.STANDARD)
     return ()
 
 
 def can_give_role(user, role: str) -> bool:
     """Whether `user` may hand out this role at all — when creating an account,
     or when changing the role of one. Admins give any role; a syndic or a
-    manager gives the standard role and the staff roles they handle."""
+    manager gives the roles they handle."""
     if AccessService.is_platform_admin(user):
         return True
     if not user.is_active:
         return False
-    return role in (StructuralRole.STANDARD, *roles_handled_by(user))
+    return role in roles_handled_by(user)
 
 
 def can_change_role(user, account, new_role: str) -> bool:

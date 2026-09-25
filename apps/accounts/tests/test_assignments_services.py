@@ -280,10 +280,15 @@ class TestWhoCreatesWhichRole:
             == "manager"
         )
 
-    @pytest.mark.parametrize("role", ["syndic", "manager"])
-    def test_manager_cannot_create_syndics_or_managers(self, world, role):
+    def test_manager_cannot_create_syndics(self, world):
         with pytest.raises(PermissionDenied):
-            create(world.manager, role, syndicat=world.syndicat)
+            create(world.manager, "syndic", syndicat=world.syndicat)
+
+    def test_manager_creates_managers_of_their_property(self, world):
+        manager = create(
+            world.manager, "manager", syndicat=world.syndicat, prop=world.prop, email="m2@x.test"
+        )
+        assert manager.role == "manager"
 
 
 class TestFieldRoleAssignments:

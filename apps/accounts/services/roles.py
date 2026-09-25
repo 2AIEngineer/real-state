@@ -9,8 +9,8 @@ one: it is refused while the account still has active assignments (they must
 be revoked explicitly first, each revocation being audited).
 
 Who may set which role (see `can_change_role`): admins any role; syndics
-standard, syndic, manager and field roles; managers standard and field
-roles. Only an admin creates an admin or a provider.
+standard, syndic, manager and field roles; managers standard, manager and
+field roles. Only an admin gives the admin or provider role.
 """
 
 from __future__ import annotations

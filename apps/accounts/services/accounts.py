@@ -219,7 +219,7 @@ class AccountService:
     @transaction.atomic
     def update_profile(*, actor, user, changes: dict):
         if not AccountPolicy.can_edit_profile(actor, user):
-            raise PermissionDenied("You can only edit your own profile.")
+            raise PermissionDenied("You can only edit your own profile or an account you manage.")
         fields = apply_changes(user, changes, PROFILE_FIELDS)
         if fields:
             user.save(update_fields=[*fields, "updated_at"])

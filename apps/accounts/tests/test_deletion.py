@@ -62,11 +62,15 @@ def test_a_lease_left_without_occupant_ends(world):
     assert Lease.objects.get(pk=world.lease.pk).status != LeaseStatus.ACTIVE
 
 
-def test_only_admins_delete_and_never_themselves(world):
-    with pytest.raises(PermissionDenied):
-        AccountStatusService.delete(actor=world.manager, user=world.tenant)
-    with pytest.raises(BusinessRuleViolation):
-        AccountStatusService.delete(actor=world.admin, user=world.admin)
+def test_nobody_deletes_their_own_account(world):
+    for actor in (world.admin, world.syndic, world.manager):
+        with pytest.raises((PermissionDenied, BusinessRuleViolation)):
+            AccountStatusService.delete(actor=actor, user=actor)
+
+
+def test_a_manager_deletes_an_account_of_their_property(world):
+    AccountStatusService.delete(actor=world.manager, user=world.tenant)
+    assert not User.objects.filter(pk=world.tenant.pk).exists()
 
 
 def test_technical_accounts_go_with_their_promoter(world):

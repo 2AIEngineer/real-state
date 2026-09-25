@@ -36,7 +36,7 @@ class ProviderProfileService:
         if actor.pk != user.pk and not AccountPolicy.can_view(actor, user):
             raise NotFound("User not found.")
         if not AccountPolicy.can_edit_provider_profile(actor, user):
-            raise PermissionDenied("Only administrators, syndics and managers can manage accounts.")
+            raise PermissionDenied("Provider accounts are managed by administrators.")
         if user.role != StructuralRole.PROVIDER:
             raise BusinessRuleViolation(
                 "Only accounts holding the provider role have a provider profile."

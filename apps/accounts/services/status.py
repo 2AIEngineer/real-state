@@ -29,6 +29,11 @@ from apps.properties.services import OwnershipService
 
 User = get_user_model()
 
+MANAGE_THIS_ACCOUNT = (
+    "You cannot manage this account: admins manage every account, syndics and managers "
+    "those holding a role they handle, never their own."
+)
+
 
 class AccountStatusService:
     @staticmethod
@@ -53,8 +58,8 @@ class AccountStatusService:
     @staticmethod
     @transaction.atomic
     def deactivate(*, actor, user, reason: str = ""):
-        if not AccountPolicy.can_change_status(actor):
-            raise PermissionDenied("Only platform administrators can deactivate accounts.")
+        if not AccountPolicy.can_change_status(actor, user):
+            raise PermissionDenied(MANAGE_THIS_ACCOUNT)
         if actor.pk == user.pk:
             raise BusinessRuleViolation("You cannot deactivate your own account.")
         user = User.objects.select_for_update(of=("self",)).get(pk=user.pk)
@@ -89,12 +94,10 @@ class AccountStatusService:
     @staticmethod
     @transaction.atomic
     def reactivate(*, actor, user):
-        if not AccountPolicy.can_change_status(actor):
-            raise PermissionDenied("Only platform administrators can reactivate accounts.")
+        if not AccountPolicy.can_change_status(actor, user):
+            raise PermissionDenied(MANAGE_THIS_ACCOUNT)
         if user.is_active:
             raise BusinessRuleViolation("This account is already active.")
-        if user.email.endswith("@erased.invalid"):
-            raise BusinessRuleViolation("A closed account cannot be reactivated.")
         user.is_active = True
         user.deactivated_at = None
         user.save(update_fields=["is_active", "deactivated_at", "updated_at"])
@@ -116,8 +119,8 @@ class AccountStatusService:
         without an owner reverts to its promoter, a lease left without an
         occupant ends.
         """
-        if not AccountPolicy.can_change_status(actor):
-            raise PermissionDenied("Only platform administrators can delete accounts.")
+        if not AccountPolicy.can_change_status(actor, user):
+            raise PermissionDenied(MANAGE_THIS_ACCOUNT)
         if actor.pk == user.pk:
             raise BusinessRuleViolation("You cannot delete your own account.")
         if user.is_technical_account:

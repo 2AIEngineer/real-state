@@ -144,6 +144,19 @@ jamais des rôles stockés : ils se déduisent de `UnitOwnership` et de `LeaseMe
 - Chaque module décide pour ses ressources dans son `policies.py`.
 - `accounts/services/visibility.py` répond à la question des contenus adressés à des rôles.
 
+Gestion des comptes (créer, modifier, désactiver, réactiver, supprimer), dans `accounts/policies.py` :
+
+| Acteur | Gère les comptes des rôles |
+|---|---|
+| `admin` | tous, y compris `admin` et `provider` (qu'il est seul à gérer) |
+| `syndic` | `syndic`, `manager`, `security`, `cleaning`, `maintenance`, `standard` |
+| `manager` | `manager`, `security`, `cleaning`, `maintenance`, `standard` |
+
+Un syndic ou un gérant n'agit que sur les comptes qu'il voit : ceux liés aux propriétés qu'il gère, ceux
+qu'il a créés, et ceux qui n'ont plus aucune assignation active après en avoir eu une chez lui (un compte
+désactivé reste ainsi réactivable ou supprimable). Personne ne change son propre rôle, ne se désactive
+ni ne se supprime ; chacun modifie son propre profil.
+
 ### Sélection du syndicat et de la propriété
 
 Le serveur ne traite jamais une requête de tableau de bord sans savoir, de façon certaine, pour quelle
