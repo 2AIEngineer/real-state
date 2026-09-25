@@ -14,6 +14,8 @@ from django.db.models import QuerySet
 from django.utils import timezone
 
 from apps.accounts.services.authorization import AccessService
+from apps.common.attachments.rules import EntityType
+from apps.common.attachments.service import AttachmentService
 from apps.common.exceptions import (
     BusinessRuleViolation,
     InvalidInput,
@@ -21,8 +23,6 @@ from apps.common.exceptions import (
     NotFound,
     PermissionDenied,
 )
-from apps.common.files.rules import EntityType
-from apps.common.files.service import AttachmentService
 from apps.common.services.audit import AuditService
 from apps.service_requests import notices
 from apps.service_requests.audit import ServiceRequestAudit

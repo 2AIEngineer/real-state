@@ -20,8 +20,8 @@ from django.db import router, transaction
 from django.db.models import Model
 from django.db.models.deletion import Collector
 
-from apps.common.files.rules import entity_types_owned_by
-from apps.common.files.service import AttachmentService
+from apps.common.attachments.rules import entity_types_owned_by
+from apps.common.attachments.service import AttachmentService
 
 
 def _rows_reached(obj: Model) -> dict[type[Model], set[int]]:

@@ -3,8 +3,8 @@ from rest_framework import serializers
 
 from apps.accounts.enums import PropertyRole
 from apps.announcements.models import Announcement, AnnouncementCategory, AnnouncementPriority
-from apps.common.files.rules import EntityType
-from apps.common.files.serializers import AttachmentsField
+from apps.common.attachments.rules import EntityType
+from apps.common.attachments.serializers import AttachmentsField
 from apps.common.serializers import UserSummarySerializer
 
 

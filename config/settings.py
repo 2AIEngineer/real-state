@@ -147,17 +147,18 @@ USE_TZ = True
 # --- Files -------------------------------------------------------------------
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+MEDIA_URL = "/media/"
 MEDIA_ROOT = Path(env("MEDIA_ROOT", str(BASE_DIR / "media")))
 
-# The container is private: every file is read through a signed link
-# (`apps.common.files.links`). Production refuses to start without it, so
-# personal documents can never end up on the server's disk.
+# Files are stored in Azure Blob in production and served from their plain
+# URL (the container is readable); on the local disk otherwise, served by the
+# development route of `config/urls.py`.
 AZURE_CONNECTION_STRING = env("AZURE_CONNECTION_STRING")
 AZURE_CONTAINER = env("AZURE_CONTAINER")
 if AZURE_CONNECTION_STRING and AZURE_CONTAINER:
     STORAGES = {
         "default": {
-            "BACKEND": "apps.common.files.storage.AzureFileStorage",
+            "BACKEND": "storages.backends.azure_storage.AzureStorage",
             "OPTIONS": {
                 "connection_string": AZURE_CONNECTION_STRING,
                 "azure_container": AZURE_CONTAINER,
@@ -167,17 +168,14 @@ if AZURE_CONNECTION_STRING and AZURE_CONTAINER:
         },
         "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
     }
-elif IS_PRODUCTION:
-    raise RuntimeError("AZURE_CONNECTION_STRING and AZURE_CONTAINER must be set in production.")
 else:
     STORAGES = {
         "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
         "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
     }
 
-
 # A request body other than files (JSON, form fields) is read in memory: keep it
-# small. Files have their own limits, per kind, in `apps.common.files.rules`.
+# small. Files have their own limits, per kind, in `apps.common.attachments.rules`.
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
 

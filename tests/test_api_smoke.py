@@ -15,7 +15,6 @@ PUBLIC = {
     "docs",
     "healthz",
     "readyz",
-    "file",  # signed links carry their own authorization
 }
 
 

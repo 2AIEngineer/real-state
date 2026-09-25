@@ -8,11 +8,11 @@ from django.db import transaction
 from django.db.models import QuerySet
 
 from apps.accounts.services.assignments import PropertyAssignmentService
+from apps.common.attachments.rules import EntityType
+from apps.common.attachments.service import AttachmentService
 from apps.common.db import apply_changes, translate_integrity_errors
 from apps.common.deletion import destroy
 from apps.common.exceptions import BusinessRuleViolation, InvalidInput, NotFound, PermissionDenied
-from apps.common.files.rules import EntityType
-from apps.common.files.service import AttachmentService
 from apps.common.services.audit import AuditService
 from apps.properties import errors, notices
 from apps.properties.audit import PropertyAudit

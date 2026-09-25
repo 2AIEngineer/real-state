@@ -7,13 +7,13 @@ from dataclasses import dataclass, field
 from django.db import transaction
 from django.db.models import QuerySet
 
+from apps.common.attachments.rules import EntityType
+from apps.common.attachments.service import AttachmentService
 from apps.common.db import apply_changes
 from apps.common.exceptions import (
     BusinessRuleViolation,
     NotFound,
 )
-from apps.common.files.rules import EntityType
-from apps.common.files.service import AttachmentService
 from apps.common.services.audit import AuditService
 from apps.properties.models import Property
 from apps.short_term_rental.audit import ShortTermRentalAudit

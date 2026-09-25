@@ -8,7 +8,7 @@ import mimetypes
 import filetype
 from django.core.files.uploadedfile import UploadedFile
 
-from apps.common.files.rules import TEXT
+from apps.common.attachments.rules import TEXT
 
 _ALIASES = {"image/jpg": "image/jpeg"}
 

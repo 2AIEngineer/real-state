@@ -19,10 +19,10 @@ from apps.chat import notices
 from apps.chat.contexts import CONTEXTS, context_of, load_context
 from apps.chat.models import ChatMessage, ChatReadMarker, ChatRoom
 from apps.chat.policies import ChatPolicy
+from apps.common.attachments.rules import EntityType
+from apps.common.attachments.service import AttachmentService
 from apps.common.deletion import destroy
 from apps.common.exceptions import InvalidInput, NotFound, PermissionDenied
-from apps.common.files.rules import EntityType
-from apps.common.files.service import AttachmentService
 from apps.properties.enums import Feature
 from apps.properties.models import Property
 from apps.properties.services import FeatureGate

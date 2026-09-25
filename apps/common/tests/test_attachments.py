@@ -1,9 +1,9 @@
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
 
+from apps.common.attachments.rules import RULES, EntityType
+from apps.common.attachments.service import AttachmentService
 from apps.common.exceptions import InvalidInput
-from apps.common.files.rules import RULES, EntityType
-from apps.common.files.service import AttachmentService
 from tests import factories as f
 
 pytestmark = pytest.mark.django_db

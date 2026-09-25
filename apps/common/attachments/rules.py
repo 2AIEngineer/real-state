@@ -1,14 +1,12 @@
-"""What each kind of file may be: its formats, how many, how big, and who may read it.
+"""What each kind of file may be: its formats, how many, how big, and which record owns it.
 
 Every file belongs to one entity, named by its type and its id (`EntityType`).
 The type also says which slot of the record the file fills (a lease member has
 a proof of identity and a proof of address: two types). For each type, `RULES`
 fixes the accepted formats, the maximum number of files, the maximum size of
-one file, and whether the file is public. When the maximum is 1, a new upload
+one file, and the model that owns the files. When the maximum is 1, a new upload
 replaces the current file.
 
-A *public* file (a logo, a product photo) has a link that never expires. Every
-other file is private: its link is personal and expires (see `links.py`).
 """
 
 from __future__ import annotations
@@ -53,9 +51,6 @@ EXTENSIONS: dict[str, str] = {
     "text/plain": ".txt",
 }
 
-# Formats a browser shows by itself; the others are downloaded.
-SHOWN_INLINE = IMAGES | PDF | TEXT
-
 
 class EntityType(models.TextChoices):
     SYNDICAT_LOGO = "syndicat_logo", "Syndicat logo"
@@ -92,32 +87,23 @@ class AttachmentRule:
     # The model the files belong to ("app_label.Model"): when one of its rows is
     # deleted, directly or by cascade, its files go with it (`apps.common.deletion`).
     owner: str
-    public: bool = False
 
     def describe_types(self) -> str:
         return ", ".join(sorted(t.split("/")[-1] for t in self.allowed_types))
 
 
-def _rule(types, *, owner: str, files: int, mb: int, public: bool = False) -> AttachmentRule:
-    return AttachmentRule(
-        types, max_files=files, max_size_bytes=mb * MB, owner=owner, public=public
-    )
+def _rule(types, *, owner: str, files: int, mb: int) -> AttachmentRule:
+    return AttachmentRule(types, max_files=files, max_size_bytes=mb * MB, owner=owner)
 
 
 RULES: dict[str, AttachmentRule] = {
-    # Public: shown to anyone who has the link (branding and catalogue pictures).
-    EntityType.SYNDICAT_LOGO: _rule(
-        IMAGES, owner="properties.Syndicat", files=1, mb=10, public=True
-    ),
-    EntityType.PROPERTY_LOGO: _rule(
-        IMAGES, owner="properties.Property", files=1, mb=10, public=True
-    ),
-    EntityType.AMENITY: _rule(IMAGES, owner="amenities.Amenity", files=20, mb=10, public=True),
-    EntityType.PRODUCT: _rule(IMAGES, owner="store.Product", files=20, mb=10, public=True),
+    EntityType.SYNDICAT_LOGO: _rule(IMAGES, owner="properties.Syndicat", files=1, mb=10),
+    EntityType.PROPERTY_LOGO: _rule(IMAGES, owner="properties.Property", files=1, mb=10),
+    EntityType.AMENITY: _rule(IMAGES, owner="amenities.Amenity", files=20, mb=10),
+    EntityType.PRODUCT: _rule(IMAGES, owner="store.Product", files=20, mb=10),
     EntityType.MARKETPLACE_LISTING: _rule(
-        IMAGES, owner="marketplace.MarketplaceListing", files=20, mb=10, public=True
+        IMAGES, owner="marketplace.MarketplaceListing", files=20, mb=10
     ),
-    # Private: residents' content and personal documents.
     EntityType.ANNOUNCEMENT: _rule(DOCUMENTS, owner="announcements.Announcement", files=30, mb=25),
     EntityType.EVENT: _rule(DOCUMENTS, owner="events.Event", files=30, mb=25),
     EntityType.SURVEY: _rule(DOCUMENTS, owner="surveys.Survey", files=30, mb=25),

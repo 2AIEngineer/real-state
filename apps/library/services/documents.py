@@ -5,11 +5,11 @@ from __future__ import annotations
 from django.db import transaction
 from django.db.models import QuerySet
 
+from apps.common.attachments.rules import EntityType
+from apps.common.attachments.service import AttachmentService
 from apps.common.db import apply_changes
 from apps.common.deletion import destroy
 from apps.common.exceptions import InvalidInput, NotFound, PermissionDenied
-from apps.common.files.rules import EntityType
-from apps.common.files.service import AttachmentService
 from apps.common.services.audit import AuditService
 from apps.library import notices
 from apps.library.audit import LibraryAudit

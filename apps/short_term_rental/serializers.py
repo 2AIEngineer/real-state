@@ -1,8 +1,8 @@
 from drf_spectacular.utils import extend_schema_serializer
 from rest_framework import serializers
 
-from apps.common.files.rules import EntityType
-from apps.common.files.serializers import AttachmentsField
+from apps.common.attachments.rules import EntityType
+from apps.common.attachments.serializers import AttachmentsField
 from apps.common.serializers import UserSummarySerializer
 from apps.short_term_rental.models import (
     Gender,

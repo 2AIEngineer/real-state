@@ -6,6 +6,8 @@ import datetime as dt
 
 from django.db import transaction
 
+from apps.common.attachments.rules import EntityType
+from apps.common.attachments.service import AttachmentService
 from apps.common.db import apply_changes, translate_integrity_errors
 from apps.common.exceptions import (
     BusinessRuleViolation,
@@ -14,8 +16,6 @@ from apps.common.exceptions import (
     NotFound,
     PermissionDenied,
 )
-from apps.common.files.rules import EntityType
-from apps.common.files.service import AttachmentService
 from apps.common.services.audit import AuditService
 from apps.leasing import errors, notices
 from apps.leasing.audit import LeaseAudit

@@ -135,17 +135,12 @@ export const actionReasonRequestSchema = z.object({
 });
 export type ActionReasonRequest = z.infer<typeof actionReasonRequestSchema>;
 
-/**
- * A stored file with a ready-to-use URL: use it as is (`<img src>`, `<iframe>`,
- * a link), no header and no extra call. Public files (logos, catalogue photos)
- * have a permanent URL; private ones a personal URL valid for 12 to 24 hours,
- * renewed in every API response.
- */
+/** A stored file with a ready-to-use URL: no extra call to read it. */
 export const attachmentSchema = z.object({
   id: z.number().int(),
   entity_type: entityTypeSchema,
   entity_id: z.number().int(),
-  /** Signed link to the file (see above). */
+  /** Absolute URL of the file, from the storage it lives in. */
   url: z.string(),
   original_filename: z.string(),
   mime_type: z.string(),

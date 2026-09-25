@@ -1,8 +1,8 @@
 import pytest
 
+from apps.common.attachments.rules import EntityType
+from apps.common.attachments.service import AttachmentService
 from apps.common.exceptions import BusinessRuleViolation, InvalidInput, PermissionDenied
-from apps.common.files.rules import EntityType
-from apps.common.files.service import AttachmentService
 from apps.marketplace.models import ListingCategory, ListingStatus
 from apps.marketplace.services import ListingService
 from apps.notifications.models import InboxNotification

@@ -17,6 +17,8 @@ from django.db import transaction
 from django.db.models import Q, QuerySet
 from django.utils import timezone
 
+from apps.common.attachments.rules import EntityType
+from apps.common.attachments.service import AttachmentService
 from apps.common.db import apply_changes
 from apps.common.deletion import destroy
 from apps.common.exceptions import (
@@ -26,8 +28,6 @@ from apps.common.exceptions import (
     NotFound,
     PermissionDenied,
 )
-from apps.common.files.rules import EntityType
-from apps.common.files.service import AttachmentService
 from apps.common.services.audit import AuditService
 from apps.marketplace import notices
 from apps.marketplace.audit import MarketplaceAudit

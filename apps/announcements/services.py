@@ -16,11 +16,11 @@ from apps.announcements import notices
 from apps.announcements.audit import AnnouncementAudit
 from apps.announcements.models import Announcement, AnnouncementPriority
 from apps.announcements.policies import AnnouncementPolicy
+from apps.common.attachments.rules import EntityType
+from apps.common.attachments.service import AttachmentService
 from apps.common.db import apply_changes
 from apps.common.deletion import destroy
 from apps.common.exceptions import InvalidInput, NotFound, PermissionDenied
-from apps.common.files.rules import EntityType
-from apps.common.files.service import AttachmentService
 from apps.common.services.audit import AuditService
 from apps.notifications.services import SnapshotService
 from apps.properties.enums import Feature

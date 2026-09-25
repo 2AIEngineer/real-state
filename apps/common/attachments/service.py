@@ -1,9 +1,9 @@
 """Single entry point for storing, listing and deleting files.
 
 A file is attached to an entity (`entity_type` + `entity_id`); the rules of
-each type (formats, number of files, size, visibility) are in `rules.py`.
-Reading needs no service: the serializer hands out a signed link (`links.py`)
-that the client uses directly.
+each type (formats, number of files, size, owner) are in `rules.py`.
+Reading needs no service: the serializer hands out the URL of the stored
+file, which the client uses directly.
 """
 
 from __future__ import annotations
@@ -16,9 +16,9 @@ from django.core.files.uploadedfile import UploadedFile
 from django.db import transaction
 from django.db.models import QuerySet
 
+from apps.common.attachments.formats import detect_mime_type, sha256_of
+from apps.common.attachments.rules import RULES, AttachmentRule
 from apps.common.exceptions import InvalidInput, NotFound
-from apps.common.files.formats import detect_mime_type, sha256_of
-from apps.common.files.rules import RULES, AttachmentRule
 from apps.common.models import Attachment
 
 logger = logging.getLogger(__name__)

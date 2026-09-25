@@ -13,11 +13,11 @@ from django.utils import timezone
 
 from apps.accounts.enums import StructuralRole
 from apps.accounts.services.authorization import AccessService
+from apps.common.attachments.rules import EntityType
+from apps.common.attachments.service import AttachmentService
 from apps.common.db import apply_changes
 from apps.common.deletion import destroy
 from apps.common.exceptions import InvalidInput, InvalidTransition, NotFound, PermissionDenied
-from apps.common.files.rules import EntityType
-from apps.common.files.service import AttachmentService
 from apps.common.services.audit import AuditService
 from apps.properties.models import Building, Property, Unit
 from apps.service_requests.models import ServiceRequest

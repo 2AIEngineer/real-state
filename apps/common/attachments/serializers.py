@@ -4,17 +4,12 @@ from collections import defaultdict
 
 from rest_framework import serializers
 
-from apps.common.files import links
-from apps.common.files.service import AttachmentService
+from apps.common.attachments.service import AttachmentService
 from apps.common.models import Attachment
 
 
 class AttachmentSerializer(serializers.ModelSerializer):
-    """A stored file with a ready-to-use URL: no extra call, no header to read it.
-
-    `url` is a signed link (see `links.py`): permanent for public files,
-    personal and renewed on every response for private ones.
-    """
+    """A stored file with a ready-to-use URL: no extra call to read it."""
 
     url = serializers.SerializerMethodField()
 
@@ -36,9 +31,10 @@ class AttachmentSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
     def get_url(self, obj: Attachment) -> str:
+        """Absolute URL of the file, from the storage it lives in."""
+        url = obj.file.url
         request = self.context.get("request")
-        path = links.path_of(obj, getattr(request, "user", None))
-        return request.build_absolute_uri(path) if request else path
+        return request.build_absolute_uri(url) if request else url
 
 
 class AttachmentsField(serializers.Field):

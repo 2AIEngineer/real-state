@@ -53,4 +53,4 @@ def test_tenant_uploads_own_identity_proof(api, world):
         and response.json()["proof_of_identity"]["mime_type"] == "application/pdf"
     )
     proof = response.json()["proof_of_identity"]
-    assert "/api/v1/files/" in proof["url"] and proof["entity_type"] == "lease_member_identity"
+    assert proof["url"].endswith(".pdf") and proof["entity_type"] == "lease_member_identity"

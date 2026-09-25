@@ -3,9 +3,9 @@
 import pytest
 
 from apps.chat.services import ChatService
+from apps.common.attachments.rules import EntityType
+from apps.common.attachments.service import AttachmentService
 from apps.common.deletion import destroy
-from apps.common.files.rules import EntityType
-from apps.common.files.service import AttachmentService
 from apps.common.models import Attachment
 from apps.notifications.models import InboxNotification
 from apps.service_requests.services import ServiceRequestService

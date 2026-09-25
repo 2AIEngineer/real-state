@@ -1,4 +1,4 @@
-"""A stored file, attached to any entity: its rules live in `apps.common.files.rules`."""
+"""A stored file, attached to any entity: its rules live in `apps.common.attachments.rules`."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 
-from apps.common.files.rules import EXTENSIONS, SINGLE_FILE_TYPES, EntityType
+from apps.common.attachments.rules import EXTENSIONS, SINGLE_FILE_TYPES, EntityType
 
 
 def attachment_upload_to(instance: Attachment, filename: str) -> str:

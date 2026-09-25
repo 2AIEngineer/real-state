@@ -13,10 +13,10 @@ from django.db import transaction
 from django.db.models import QuerySet
 from django.utils import timezone
 
+from apps.common.attachments.rules import EntityType
+from apps.common.attachments.service import AttachmentService
 from apps.common.deletion import destroy
 from apps.common.exceptions import InvalidInput, InvalidTransition, NotFound, PermissionDenied
-from apps.common.files.rules import EntityType
-from apps.common.files.service import AttachmentService
 from apps.common.services.audit import AuditService
 from apps.properties.enums import Feature
 from apps.properties.models import Property, Unit

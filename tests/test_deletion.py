@@ -14,9 +14,9 @@ import pytest
 from django.utils import timezone
 
 from apps.amenities.services import AmenityService, BookingService
+from apps.common.attachments.rules import EntityType
+from apps.common.attachments.service import AttachmentService
 from apps.common.exceptions import BusinessRuleViolation, NotFound, PermissionDenied
-from apps.common.files.rules import EntityType
-from apps.common.files.service import AttachmentService
 from apps.common.models import Attachment
 from apps.leasing.models import CheckPhase, ComponentCondition
 from apps.leasing.services import LeaseComponentStateService
