@@ -111,7 +111,7 @@ class LeaseMember(TimeStampedModel):
 
     lease = models.ForeignKey(Lease, on_delete=models.CASCADE, related_name="members")
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="lease_memberships"
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="lease_memberships"
     )
     joined_at = models.DateField()
     left_at = models.DateField(null=True, blank=True)

@@ -27,7 +27,7 @@ class Visitor(TimeStampedModel):
     denial_reason = models.TextField(blank=True)
     notes = models.TextField(blank=True)
     registered_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+"
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
     checked_out_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"

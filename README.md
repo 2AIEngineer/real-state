@@ -101,44 +101,37 @@ appels se lisent à l'endroit où ils ont lieu, sans détour par un mécanisme d
 Deux actions distinctes, au choix de l'utilisateur :
 
 - **archiver** (ou désactiver, clôturer, annuler selon la ressource) garde tout l'historique ;
-- **supprimer** est une action consciente et destructive : la ressource part avec tout ce qui en dépend
-  (clés étrangères en `CASCADE`). Supprimer un bâtiment supprime ses lots, leurs baux, leurs occupants,
-  leurs demandes, et ainsi de suite. Aucune suppression n'est refusée parce que d'autres enregistrements
-  pointent vers la ligne.
+- **supprimer** est une action consciente et destructive, jamais refusée parce que d'autres
+  enregistrements dépendent de la ressource :
+  - ce qui **appartient** à la ressource part avec elle (`CASCADE`). Supprimer un bâtiment supprime ses
+    lots, leurs baux, leurs occupants, leurs demandes, et ainsi de suite ;
+  - ce qui la **cite seulement comme auteur** reste, sans auteur (`SET_NULL`).
 
-Trois exceptions seulement : les comptes utilisateurs ne sont jamais supprimés mais fermés (données
-personnelles effacées, `AccountStatusService.close`), un promoteur qui développe encore une propriété se
-remplace sur la propriété avant d'être supprimé (c'est une référence, pas un contenant), et les dossiers
-par défaut de la bibliothèque restent. Une ligne de commande garde ses nom et prix quand le produit est
-retiré du catalogue.
+Cela vaut aussi pour les comptes : supprimer un utilisateur supprime ce qui est à lui (ses propriétés de
+lots, ses places dans les baux, ses demandes, réservations, commandes, annonces de la marketplace,
+messages, réponses aux sondages, appareils, notifications, assignations), avec leurs fichiers. Ce qu'il a
+rédigé ou enregistré pour la résidence (annonces, événements, documents, visiteurs…) reste, sans auteur.
+Un lot resté sans propriétaire revient au promoteur, un bail resté sans occupant prend fin. Qui ne veut
+pas supprimer un compte le désactive.
+
+Une seule exception : une propriété ne peut pas exister sans promoteur. Supprimer un promoteur qui en
+développe encore répond 409 ; on lui en substitue un autre sur ses propriétés d'abord. Une ligne de
+commande garde ses nom et prix quand le produit est retiré du catalogue. Les dossiers par défaut de la
+bibliothèque ne sont qu'une préconfiguration : ils se modifient et se suppriment comme les autres.
 
 Un fichier ou une notification pointe vers un enregistrement par `(type, id)`, sans clé étrangère : la base
 ne peut pas les supprimer en cascade. Chaque `delete()` de service finit donc par
 `apps.common.deletion.destroy(objet)`, qui recense toutes les lignes atteintes par la cascade et supprime
 leurs fichiers (chaque type de fichier déclare son modèle propriétaire dans `rules.py`) et leurs traces de
-notification, dans la même transaction. Une suppression qui contournerait `destroy` (ORM brut) laisse des
-fichiers orphelins ; `purge_orphan_attachments` récupère les blobs stockés sans ligne.
+notification, dans la même transaction. `purge_orphan_attachments` récupère les blobs stockés sans ligne.
 
-Les règles de chaque type de fichier (formats, nombre, taille, public ou privé, modèle propriétaire) sont
-dans `apps/common/files/rules.py`. Le format est détecté d'après le contenu, jamais d'après l'extension,
-et le fichier est stocké et servi sous ce format.
+### Pièces jointes
 
-### Lire un fichier
-
-Le champ `url` d'une pièce jointe s'utilise tel quel (`<img src>`, `<iframe>`, lien de téléchargement) :
-ni en-tête, ni appel supplémentaire. C'est un lien signé vers `GET /api/v1/files/<jeton>/`
-(`apps/common/files/links.py`) :
-
-- fichier **public** (logos, photos du catalogue, des équipements et des annonces de la marketplace) :
-  lien permanent, identique pour tous ;
-- fichier **privé** (tout le reste : pièces d'identité, justificatifs, documents) : lien personnel, qui
-  n'expire pas avec le temps. Il cesse de fonctionner seulement quand le compte de son lecteur est
-  désactivé ou change de mot de passe (le moment où toutes ses sessions sont coupées). Le client n'a donc
-  jamais d'expiration à gérer, même dans un onglet resté ouvert des jours.
-
-En production, le conteneur Azure est privé : le lien redirige vers une URL SAS courte, que le navigateur
-suit aussitôt (le client ne la manipule jamais), et qui impose le `Content-Type` et le
-`Content-Disposition` du fichier. En local, le fichier est servi directement.
+Les règles de chaque type de fichier (formats, nombre, taille, modèle propriétaire) sont dans
+`apps/common/attachments/rules.py`. Le format est détecté d'après le contenu, jamais d'après l'extension,
+et le fichier est stocké sous l'extension de ce format. Le champ `url` d'une pièce jointe est l'adresse du
+fichier dans son stockage (Azure Blob en production, disque local en développement) : il s'utilise tel
+quel, sans appel supplémentaire.
 
 ### Autorisation
 
@@ -199,7 +192,7 @@ le stock est réservé à la commande.
 1. `models.py` et sa migration.
 2. `errors.py`, `policies.py`, `services/`, `notices.py`, `audit.py`. Le `delete()` d'un service vérifie
    le droit, écrit l'audit puis appelle `destroy(objet)`. Un nouveau type de fichier déclare son modèle
-   propriétaire dans `apps/common/files/rules.py`.
+   propriétaire dans `apps/common/attachments/rules.py`.
 3. `serializers.py`, `views.py`, `urls.py` (à déclarer dans `config/urls.py`, l'app dans `INSTALLED_APPS`).
    Une vue de tableau de bord hérite de `apps.common.views.BaseAPIView` et passe `prop=self.property` au
    `get_visible` de ses services, qui filtre sur cette propriété.

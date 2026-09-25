@@ -53,7 +53,7 @@ class Amenity(TimeStampedModel):
     )
     is_active = models.BooleanField(default=True)
     created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+"
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
 
     class Meta:
@@ -100,7 +100,7 @@ BLOCKING_BOOKING_STATUSES = (BookingStatus.PENDING, BookingStatus.CONFIRMED)
 class Booking(TimeStampedModel):
     amenity = models.ForeignKey(Amenity, on_delete=models.CASCADE, related_name="bookings")
     booker = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="bookings"
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="bookings"
     )
     start_datetime = models.DateTimeField()
     end_datetime = models.DateTimeField()

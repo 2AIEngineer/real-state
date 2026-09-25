@@ -36,7 +36,7 @@ class ShortTermRental(TimeStampedModel):
     )
     initiated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="initiated_short_term_rentals",
     )
     initiator_capacity = models.CharField(max_length=12, choices=InitiatorCapacity.choices)

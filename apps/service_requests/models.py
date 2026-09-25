@@ -48,7 +48,7 @@ class ServiceRequest(TimeStampedModel):
         help_text="Empty when the request concerns common areas.",
     )
     requester = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="service_requests"
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="service_requests"
     )
     title = models.CharField(max_length=200)
     description = models.TextField()
@@ -99,11 +99,11 @@ class ServiceRequestAssignment(TimeStampedModel):
         ServiceRequest, on_delete=models.CASCADE, related_name="assignments"
     )
     resolver = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="service_assignments"
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="service_assignments"
     )
     resolution_round = models.PositiveIntegerField(default=1)
     assigned_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+"
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
     is_resolved = models.BooleanField(default=False)
     resolved_at = models.DateTimeField(null=True, blank=True)

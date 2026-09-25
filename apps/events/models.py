@@ -37,7 +37,7 @@ class Event(TimeStampedModel, ArchivableModel):
     cancellation_reason = models.TextField(blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)
     created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+"
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
 
     class Meta:

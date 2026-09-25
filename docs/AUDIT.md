@@ -9,13 +9,13 @@ faut prévoir dans le code dès maintenant pour que la phase de déploiement se 
 | # | Constat | État | Où |
 |---|---|---|---|
 | S1 | Sélection syndicat/propriété non vérifiée | **Corrigé** : `BaseAPIView` résout `self.property`, chaque `get_visible` filtre sur elle | `apps/common/views.py`, `tests/test_selection.py` |
-| S2 | Extension de stockage choisie par le client | **Corrigé** : extension et `Content-Type` suivent le format détecté | `apps/common/files/rules.py`, `models/attachments.py` |
-| S3 | Fichiers privés publics | **Corrigé** : liens signés utilisables tels quels (`<img src>`), permanents pour les images publiques, personnels et sans expiration dans le temps pour le reste (révoqués à la désactivation ou au changement de mot de passe) ; conteneur Azure privé + SAS interne ; route `/media/` supprimée | `apps/common/files/`, `tests/test_file_links.py` |
+| S2 | Extension de stockage choisie par le client | **Corrigé** : extension et `Content-Type` suivent le format détecté | `apps/common/attachments/rules.py`, `models/attachments.py` |
+| S3 | Fichiers accessibles par leur URL | **Accepté** (choix produit) : l'accès aux fichiers passe déjà par le tableau de bord authentifié ; les pièces jointes restent servies par leur URL de stockage | `apps/common/attachments/` |
 | S4 | Jetons non révocables | **Corrigé** : liste noire, `POST /auth/logout/`, révocation au changement de mot de passe et à la désactivation, lien de reset de 2 h | `apps/accounts/services/tokens.py`, `setup_links.py`, `tests/test_sessions.py` |
 | S5 | Throttling contournable | **Corrigé** : `NUM_PROXIES`, limite de connexion par compte, compteurs dans une table de cache PostgreSQL (pas de Redis) | `config/settings.py`, `apps/accounts/throttles.py` |
 | S6 | Secrets dans l'outbox | **Corrigé** : contenu effacé dès qu'un message est final, purge après 30 jours | `apps/notifications/services/delivery.py`, `retention.py` |
 | — | Corps JSON de 50 Mo en mémoire | **Corrigé** : 5 Mo | `config/settings.py` |
-| — | Effacement RGPD incomplet | **Corrigé** : genre, langue, appareils, inbox, préférences. Pièces d'identité conservées sans durée (choix produit) ; une purge par règles pourra venir plus tard sous forme de job | `apps/accounts/services/status.py` |
+| — | Suppression d'un compte | **Refait** : suppression réelle avec ses conséquences (`AccountStatusService.delete`) ; la désactivation reste l'alternative. Pièces d'identité conservées sans durée (choix produit) | `apps/accounts/services/status.py` |
 | — | Push en doublon | **Corrigé** : un message par lot de 100 destinataires | `apps/notifications/services/dispatcher.py` |
 | — | Secrets courts / `ENVIRONMENT` inconnu | **Corrigé** : refus de démarrer en production | `config/env.py` |
 | — | CI absente | **Corrigé** : ruff, migrations, schéma OpenAPI, pytest, contrats TS | `.github/workflows/ci.yml` |
@@ -23,7 +23,7 @@ faut prévoir dans le code dès maintenant pour que la phase de déploiement se 
 | — | Lisibilité | **Fait** : modules découpés par ressource (voir section 11) | — |
 | §5.1 | Fuseau horaire unique | **Corrigé** : `Property.timezone` (IANA) pour « aujourd'hui », les horaires et les heures des notifications | `apps/properties/timezones.py` |
 | §5.5 | Doublons à la création | **Corrigé** : en-tête `Idempotency-Key` sur tout POST | `apps/common/idempotency.py` |
-| §5.6 | Suppression vs archivage | **Tranché** : l'utilisateur choisit. L'archivage garde tout ; la suppression est destructive et emporte tout ce qui en dépend (`CASCADE`, fichiers et notifications compris via `destroy()`) | `apps/common/deletion.py` |
+| §5.6 | Suppression vs archivage | **Tranché** : l'utilisateur choisit. L'archivage garde tout ; la suppression est destructive : plus aucun `PROTECT` sauf `Property.promoter` ; ce qui appartient à la ressource part (`CASCADE`), ce qui la cite comme auteur reste (`SET_NULL`), fichiers et notifications compris via `destroy()` | `apps/common/deletion.py` |
 | — | orjson | `drf-orjson-renderer` (paquet), sans module maison | `config/settings.py` |
 | — | CORS | Les en-têtes `X-Syndicat-Id`, `X-Property-Id`, `X-UI-Config-Step`, `Idempotency-Key` étaient refusés par les navigateurs : autorisés | `config/settings.py` |
 
@@ -320,7 +320,7 @@ charge les fichiers d'une page en une requête.
 
 | Avant | Après |
 |---|---|
-| `common/models.py` (modèles de base, règles de fichiers, pièces jointes, audit) | `common/models/` (`base`, `attachments`, `audit`) et `common/files/` (`rules`, `formats`, `service`, `links`, `delivery`, `storage`, `serializers`, `views`) |
+| `common/models.py` (modèles de base, règles de fichiers, pièces jointes, audit) | `common/models/` (`base`, `attachments`, `audit`) et `common/attachments/` (`rules`, `formats`, `service`, `serializers`) |
 | `service_requests/services.py` (demande + tours) | `services/requests.py`, `services/rounds.py` (`RoundService`) |
 | `library/services.py` | `services/folders.py`, `services/documents.py` |
 | `surveys/services.py` | `services/surveys.py`, `services/participation.py` (`ParticipationService`) |

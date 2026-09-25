@@ -17,7 +17,7 @@ class Product(TimeStampedModel):
     stock_quantity = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
     created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+"
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
 
     class Meta:
@@ -46,7 +46,7 @@ class Order(TimeStampedModel):
         "properties.Property", on_delete=models.CASCADE, related_name="orders"
     )
     orderer = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="orders"
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="orders"
     )
     unit = models.ForeignKey(
         "properties.Unit", null=True, blank=True, on_delete=models.CASCADE, related_name="orders"

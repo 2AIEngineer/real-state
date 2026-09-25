@@ -37,7 +37,11 @@ class Attachment(models.Model):
     position = models.PositiveSmallIntegerField(default=0)
 
     uploaded_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="uploaded_attachments"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="uploaded_attachments",
     )
     created_at = models.DateTimeField(auto_now_add=True)
 

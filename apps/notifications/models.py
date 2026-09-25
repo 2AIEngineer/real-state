@@ -147,7 +147,7 @@ class RecipientSnapshot(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, related_name="+")
     object_id = models.PositiveBigIntegerField()
     target = GenericForeignKey("content_type", "object_id")
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="+")
     matched_roles = models.JSONField(
         default=list, help_text="The target roles the user had when the snapshot was taken."
     )

@@ -22,7 +22,7 @@ class MarketplaceListing(TimeStampedModel):
     """Platform-wide classified ad, optionally attached to a property."""
 
     seller = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="marketplace_listings"
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="marketplace_listings"
     )
     property = models.ForeignKey(
         "properties.Property",

@@ -36,7 +36,7 @@ export const workOrderSchema = z.object({
   cancelled_at: z.iso.datetime({ offset: true }).nullable(),
   cancellation_reason: z.string(),
   files: z.array(attachmentSchema),
-  created_by: z.number().int(),
+  created_by: z.number().int().nullable(),
   created_at: z.iso.datetime({ offset: true }),
   updated_at: z.iso.datetime({ offset: true }),
 });

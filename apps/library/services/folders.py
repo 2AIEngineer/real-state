@@ -7,7 +7,7 @@ from django.db.models import Count, QuerySet
 
 from apps.common.db import apply_changes, translate_integrity_errors
 from apps.common.deletion import destroy
-from apps.common.exceptions import BusinessRuleViolation, InvalidInput, NotFound, PermissionDenied
+from apps.common.exceptions import InvalidInput, NotFound, PermissionDenied
 from apps.common.services.audit import AuditService
 from apps.library import errors
 from apps.library.audit import LibraryAudit
@@ -144,8 +144,6 @@ class FolderService:
     def delete(*, actor, folder: Folder) -> None:
         if not FolderPolicy.can_delete(actor, folder):
             raise PermissionDenied("Only the property management can delete folders.")
-        if folder.is_system:
-            raise BusinessRuleViolation("Default folders cannot be deleted.", code="system_folder")
         AuditService.record(
             actor=actor,
             action=LibraryAudit.FOLDER_DELETED,

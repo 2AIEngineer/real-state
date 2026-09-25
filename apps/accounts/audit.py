@@ -4,9 +4,9 @@ from enum import StrEnum
 
 
 class AccountAudit(StrEnum):
-    CLOSED = "account.closed"
     CREATED = "account.created"
     DEACTIVATED = "account.deactivated"
+    DELETED = "account.deleted"
     EMAIL_CHANGED = "account.email_changed"
     INVITATION_RESENT = "account.invitation_resent"
     PASSWORD_CHANGED = "account.password_changed"

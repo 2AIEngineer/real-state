@@ -75,10 +75,11 @@ class UserDetailView(AccountMixin, ApiMixin, APIView):
 
     @extend_schema(
         responses={204: None},
-        description="Closes the account: deactivation and erasure of personal data.",
+        description="Deletes the account for good, with everything that is theirs. "
+        "Deactivating is the alternative that keeps it.",
     )
     def delete(self, request, user_id: str):
-        AccountStatusService.close(actor=request.user, user=self.account(user_id))
+        AccountStatusService.delete(actor=request.user, user=self.account(user_id))
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

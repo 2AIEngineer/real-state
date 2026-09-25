@@ -19,7 +19,8 @@ class Folder(TimeStampedModel):
     fr_name = models.CharField(max_length=160)
     description = models.TextField(blank=True)
     is_system = models.BooleanField(
-        default=False, help_text="Created automatically with the property."
+        default=False,
+        help_text="Created with the property as a starting point; editable and deletable like any.",
     )
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+"
@@ -62,7 +63,7 @@ class LibraryDocument(TimeStampedModel):
     description = models.TextField(blank=True)
     target_roles = ArrayField(models.CharField(max_length=16, choices=PropertyRole.choices))
     created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+"
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
 
     class Meta:

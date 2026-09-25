@@ -56,7 +56,7 @@ class ChatMessage(models.Model):
 
     chat_room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE, related_name="messages")
     sender = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="chat_messages"
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="chat_messages"
     )
     body = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)

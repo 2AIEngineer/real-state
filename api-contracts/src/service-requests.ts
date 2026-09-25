@@ -34,7 +34,7 @@ export const serviceRequestAssignmentSchema = z.object({
   id: z.number().int(),
   resolver: userSummarySchema,
   resolution_round: z.number().int(),
-  assigned_by: z.number().int(),
+  assigned_by: z.number().int().nullable(),
   is_resolved: z.boolean(),
   resolved_at: z.iso.datetime({ offset: true }).nullable(),
   resolution_note: z.string(),

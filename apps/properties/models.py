@@ -47,7 +47,7 @@ class Promoter(TimeStampedModel):
     contact_phone = models.CharField(max_length=32, blank=True)
     address = models.TextField(blank=True)
     representative_user = models.OneToOneField(
-        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="represented_promoter"
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="represented_promoter"
     )
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+"
@@ -194,7 +194,7 @@ class UnitOwnership(TimeStampedModel):
 
     unit = models.ForeignKey(Unit, on_delete=models.CASCADE, related_name="ownerships")
     owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="unit_ownerships"
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="unit_ownerships"
     )
     ownership_share = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     start_date = models.DateField()

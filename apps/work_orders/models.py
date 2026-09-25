@@ -76,7 +76,7 @@ class WorkOrder(TimeStampedModel):
         settings.AUTH_USER_MODEL,
         null=True,
         blank=True,
-        on_delete=models.PROTECT,
+        on_delete=models.SET_NULL,
         related_name="work_orders",
     )
     scheduled_start = models.DateTimeField(null=True, blank=True)
@@ -88,7 +88,7 @@ class WorkOrder(TimeStampedModel):
     cancelled_at = models.DateTimeField(null=True, blank=True)
     cancellation_reason = models.TextField(blank=True)
     created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+"
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
 
     class Meta:

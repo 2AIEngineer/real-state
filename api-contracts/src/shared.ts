@@ -94,7 +94,6 @@ export const knownErrorCodes = [
   "server_error",
   "short_term_rental_overlap",
   "slot_unavailable",
-  "system_folder",
   "throttled",
   "token_not_valid",
   "unit_leased",
@@ -148,7 +147,7 @@ export const attachmentSchema = z.object({
   size: z.number().int(),
   checksum_sha256: z.string(),
   position: z.number().int(),
-  uploaded_by: z.number().int(),
+  uploaded_by: z.number().int().nullable(),
   created_at: z.iso.datetime({ offset: true }),
 });
 export type Attachment = z.infer<typeof attachmentSchema>;

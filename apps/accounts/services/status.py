@@ -1,4 +1,4 @@
-"""The status of an account: deactivating, reactivating, closing (erasing personal data)."""
+"""The status of an account: deactivating, reactivating, deleting it for good."""
 
 from __future__ import annotations
 
@@ -8,7 +8,6 @@ from django.utils import timezone
 
 from apps.accounts import notices
 from apps.accounts.audit import AccountAudit
-from apps.accounts.models import ProviderProfile
 from apps.accounts.policies import AccountPolicy
 from apps.accounts.services.assignments import (
     BuildingAssignmentService,
@@ -16,14 +15,17 @@ from apps.accounts.services.assignments import (
     SyndicatAssignmentService,
 )
 from apps.accounts.services.tokens import TokenService
+from apps.common.deletion import destroy
 from apps.common.exceptions import (
     BusinessRuleViolation,
     PermissionDenied,
 )
 from apps.common.services.audit import AuditService
-from apps.leasing.models import LeaseMember, LeaseStatus
-from apps.notifications.services import PushTokenService, erase_notifications_of
-from apps.properties.models import OwnershipStatus, UnitOwnership
+from apps.leasing.models import Lease, LeaseMember, LeaseStatus
+from apps.leasing.services import LeaseService
+from apps.notifications.services import PushTokenService
+from apps.properties.models import OwnershipStatus, Unit, UnitOwnership
+from apps.properties.services import OwnershipService
 
 User = get_user_model()
 
@@ -102,40 +104,42 @@ class AccountStatusService:
 
     @staticmethod
     @transaction.atomic
-    def close(*, actor, user):
-        """Account deletion. Rows referenced by history are kept but personal
-        data is erased: the account becomes an anonymous, inactive tombstone.
+    def delete(*, actor, user) -> None:
+        """Deletes the account for good, with everything that is theirs.
 
-        Erased: identity (e-mail, names, phone, gender, language), password,
-        provider profile, devices, in-app notifications and preferences.
-        Kept: what other records point at (leases, requests, audit entries),
-        now attached to the tombstone.
+        Deactivating is the alternative that keeps the account. Deleting takes
+        what belongs to the person (ownerships, lease memberships, requests,
+        bookings, orders, listings, messages, answers, devices, notifications,
+        assignments), each with its files. What they only wrote or recorded for
+        a residence (announcements, events, documents, visitor entries…) stays,
+        without an author. Invariants are restored afterwards: a unit left
+        without an owner reverts to its promoter, a lease left without an
+        occupant ends.
         """
-        if user.is_active:
-            AccountStatusService.deactivate(actor=actor, user=user, reason="account_closed")
-        elif not AccountPolicy.can_change_status(actor):
-            raise PermissionDenied()
-        user = User.objects.select_for_update(of=("self",)).get(pk=user.pk)
-        user.email = f"user-{user.pk}@erased.invalid"
-        user.first_name = "Compte"
-        user.last_name = "supprimé"
-        user.phone = ""
-        user.gender = User._meta.get_field("gender").default
-        user.preferred_language = User._meta.get_field("preferred_language").default
-        user.set_unusable_password()
-        user.save(
-            update_fields=[
-                "email",
-                "first_name",
-                "last_name",
-                "phone",
-                "gender",
-                "preferred_language",
-                "password",
-                "updated_at",
-            ]
+        if not AccountPolicy.can_change_status(actor):
+            raise PermissionDenied("Only platform administrators can delete accounts.")
+        if actor.pk == user.pk:
+            raise BusinessRuleViolation("You cannot delete your own account.")
+        if user.is_technical_account:
+            raise BusinessRuleViolation("Technical accounts are managed with their promoter.")
+        owned_units = list(
+            Unit.objects.filter(ownerships__owner=user, ownerships__status=OwnershipStatus.ACTIVE)
+            .select_related("building__property")
+            .distinct()
         )
-        ProviderProfile.objects.filter(user=user).delete()
-        erase_notifications_of(user)
-        AuditService.record(actor=actor, action=AccountAudit.CLOSED, target=user)
-        return user
+        lease_ids = list(
+            LeaseMember.objects.filter(
+                user=user, left_at__isnull=True, lease__status=LeaseStatus.ACTIVE
+            ).values_list("lease_id", flat=True)
+        )
+        AuditService.record(
+            actor=actor, action=AccountAudit.DELETED, target=user, metadata={"role": user.role}
+        )
+        TokenService.revoke_all(user=user)
+        destroy(user)
+        for unit in owned_units:
+            OwnershipService.ensure_owned(unit, actor=actor)
+        for lease in Lease.objects.filter(pk__in=lease_ids).select_related(
+            "unit__building__property"
+        ):
+            LeaseService.end_if_unoccupied(actor=actor, lease=lease)

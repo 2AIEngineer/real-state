@@ -304,6 +304,22 @@ class LeaseService:
         return lease
 
     @staticmethod
+    @transaction.atomic
+    def end_if_unoccupied(*, actor, lease: Lease) -> Lease:
+        """An active lease left without any occupant (their account was deleted)
+        ends today, or is cancelled if it had not started yet."""
+        if (
+            lease.status != LeaseStatus.ACTIVE
+            or lease.members.filter(left_at__isnull=True).exists()
+        ):
+            return lease
+        today = timezones.today(lease.unit.building.property)
+        if today < lease.start_date:
+            return LeaseService.cancel(actor=actor, lease=lease, reason="No occupant left.")
+        effective = min(today, lease.end_date) if lease.end_date else today
+        return LeaseService.terminate(actor=actor, lease=lease, effective_date=effective)
+
+    @staticmethod
     def expire_due(*, today: dt.date | None = None) -> int:
         """Scheduled job: leases past their end date are terminated at term.
 

@@ -122,6 +122,14 @@ class OwnershipService:
             unit, prop=unit.building.property, start_date=start_date, actor=actor
         )
 
+    @staticmethod
+    def ensure_owned(unit: Unit, *, actor) -> UnitOwnership | None:
+        """After an owner disappeared (account deleted): a unit without an
+        active owner reverts to its promoter from today."""
+        return OwnershipService._ensure_not_orphan(
+            unit, start_date=timezones.today(unit.building.property), actor=actor
+        )
+
     # -- operations ------------------------------------------------------------------
     @staticmethod
     @transaction.atomic

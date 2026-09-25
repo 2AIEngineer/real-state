@@ -1,7 +1,6 @@
 from apps.notifications.services.cleanup import (
     delete_notification_traces,
     delete_notification_traces_of,
-    erase_notifications_of,
 )
 from apps.notifications.services.delivery import OutboxRelay
 from apps.notifications.services.dispatcher import (
@@ -19,7 +18,6 @@ __all__ = [
     "DispatchResult",
     "delete_notification_traces",
     "delete_notification_traces_of",
-    "erase_notifications_of",
     "InboxService",
     "NotificationIntent",
     "NotificationService",

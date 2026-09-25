@@ -1,10 +1,11 @@
 """Deleting a record for good, with everything that belongs to it.
 
-Deleting is a deliberate, destructive action; archiving is the alternative
-that keeps things. So a deletion is never refused because other records point
-at the row: they are deleted with it (foreign keys cascade). The only
-references that stay protected are those to user accounts, which are never
-deleted but closed (see `AccountStatusService.close`).
+Deleting is a deliberate, destructive action; archiving (or deactivating) is
+the alternative that keeps things. So a deletion is never refused because other
+records point at the row: what belongs to it is deleted with it (CASCADE), and
+what merely names it as author loses that link (SET_NULL). The one protected
+reference is a property's promoter: a property cannot exist without one, so a
+promoter is replaced on its properties before it can be deleted.
 
 Files and notifications point at a record by type and id, without a foreign
 key, so the database cannot cascade to them. `destroy` collects every row the

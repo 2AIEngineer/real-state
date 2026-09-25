@@ -11752,7 +11752,7 @@
             },
             "delete": {
                 "operationId": "v1_users_destroy",
-                "description": "Closes the account: deactivation and erasure of personal data.",
+                "description": "Deletes the account for good, with everything that is theirs. Deactivating is the alternative that keeps it.",
                 "parameters": [
                     {
                         "in": "path",
@@ -14225,7 +14225,7 @@
             },
             "Attachment": {
                 "type": "object",
-                "description": "A stored file with a ready-to-use URL: no extra call, no header to read it.\n\n`url` is a signed link (see `links.py`): permanent for public files,\npersonal and renewed on every response for private ones.",
+                "description": "A stored file with a ready-to-use URL: no extra call to read it.",
                 "properties": {
                     "id": {
                         "type": "integer",
@@ -14245,6 +14245,7 @@
                     },
                     "url": {
                         "type": "string",
+                        "description": "Absolute URL of the file, from the storage it lives in.",
                         "readOnly": true
                     },
                     "original_filename": {
@@ -14270,7 +14271,8 @@
                     },
                     "uploaded_by": {
                         "type": "integer",
-                        "readOnly": true
+                        "readOnly": true,
+                        "nullable": true
                     },
                     "created_at": {
                         "type": "string",
@@ -15696,7 +15698,7 @@
                     "is_system": {
                         "type": "boolean",
                         "readOnly": true,
-                        "description": "Created automatically with the property."
+                        "description": "Created with the property as a starting point; editable and deletable like any."
                     },
                     "subfolders_count": {
                         "type": "integer",
@@ -18945,7 +18947,8 @@
                     },
                     "assigned_by": {
                         "type": "integer",
-                        "readOnly": true
+                        "readOnly": true,
+                        "nullable": true
                     },
                     "is_resolved": {
                         "type": "boolean",
@@ -21204,7 +21207,8 @@
                     },
                     "created_by": {
                         "type": "integer",
-                        "readOnly": true
+                        "readOnly": true,
+                        "nullable": true
                     },
                     "created_at": {
                         "type": "string",
