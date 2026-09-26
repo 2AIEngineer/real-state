@@ -6,15 +6,7 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 
 from apps.accounts.enums import StructuralRole
-from apps.leasing.models import LeaseMember, LeaseStatus
 from apps.notifications.models import CATEGORY_PREFERENCE_FIELD, NotificationPreference
-from apps.properties.models import OwnershipStatus, UnitOwnership
-
-# Field staff only get what concerns them directly by default: broadcast
-# feature notifications start disabled (they remain free to opt in).
-FIELD_ONLY_ROLES = frozenset(
-    {StructuralRole.SECURITY, StructuralRole.CLEANING, StructuralRole.PROVIDER}
-)
 
 PREFERENCE_FIELDS: tuple[str, ...] = (
     "enabled_push",
@@ -22,42 +14,50 @@ PREFERENCE_FIELDS: tuple[str, ...] = (
     *CATEGORY_PREFERENCE_FIELD.values(),
 )
 
+FEATURE_FIELDS: frozenset[str] = frozenset(CATEGORY_PREFERENCE_FIELD.values())
 
-def _defaults_for(
-    user_id: int, roles_by_user: dict[int, str], owner_or_tenant_ids: set[int]
-) -> dict[str, bool]:
-    field_only = (
-        roles_by_user.get(user_id) in FIELD_ONLY_ROLES and user_id not in owner_or_tenant_ids
-    )
-    return {name: not field_only for name in CATEGORY_PREFERENCE_FIELD.values()}
+# Feature notifications each role starts with; everyone remains free to opt
+# in or out afterwards. Field staff start with none: they still receive what
+# concerns them directly (operational categories obey the channels only).
+# Roles absent from the map start with every feature.
+ROLE_ENABLED_FEATURES: dict[str, frozenset[str]] = {
+    StructuralRole.SYNDIC: FEATURE_FIELDS - {"store_enabled"},
+    StructuralRole.MANAGER: FEATURE_FIELDS - {"store_enabled"},
+    StructuralRole.SECURITY: frozenset(),
+    StructuralRole.CLEANING: frozenset(),
+    StructuralRole.PROVIDER: frozenset(),
+}
+
+
+def defaults_for(role: str) -> dict[str, bool]:
+    """The feature flags an account holding `role` starts with."""
+    enabled = ROLE_ENABLED_FEATURES.get(role, FEATURE_FIELDS)
+    return {name: name in enabled for name in FEATURE_FIELDS}
 
 
 class PreferenceService:
     @staticmethod
+    def create_for(user) -> NotificationPreference:
+        """The preferences of a new account, following its role (no-op if they exist)."""
+        preference, _ = NotificationPreference.objects.get_or_create(
+            user=user, defaults=defaults_for(user.role)
+        )
+        return preference
+
+    @staticmethod
     def resolve_many(user_ids: Iterable[int]) -> dict[int, NotificationPreference]:
-        """Preferences for many users; missing rows are created with role-based defaults."""
+        """Preferences for many users; a missing row is created from the role defaults."""
         ids = set(user_ids)
         prefs = {p.user_id: p for p in NotificationPreference.objects.filter(user_id__in=ids)}
         missing = ids - prefs.keys()
         if missing:
-            roles_by_user = dict(
+            roles_by_user = (
                 get_user_model().objects.filter(pk__in=missing).values_list("pk", "role")
-            )
-            owner_or_tenant_ids = set(
-                UnitOwnership.objects.filter(
-                    owner_id__in=missing, status=OwnershipStatus.ACTIVE
-                ).values_list("owner_id", flat=True)
-            ) | set(
-                LeaseMember.objects.filter(
-                    user_id__in=missing, left_at__isnull=True, lease__status=LeaseStatus.ACTIVE
-                ).values_list("user_id", flat=True)
             )
             NotificationPreference.objects.bulk_create(
                 [
-                    NotificationPreference(
-                        user_id=uid, **_defaults_for(uid, roles_by_user, owner_or_tenant_ids)
-                    )
-                    for uid in missing
+                    NotificationPreference(user_id=uid, **defaults_for(role))
+                    for uid, role in roles_by_user
                 ],
                 ignore_conflicts=True,
             )

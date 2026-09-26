@@ -11,6 +11,7 @@ from apps.notifications.models import (
     ExpoPushToken,
     InboxNotification,
     NotificationCategory,
+    NotificationPreference,
     OutboxChannel,
     OutboxMessage,
     OutboxStatus,
@@ -24,6 +25,7 @@ from apps.notifications.services import (
     PreferenceService,
     PushTokenService,
 )
+from apps.notifications.services.preferences import FEATURE_FIELDS
 from tests import factories as f
 
 pytestmark = pytest.mark.django_db
@@ -99,10 +101,29 @@ class TestDispatch:
         assert not OutboxMessage.objects.filter(channel=OutboxChannel.EMAIL).exists()
         assert InboxNotification.objects.filter(user=world.tenant).exists()
 
-    def test_field_roles_start_opted_out_of_feature_broadcasts(self, world):
+    @pytest.mark.parametrize(
+        ("role", "disabled"),
+        [
+            (StructuralRole.ADMIN, set()),
+            (StructuralRole.STANDARD, set()),
+            (StructuralRole.MAINTENANCE, set()),
+            (StructuralRole.SYNDIC, {"store_enabled"}),
+            (StructuralRole.MANAGER, {"store_enabled"}),
+            (StructuralRole.SECURITY, set(FEATURE_FIELDS)),
+            (StructuralRole.CLEANING, set(FEATURE_FIELDS)),
+            (StructuralRole.PROVIDER, set(FEATURE_FIELDS)),
+        ],
+    )
+    def test_new_account_is_born_with_role_preferences(self, role, disabled):
+        user = f.make_user(role=role)
+        prefs = NotificationPreference.objects.get(user=user)
+        assert {name for name in FEATURE_FIELDS if not getattr(prefs, name)} == disabled
+        assert prefs.enabled_push is True and prefs.enabled_email is True
+
+    def test_missing_preferences_fall_back_to_role_defaults(self, world):
+        NotificationPreference.objects.filter(user=world.security).delete()
         prefs = PreferenceService.get(user=world.security)
         assert prefs.announcements_enabled is False and prefs.enabled_push is True
-        assert PreferenceService.get(user=world.tenant).announcements_enabled is True
 
     def test_transactional_bypasses_preferences(self, world):
         PreferenceService.update(user=world.tenant, changes={"enabled_email": False})
