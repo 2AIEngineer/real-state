@@ -15,7 +15,8 @@ from apps.store.services import ProductService
 @extend_schema(tags=["Store"])
 class ProductListView(BaseAPIView):
     @extend_schema(
-        parameters=[s.ProductsQueryParamsSerializer], responses=s.ProductSerializer(many=True)
+        parameters=[s.ProductsQueryParamsSerializer],
+        responses=s.ProductSerializer(many=True),
     )
     def get(self, request):
         query = self.parse_query_params(s.ProductsQueryParamsSerializer)
@@ -27,7 +28,9 @@ class ProductListView(BaseAPIView):
         )
         return self.render_page(s.ProductSerializer, qs)
 
-    @extend_schema(request=s.ProductCreateSerializer, responses={201: s.ProductSerializer})
+    @extend_schema(
+        request=s.ProductCreateSerializer, responses={201: s.ProductSerializer}
+    )
     def post(self, request):
         data = dict(self.parse(s.ProductCreateSerializer))
         return self.render(
@@ -59,7 +62,9 @@ class ProductDetailView(BaseAPIView):
             ProductService.update(actor=request.user, product=product, changes=data),
         )
 
-    @extend_schema(responses={204: None}, description="Deletes a product that was never ordered.")
+    @extend_schema(
+        responses={204: None}, description="Deletes a product that was never ordered."
+    )
     def delete(self, request, product_id: int):
         product = ProductService.get_visible(
             actor=request.user, prop=self.property, product_id=product_id
@@ -76,7 +81,9 @@ class ProductImagesView(BaseAPIView):
             actor=request.user, prop=self.property, product_id=product_id
         )
         data = self.parse(UploadFilesSerializer)
-        ProductService.add_images(actor=request.user, product=product, files=data["files"])
+        ProductService.add_images(
+            actor=request.user, product=product, files=data["files"]
+        )
         return self.render(s.ProductSerializer, product, status=status.HTTP_201_CREATED)
 
 

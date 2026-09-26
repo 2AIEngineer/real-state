@@ -13,7 +13,9 @@ from apps.notifications.services import NotificationIntent, NotificationService
 def _lease_event(lease: Lease, *, event: str, title: str, body: str, actor) -> None:
     """Tell the occupants, the owners of the unit and the property management."""
     unit = lease.unit
-    occupants = [member.user for member in lease.active_members().select_related("user")]
+    occupants = [
+        member.user for member in lease.active_members().select_related("user")
+    ]
     NotificationService.notify(
         NotificationIntent(
             event_type=event,

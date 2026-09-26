@@ -11,7 +11,12 @@ from django.core.mail import EmailMultiAlternatives
 from django.db import transaction
 from django.utils import timezone
 
-from apps.notifications.models import ExpoPushToken, OutboxChannel, OutboxMessage, OutboxStatus
+from apps.notifications.models import (
+    ExpoPushToken,
+    OutboxChannel,
+    OutboxMessage,
+    OutboxStatus,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +67,10 @@ class ExpoPushTransport:
                 "sound": "default",
                 "priority": "high",
                 "channelId": "default",
-                "data": {**payload.get("data", {}), "inbox_id": inbox_ids.get(str(user_id))},
+                "data": {
+                    **payload.get("data", {}),
+                    "inbox_id": inbox_ids.get(str(user_id)),
+                },
             }
             for user_id, token in tokens
         ]
@@ -82,7 +90,9 @@ class ExpoPushTransport:
                 raise DeliveryError(f"Expo HTTP {response.status_code}")
             if response.status_code >= 400:
                 logger.error(
-                    "Expo rejected push batch: %s %s", response.status_code, response.text[:500]
+                    "Expo rejected push batch: %s %s",
+                    response.status_code,
+                    response.text[:500],
                 )
                 return
             ExpoPushTransport._handle_tickets(chunk, response.json().get("data", []))
@@ -96,12 +106,15 @@ class ExpoPushTransport:
             and (ticket.get("details") or {}).get("error") == "DeviceNotRegistered"
         ]
         if dead_tokens:
-            ExpoPushToken.objects.filter(expo_push_token__in=dead_tokens, is_active=True).update(
-                is_active=False, deactivated_reason="DeviceNotRegistered"
-            )
+            ExpoPushToken.objects.filter(
+                expo_push_token__in=dead_tokens, is_active=True
+            ).update(is_active=False, deactivated_reason="DeviceNotRegistered")
 
 
-TRANSPORTS = {OutboxChannel.EMAIL: EmailTransport, OutboxChannel.PUSH: ExpoPushTransport}
+TRANSPORTS = {
+    OutboxChannel.EMAIL: EmailTransport,
+    OutboxChannel.PUSH: ExpoPushTransport,
+}
 
 
 def redacted(payload: dict) -> dict:
@@ -149,7 +162,9 @@ class OutboxRelay:
                         exc,
                     )
                 else:
-                    message.next_attempt_at = timezone.now() + _backoff(message.attempts)
+                    message.next_attempt_at = timezone.now() + _backoff(
+                        message.attempts
+                    )
                     logger.warning(
                         "Outbox message %s failed (attempt %s): %s",
                         message.pk,
@@ -176,7 +191,9 @@ class OutboxRelay:
 
     @staticmethod
     def deliver_ids(message_ids) -> int:
-        return sum(1 for message_id in message_ids if OutboxRelay._deliver_one(message_id))
+        return sum(
+            1 for message_id in message_ids if OutboxRelay._deliver_one(message_id)
+        )
 
     @staticmethod
     def run_once(batch_size: int | None = None) -> int:

@@ -17,9 +17,7 @@ def visitor_logged(visitor: Visitor, *, actor) -> None:
     if admitted:
         event, severity = "visitor.arrived", Severity.INFO
         title = f"Visiteur — lot {unit.number}"
-        body = (
-            f"{name} est arrivé(e) à {timezones.local(visitor.property, visitor.arrived_at):%H:%M}."
-        )
+        body = f"{name} est arrivé(e) à {timezones.local(visitor.property, visitor.arrived_at):%H:%M}."
     else:
         event, severity = "visitor.denied", Severity.WARNING
         title = f"Visite refusée — lot {unit.number}"

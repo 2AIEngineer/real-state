@@ -155,7 +155,9 @@ class UserBuildingAssignmentsView(AccountMixin, BaseAPIView):
 class SyndicatAssignmentRevokeView(BaseAPIView):
     @extend_schema(request=None, responses=s.UserSyndicatSerializer)
     def post(self, request, assignment_id: int):
-        row = SyndicatAssignmentService.revoke(actor=request.user, assignment_id=assignment_id)
+        row = SyndicatAssignmentService.revoke(
+            actor=request.user, assignment_id=assignment_id
+        )
         return self.render(s.UserSyndicatSerializer, row)
 
 
@@ -163,7 +165,9 @@ class SyndicatAssignmentRevokeView(BaseAPIView):
 class PropertyAssignmentRevokeView(BaseAPIView):
     @extend_schema(request=None, responses=s.UserPropertySerializer)
     def post(self, request, assignment_id: int):
-        row = PropertyAssignmentService.revoke(actor=request.user, assignment_id=assignment_id)
+        row = PropertyAssignmentService.revoke(
+            actor=request.user, assignment_id=assignment_id
+        )
         return self.render(s.UserPropertySerializer, row)
 
 
@@ -171,5 +175,7 @@ class PropertyAssignmentRevokeView(BaseAPIView):
 class BuildingAssignmentRevokeView(BaseAPIView):
     @extend_schema(request=None, responses=s.UserBuildingSerializer)
     def post(self, request, assignment_id: int):
-        row = BuildingAssignmentService.revoke(actor=request.user, assignment_id=assignment_id)
+        row = BuildingAssignmentService.revoke(
+            actor=request.user, assignment_id=assignment_id
+        )
         return self.render(s.UserBuildingSerializer, row)

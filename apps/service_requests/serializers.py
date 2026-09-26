@@ -66,7 +66,9 @@ class ServiceRequestSerializer(serializers.ModelSerializer):
 
 
 class ServiceRequestCreateSerializer(serializers.Serializer):
-    unit_id = serializers.IntegerField(min_value=1, required=False, allow_null=True, default=None)
+    unit_id = serializers.IntegerField(
+        min_value=1, required=False, allow_null=True, default=None
+    )
     title = serializers.CharField(max_length=200)
     description = serializers.CharField()
     category = serializers.ChoiceField(
@@ -75,11 +77,15 @@ class ServiceRequestCreateSerializer(serializers.Serializer):
     priority = serializers.ChoiceField(
         choices=ServiceRequestPriority.choices, default=ServiceRequestPriority.MEDIUM
     )
-    files = serializers.ListField(child=serializers.FileField(), required=False, default=list)
+    files = serializers.ListField(
+        child=serializers.FileField(), required=False, default=list
+    )
 
 
 class ServiceRequestsQueryParamsSerializer(serializers.Serializer):
-    status = serializers.ChoiceField(choices=ServiceRequestStatus.choices, required=False)
+    status = serializers.ChoiceField(
+        choices=ServiceRequestStatus.choices, required=False
+    )
     mine = serializers.BooleanField(required=False, default=False)
 
 
@@ -91,7 +97,9 @@ class ServiceRequestAssignSerializer(serializers.Serializer):
 
 class ServiceRequestResolveSerializer(serializers.Serializer):
     note = serializers.CharField(required=False, allow_blank=True, default="")
-    files = serializers.ListField(child=serializers.FileField(), required=False, default=list)
+    files = serializers.ListField(
+        child=serializers.FileField(), required=False, default=list
+    )
 
 
 class ServiceRequestFeedbackSerializer(serializers.Serializer):
@@ -99,4 +107,6 @@ class ServiceRequestFeedbackSerializer(serializers.Serializer):
     rating = serializers.IntegerField(
         min_value=1, max_value=5, required=False, allow_null=True, default=None
     )
-    comment = serializers.CharField(required=False, allow_blank=True, default="", max_length=2000)
+    comment = serializers.CharField(
+        required=False, allow_blank=True, default="", max_length=2000
+    )

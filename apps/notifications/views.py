@@ -16,7 +16,11 @@ from apps.notifications.serializers import (
     PushTokenRegisterSerializer,
     PushTokenSerializer,
 )
-from apps.notifications.services import InboxService, PreferenceService, PushTokenService
+from apps.notifications.services import (
+    InboxService,
+    PreferenceService,
+    PushTokenService,
+)
 
 
 @extend_schema(tags=["Notifications"])
@@ -28,9 +32,13 @@ class InboxView(ApiMixin, APIView):
     def get(self, request):
         query = self.parse_query_params(NotificationsQueryParamsSerializer)
         qs = InboxService.list_for(
-            user=request.user, unread_only=query["unread"], category=query.get("category")
+            user=request.user,
+            unread_only=query["unread"],
+            category=query.get("category"),
         )
-        return self.render_page(InboxNotificationSerializer, qs.select_related("content_type"))
+        return self.render_page(
+            InboxNotificationSerializer, qs.select_related("content_type")
+        )
 
 
 @extend_schema(tags=["Notifications"])
@@ -72,7 +80,8 @@ class PreferenceView(ApiMixin, APIView):
         )
 
     @extend_schema(
-        request=NotificationPreferenceUpdateSerializer, responses=NotificationPreferenceSerializer
+        request=NotificationPreferenceUpdateSerializer,
+        responses=NotificationPreferenceSerializer,
     )
     def patch(self, request):
         data = self.parse(NotificationPreferenceUpdateSerializer)

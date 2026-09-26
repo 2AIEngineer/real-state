@@ -24,13 +24,25 @@ from apps.store.models import Product
 from apps.store.policies import ProductPolicy
 
 PRODUCT_CONSTRAINTS = {"product_sku_per_property": errors.sku_taken}
-PRODUCT_FIELDS = ("name", "description", "category", "sku", "price", "stock_quantity", "is_active")
+PRODUCT_FIELDS = (
+    "name",
+    "description",
+    "category",
+    "sku",
+    "price",
+    "stock_quantity",
+    "is_active",
+)
 
 
 class ProductService:
     @staticmethod
     def list_visible(
-        *, actor, prop: Property, include_inactive: bool = False, search: str | None = None
+        *,
+        actor,
+        prop: Property,
+        include_inactive: bool = False,
+        search: str | None = None,
     ) -> QuerySet[Product]:
         FeatureGate.require(prop, Feature.STORE)
         if not ProductPolicy.can_list(actor, prop):
@@ -45,7 +57,9 @@ class ProductService:
     @staticmethod
     def get_visible(*, actor, prop: Property, product_id: int) -> Product:
         product = (
-            Product.objects.select_related("property").filter(pk=product_id, property=prop).first()
+            Product.objects.select_related("property")
+            .filter(pk=product_id, property=prop)
+            .first()
         )
         if product is None or not ProductPolicy.can_view(actor, product):
             raise NotFound("Product not found.")
@@ -68,7 +82,10 @@ class ProductService:
         with translate_integrity_errors(PRODUCT_CONSTRAINTS):
             product.save()
         AuditService.record(
-            actor=actor, action=StoreAudit.PRODUCT_CREATED, target=product, property_id=prop.pk
+            actor=actor,
+            action=StoreAudit.PRODUCT_CREATED,
+            target=product,
+            property_id=prop.pk,
         )
         return product
 
@@ -126,6 +143,8 @@ class ProductService:
             raise errors.store_admins_only()
         AttachmentService.delete(
             attachment=AttachmentService.get(
-                entity_type=EntityType.PRODUCT, entity_id=product.pk, attachment_id=attachment_id
+                entity_type=EntityType.PRODUCT,
+                entity_id=product.pk,
+                attachment_id=attachment_id,
             )
         )

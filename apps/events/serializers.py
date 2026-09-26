@@ -42,13 +42,17 @@ class EventCreateSerializer(serializers.Serializer):
     )
     title = serializers.CharField(max_length=200)
     description = serializers.CharField(required=False, allow_blank=True, default="")
-    location = serializers.CharField(max_length=200, required=False, allow_blank=True, default="")
+    location = serializers.CharField(
+        max_length=200, required=False, allow_blank=True, default=""
+    )
     start_at = serializers.DateTimeField()
     end_at = serializers.DateTimeField()
     target_roles = serializers.ListField(
         child=serializers.ChoiceField(choices=PropertyRole.choices), allow_empty=False
     )
-    files = serializers.ListField(child=serializers.FileField(), required=False, default=list)
+    files = serializers.ListField(
+        child=serializers.FileField(), required=False, default=list
+    )
 
 
 @extend_schema_serializer(component_name="Event")

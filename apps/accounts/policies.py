@@ -50,14 +50,14 @@ def users_linked_to_properties(property_ids) -> QuerySet:
     syndicats = Property.objects.filter(id__in=property_ids).values("syndicat_id")
     return User.objects.filter(
         Q(
-            pk__in=UserSyndicat.objects.filter(is_active=True, syndicat_id__in=syndicats).values(
-                "user_id"
-            )
+            pk__in=UserSyndicat.objects.filter(
+                is_active=True, syndicat_id__in=syndicats
+            ).values("user_id")
         )
         | Q(
-            pk__in=UserProperty.objects.filter(is_active=True, property_id__in=property_ids).values(
-                "user_id"
-            )
+            pk__in=UserProperty.objects.filter(
+                is_active=True, property_id__in=property_ids
+            ).values("user_id")
         )
         | Q(
             pk__in=UserBuilding.objects.filter(
@@ -88,7 +88,9 @@ def _was_assigned_in(account, property_ids) -> bool:
     syndicats = Property.objects.filter(id__in=property_ids).values("syndicat_id")
     return (
         UserSyndicat.objects.filter(user=account, syndicat_id__in=syndicats).exists()
-        or UserProperty.objects.filter(user=account, property_id__in=property_ids).exists()
+        or UserProperty.objects.filter(
+            user=account, property_id__in=property_ids
+        ).exists()
         or UserBuilding.objects.filter(
             user=account, building__property_id__in=property_ids
         ).exists()
@@ -117,7 +119,9 @@ class AccountPolicy:
         )
 
     @staticmethod
-    def searchable_filter(user, *, property_id: int | None = None, query: str | None = None) -> Q:
+    def searchable_filter(
+        user, *, property_id: int | None = None, query: str | None = None
+    ) -> Q:
         """Accounts the user may find when searching."""
         if AccessService.is_platform_admin(user):
             return (
@@ -130,7 +134,9 @@ class AccountPolicy:
             managed = managed.filter(id=property_id)
         # Accounts created by the user are visible even before any link exists
         # (e.g. a tenant account created just before the lease is recorded).
-        reach = Q(pk__in=users_linked_to_properties(managed).values("pk")) | Q(created_by=user)
+        reach = Q(pk__in=users_linked_to_properties(managed).values("pk")) | Q(
+            created_by=user
+        )
         if query and "@" in query and not property_id:
             # Exact e-mail lookup lets staff attach an existing platform
             # account (e.g. an owner elsewhere) without browsing others.
@@ -150,7 +156,9 @@ class AccountPolicy:
         # everywhere) stays in the reach of whoever ran the places it was assigned
         # to, so it can be reactivated, reassigned or deleted. One working
         # elsewhere now is out of their reach.
-        return not _has_active_assignment(account) and _was_assigned_in(account, managed)
+        return not _has_active_assignment(account) and _was_assigned_in(
+            account, managed
+        )
 
     @staticmethod
     def can_manage_account(user, account) -> bool:
@@ -241,7 +249,11 @@ def can_assign_account(user, account) -> bool:
     """
     if AccessService.is_platform_admin(user):
         return True
-    return user.is_active and user.pk != account.pk and account.role in roles_handled_by(user)
+    return (
+        user.is_active
+        and user.pk != account.pk
+        and account.role in roles_handled_by(user)
+    )
 
 
 def can_assign_syndicat(user, syndicat: Syndicat) -> bool:

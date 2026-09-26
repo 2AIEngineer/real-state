@@ -19,7 +19,14 @@ class UIConfigSyndicatSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Syndicat
-        fields = ["id", "name", "city", "country", "logo", "accessible_properties_count"]
+        fields = [
+            "id",
+            "name",
+            "city",
+            "country",
+            "logo",
+            "accessible_properties_count",
+        ]
         read_only_fields = fields
 
 
@@ -35,7 +42,9 @@ class UIConfigPropertySerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
     def get_features(self, obj) -> dict[str, bool]:
-        return {feature: getattr(obj, flag) for feature, flag in FEATURE_FLAG_FIELDS.items()}
+        return {
+            feature: getattr(obj, flag) for feature, flag in FEATURE_FLAG_FIELDS.items()
+        }
 
 
 class UIConfigSearchQueryParamsSerializer(serializers.Serializer):

@@ -47,14 +47,20 @@ class Attachment(models.Model):
 
     class Meta:
         ordering = ["position", "created_at", "id"]
-        indexes = [models.Index(fields=["entity_type", "entity_id"], name="attachment_entity_idx")]
+        indexes = [
+            models.Index(
+                fields=["entity_type", "entity_id"], name="attachment_entity_idx"
+            )
+        ]
         constraints = [
             models.UniqueConstraint(
                 fields=["entity_type", "entity_id"],
                 condition=Q(entity_type__in=SINGLE_FILE_TYPES),
                 name="attachment_single_file_per_entity",
             ),
-            models.CheckConstraint(condition=Q(size__gt=0), name="attachment_size_positive"),
+            models.CheckConstraint(
+                condition=Q(size__gt=0), name="attachment_size_positive"
+            ),
         ]
 
     def __str__(self) -> str:

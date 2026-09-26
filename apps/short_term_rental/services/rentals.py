@@ -57,7 +57,11 @@ RENTAL_CONSTRAINTS = {"short_term_rental_no_overlap_per_unit": errors.rental_ove
 class ShortTermRentalService:
     @staticmethod
     def list_visible(
-        *, actor, property_id: int, unit_id: int | None = None, status: str | None = None
+        *,
+        actor,
+        property_id: int,
+        unit_id: int | None = None,
+        status: str | None = None,
     ) -> QuerySet[ShortTermRental]:
         qs = ShortTermRental.objects.filter(
             ShortTermRentalPolicy.visible_filter(actor)
@@ -70,7 +74,9 @@ class ShortTermRentalService:
         return qs.distinct()
 
     @staticmethod
-    def get_visible(*, actor, prop: Property, short_term_rental_id: int) -> ShortTermRental:
+    def get_visible(
+        *, actor, prop: Property, short_term_rental_id: int
+    ) -> ShortTermRental:
         rental = (
             ShortTermRental.objects.select_related(
                 "unit__building__property", "initiated_by", "lease"
@@ -104,9 +110,15 @@ class ShortTermRentalService:
         if not members:
             raise InvalidInput("At least one member is required.", field="members")
         if not 0 <= primary_index < len(members):
-            raise InvalidInput("The primary member index is out of range.", field="primary_index")
+            raise InvalidInput(
+                "The primary member index is out of range.", field="primary_index"
+            )
         check_period(
-            right, unit, checkin_date, checkout_date, today=timezones.today(unit.building.property)
+            right,
+            unit,
+            checkin_date,
+            checkout_date,
+            today=timezones.today(unit.building.property),
         )
         with translate_integrity_errors(RENTAL_CONSTRAINTS):
             rental = ShortTermRental.objects.create(
@@ -171,7 +183,9 @@ class ShortTermRentalService:
     def check_in(*, actor, rental: ShortTermRental) -> ShortTermRental:
         rental = lock_rental(rental)
         if not ShortTermRentalPolicy.can_check_in(actor, rental):
-            raise PermissionDenied("Only management or on-site security can record arrivals.")
+            raise PermissionDenied(
+                "Only management or on-site security can record arrivals."
+            )
         if rental.status != ShortTermRentalStatus.SCHEDULED:
             raise InvalidTransition("Only scheduled rentals can be checked in.")
         rental.status = ShortTermRentalStatus.CHECKED_IN
@@ -206,7 +220,9 @@ class ShortTermRentalService:
         return rental
 
     @staticmethod
-    def complete_past(*, today: dt.date | None = None, prop: Property | None = None) -> int:
+    def complete_past(
+        *, today: dt.date | None = None, prop: Property | None = None
+    ) -> int:
         """Rentals whose checkout date has passed become COMPLETED (all properties, or `prop`).
 
         Checked in or still scheduled, the stay is over either way and the unit
@@ -221,7 +237,9 @@ class ShortTermRentalService:
             candidates = candidates.filter(unit__building__property=prop)
         completed = 0
         for rental in candidates:
-            if rental.checkout_date >= (today or timezones.today(rental.unit.building.property)):
+            if rental.checkout_date >= (
+                today or timezones.today(rental.unit.building.property)
+            ):
                 continue
             with transaction.atomic():
                 rental = lock_rental(rental)
@@ -275,7 +293,9 @@ class ShortTermRentalService:
     def on_lease_closed(*, lease: Lease, effective_date: dt.date) -> int:
         """A tenant's sublets cannot outlive the lease that allowed them."""
         affected = ShortTermRental.objects.filter(
-            lease=lease, status=ShortTermRentalStatus.SCHEDULED, checkout_date__gt=effective_date
+            lease=lease,
+            status=ShortTermRentalStatus.SCHEDULED,
+            checkout_date__gt=effective_date,
         )
         count = 0
         for rental in affected:
@@ -292,7 +312,9 @@ class ShortTermRentalService:
     def delete(*, actor, rental: ShortTermRental) -> None:
         """Permanent removal of a rental and of its members' documents."""
         if not ShortTermRentalPolicy.can_delete(actor, rental):
-            raise PermissionDenied("Only the property management can delete a short rental.")
+            raise PermissionDenied(
+                "Only the property management can delete a short rental."
+            )
         AuditService.record(
             actor=actor,
             action=ShortTermRentalAudit.DELETED,

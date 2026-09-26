@@ -17,7 +17,12 @@ from apps.common.attachments.rules import EntityType
 from apps.common.attachments.service import AttachmentService
 from apps.common.db import apply_changes
 from apps.common.deletion import destroy
-from apps.common.exceptions import InvalidInput, InvalidTransition, NotFound, PermissionDenied
+from apps.common.exceptions import (
+    InvalidInput,
+    InvalidTransition,
+    NotFound,
+    PermissionDenied,
+)
 from apps.common.services.audit import AuditService
 from apps.properties.models import Building, Property, Unit
 from apps.service_requests.models import ServiceRequest
@@ -41,7 +46,11 @@ TRANSITIONS: dict[str, tuple[str, ...]] = {
     "start": (WorkOrderStatus.OPEN, WorkOrderStatus.ON_HOLD),
     "hold": (WorkOrderStatus.OPEN, WorkOrderStatus.IN_PROGRESS),
     "complete": (WorkOrderStatus.IN_PROGRESS,),
-    "cancel": (WorkOrderStatus.OPEN, WorkOrderStatus.IN_PROGRESS, WorkOrderStatus.ON_HOLD),
+    "cancel": (
+        WorkOrderStatus.OPEN,
+        WorkOrderStatus.IN_PROGRESS,
+        WorkOrderStatus.ON_HOLD,
+    ),
 }
 
 
@@ -53,11 +62,15 @@ def _building_of(wo: WorkOrder) -> Building | None:
 class WorkOrderService:
     @staticmethod
     def list_visible(
-        *, actor, property_id: int, status: str | None = None, assigned_to_me: bool = False
+        *,
+        actor,
+        property_id: int,
+        status: str | None = None,
+        assigned_to_me: bool = False,
     ) -> QuerySet[WorkOrder]:
-        qs = WorkOrder.objects.filter(WorkOrderPolicy.visible_filter(actor)).select_related(
-            "property", "building", "unit", "assignee"
-        )
+        qs = WorkOrder.objects.filter(
+            WorkOrderPolicy.visible_filter(actor)
+        ).select_related("property", "building", "unit", "assignee")
         if assigned_to_me:
             qs = qs.filter(assignee=actor)
         qs = qs.filter(property_id=property_id)
@@ -96,7 +109,8 @@ class WorkOrderService:
         ):
             return
         raise InvalidInput(
-            "The assignee does not work on this property or building.", field="assignee_id"
+            "The assignee does not work on this property or building.",
+            field="assignee_id",
         )
 
     @staticmethod
@@ -114,16 +128,21 @@ class WorkOrderService:
         files=(),
     ) -> WorkOrder:
         if not WorkOrderPolicy.can_create(actor, prop):
-            raise PermissionDenied("Only the property management can create work orders.")
+            raise PermissionDenied(
+                "Only the property management can create work orders."
+            )
         if unit is not None:
             building = building or unit.building
             if unit.building_id != building.pk:
                 raise InvalidInput("The unit is not in this building.", field="unit_id")
         if building is not None and building.property_id != prop.pk:
-            raise InvalidInput("The building belongs to another property.", field="building_id")
+            raise InvalidInput(
+                "The building belongs to another property.", field="building_id"
+            )
         if service_request is not None and service_request.property_id != prop.pk:
             raise InvalidInput(
-                "The service request belongs to another property.", field="service_request_id"
+                "The service request belongs to another property.",
+                field="service_request_id",
             )
         wo = WorkOrder(
             property=prop,
@@ -134,13 +153,24 @@ class WorkOrderService:
             created_by=actor,
         )
         apply_changes(wo, data or {}, EDITABLE_FIELDS)
-        WorkOrderService._check_assignee(assignee, prop, unit.building if unit else building)
+        WorkOrderService._check_assignee(
+            assignee, prop, unit.building if unit else building
+        )
         wo.assignee = assignee
-        if wo.scheduled_start and wo.scheduled_end and wo.scheduled_end <= wo.scheduled_start:
-            raise InvalidInput("The scheduled end must follow the start.", field="scheduled_end")
+        if (
+            wo.scheduled_start
+            and wo.scheduled_end
+            and wo.scheduled_end <= wo.scheduled_start
+        ):
+            raise InvalidInput(
+                "The scheduled end must follow the start.", field="scheduled_end"
+            )
         wo.save()
         AttachmentService.attach(
-            entity_type=EntityType.WORK_ORDER, entity_id=wo.pk, files=list(files), uploaded_by=actor
+            entity_type=EntityType.WORK_ORDER,
+            entity_id=wo.pk,
+            files=list(files),
+            uploaded_by=actor,
         )
         AuditService.record(
             actor=actor, action=WorkOrderAudit.CREATED, target=wo, property_id=prop.pk
@@ -167,12 +197,20 @@ class WorkOrderService:
         fields = apply_changes(wo, changes, EDITABLE_FIELDS)
         reassigned = False
         if "assignee" in changes and changes["assignee"] != wo.assignee:
-            WorkOrderService._check_assignee(changes["assignee"], wo.property, _building_of(wo))
+            WorkOrderService._check_assignee(
+                changes["assignee"], wo.property, _building_of(wo)
+            )
             wo.assignee = changes["assignee"]
             fields.append("assignee")
             reassigned = True
-        if wo.scheduled_start and wo.scheduled_end and wo.scheduled_end <= wo.scheduled_start:
-            raise InvalidInput("The scheduled end must follow the start.", field="scheduled_end")
+        if (
+            wo.scheduled_start
+            and wo.scheduled_end
+            and wo.scheduled_end <= wo.scheduled_start
+        ):
+            raise InvalidInput(
+                "The scheduled end must follow the start.", field="scheduled_end"
+            )
         if fields:
             wo.save(update_fields=[*fields, "updated_at"])
             AuditService.record(
@@ -201,7 +239,9 @@ class WorkOrderService:
         if action not in TRANSITIONS:
             raise InvalidInput("Unknown action.", field="action")
         if wo.status not in TRANSITIONS[action]:
-            raise InvalidTransition(f"Cannot {action} a work order that is {wo.status.lower()}.")
+            raise InvalidTransition(
+                f"Cannot {action} a work order that is {wo.status.lower()}."
+            )
         now = timezone.now()
         fields = ["status"]
         if action == "start":
@@ -235,7 +275,9 @@ class WorkOrderService:
     def delete(*, actor, wo: WorkOrder) -> None:
         """Permanent removal of a work order and its files."""
         if not WorkOrderPolicy.can_delete(actor, wo):
-            raise PermissionDenied("Only the property management can delete work orders.")
+            raise PermissionDenied(
+                "Only the property management can delete work orders."
+            )
         AuditService.record(
             actor=actor,
             action=WorkOrderAudit.DELETED,
@@ -251,5 +293,8 @@ class WorkOrderService:
         if not WorkOrderPolicy.can_add_files(actor, wo):
             raise NotFound("Work order not found.")
         return AttachmentService.attach(
-            entity_type=EntityType.WORK_ORDER, entity_id=wo.pk, files=list(files), uploaded_by=actor
+            entity_type=EntityType.WORK_ORDER,
+            entity_id=wo.pk,
+            files=list(files),
+            uploaded_by=actor,
         )

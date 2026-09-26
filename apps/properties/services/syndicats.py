@@ -37,7 +37,9 @@ class SyndicatService:
 
     @staticmethod
     def get_visible(*, actor, syndicat_id: int) -> Syndicat:
-        syndicat = SyndicatService.list_visible(actor=actor).filter(pk=syndicat_id).first()
+        syndicat = (
+            SyndicatService.list_visible(actor=actor).filter(pk=syndicat_id).first()
+        )
         if syndicat is None:
             raise NotFound("Syndicat not found.")
         return syndicat
@@ -64,13 +66,17 @@ class SyndicatService:
         accessible = Q() if reachable is None else Q(properties__id__in=property_ids)
         return syndicats.annotate(
             accessible_properties_count=Count(
-                "properties", filter=accessible & Q(properties__is_active=True), distinct=True
+                "properties",
+                filter=accessible & Q(properties__is_active=True),
+                distinct=True,
             )
         ).order_by("name", "id")
 
     @staticmethod
     def get_reachable(*, actor, syndicat_id: int) -> Syndicat:
-        syndicat = SyndicatService.list_reachable(actor=actor).filter(pk=syndicat_id).first()
+        syndicat = (
+            SyndicatService.list_reachable(actor=actor).filter(pk=syndicat_id).first()
+        )
         if syndicat is None:
             raise NotFound("Syndicat not found.")
         return syndicat

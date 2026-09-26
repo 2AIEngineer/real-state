@@ -46,7 +46,9 @@ class LeasePolicy:
 
     @staticmethod
     def can_delete(user, lease: Lease) -> bool:
-        return AccessService.manages_syndicat(user, lease.unit.building.property.syndicat)
+        return AccessService.manages_syndicat(
+            user, lease.unit.building.property.syndicat
+        )
 
 
 class LeaseMemberPolicy:

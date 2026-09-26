@@ -17,7 +17,9 @@ class BuildingListView(BaseAPIView):
             BuildingService.list_for_property(actor=request.user, prop=prop),
         )
 
-    @extend_schema(request=s.BuildingInputSerializer, responses={201: s.BuildingSerializer})
+    @extend_schema(
+        request=s.BuildingInputSerializer, responses={201: s.BuildingSerializer}
+    )
     def post(self, request, property_id: int):
         prop = self.selected_property(property_id)
         data = self.parse(s.BuildingInputSerializer)

@@ -55,7 +55,9 @@ class LeaseSerializer(serializers.ModelSerializer):
     termination_reason = serializers.ChoiceField(
         choices=LeaseTerminationReason.choices, allow_blank=True, read_only=True
     )
-    property = serializers.IntegerField(source="unit.building.property_id", read_only=True)
+    property = serializers.IntegerField(
+        source="unit.building.property_id", read_only=True
+    )
 
     class Meta:
         model = Lease
@@ -107,7 +109,9 @@ class LeaseMemberVehicleSerializer(serializers.Serializer):
     make = serializers.CharField(max_length=60, required=False, allow_blank=True)
     model = serializers.CharField(max_length=60, required=False, allow_blank=True)
     color = serializers.CharField(max_length=30, required=False, allow_blank=True)
-    parking_spot = serializers.CharField(max_length=30, required=False, allow_blank=True)
+    parking_spot = serializers.CharField(
+        max_length=30, required=False, allow_blank=True
+    )
 
 
 class LeaseMemberPetSerializer(serializers.Serializer):
@@ -117,8 +121,12 @@ class LeaseMemberPetSerializer(serializers.Serializer):
 
 
 class LeaseMemberExtrasSerializer(serializers.Serializer):
-    emergency_contact_name = serializers.CharField(max_length=200, required=False, allow_blank=True)
-    emergency_contact_phone = serializers.CharField(max_length=32, required=False, allow_blank=True)
+    emergency_contact_name = serializers.CharField(
+        max_length=200, required=False, allow_blank=True
+    )
+    emergency_contact_phone = serializers.CharField(
+        max_length=32, required=False, allow_blank=True
+    )
     emergency_contact_relation = serializers.CharField(
         max_length=80, required=False, allow_blank=True
     )
@@ -179,7 +187,9 @@ class LeaseComponentStateInputSerializer(serializers.Serializer):
     state = serializers.ChoiceField(choices=ComponentCondition.choices)
     on_check = serializers.ChoiceField(choices=CheckPhase.choices)
     on_check_date = serializers.DateField()
-    files = serializers.ListField(child=serializers.FileField(), required=False, default=list)
+    files = serializers.ListField(
+        child=serializers.FileField(), required=False, default=list
+    )
 
 
 @extend_schema_serializer(component_name="LeaseComponentState")

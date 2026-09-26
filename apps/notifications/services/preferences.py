@@ -27,7 +27,8 @@ def _defaults_for(
     user_id: int, roles_by_user: dict[int, str], owner_or_tenant_ids: set[int]
 ) -> dict[str, bool]:
     field_only = (
-        roles_by_user.get(user_id) in FIELD_ONLY_ROLES and user_id not in owner_or_tenant_ids
+        roles_by_user.get(user_id) in FIELD_ONLY_ROLES
+        and user_id not in owner_or_tenant_ids
     )
     return {name: not field_only for name in CATEGORY_PREFERENCE_FIELD.values()}
 
@@ -37,11 +38,15 @@ class PreferenceService:
     def resolve_many(user_ids: Iterable[int]) -> dict[int, NotificationPreference]:
         """Preferences for many users; missing rows are created with role-based defaults."""
         ids = set(user_ids)
-        prefs = {p.user_id: p for p in NotificationPreference.objects.filter(user_id__in=ids)}
+        prefs = {
+            p.user_id: p for p in NotificationPreference.objects.filter(user_id__in=ids)
+        }
         missing = ids - prefs.keys()
         if missing:
             roles_by_user = dict(
-                get_user_model().objects.filter(pk__in=missing).values_list("pk", "role")
+                get_user_model()
+                .objects.filter(pk__in=missing)
+                .values_list("pk", "role")
             )
             owner_or_tenant_ids = set(
                 UnitOwnership.objects.filter(
@@ -49,20 +54,26 @@ class PreferenceService:
                 ).values_list("owner_id", flat=True)
             ) | set(
                 LeaseMember.objects.filter(
-                    user_id__in=missing, left_at__isnull=True, lease__status=LeaseStatus.ACTIVE
+                    user_id__in=missing,
+                    left_at__isnull=True,
+                    lease__status=LeaseStatus.ACTIVE,
                 ).values_list("user_id", flat=True)
             )
             NotificationPreference.objects.bulk_create(
                 [
                     NotificationPreference(
-                        user_id=uid, **_defaults_for(uid, roles_by_user, owner_or_tenant_ids)
+                        user_id=uid,
+                        **_defaults_for(uid, roles_by_user, owner_or_tenant_ids),
                     )
                     for uid in missing
                 ],
                 ignore_conflicts=True,
             )
             prefs.update(
-                {p.user_id: p for p in NotificationPreference.objects.filter(user_id__in=missing)}
+                {
+                    p.user_id: p
+                    for p in NotificationPreference.objects.filter(user_id__in=missing)
+                }
             )
         return prefs
 

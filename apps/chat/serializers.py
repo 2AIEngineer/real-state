@@ -47,7 +47,15 @@ class ChatMessageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ChatMessage
-        fields = ["id", "chat_room", "sender", "body", "media", "created_at", "edited_at"]
+        fields = [
+            "id",
+            "chat_room",
+            "sender",
+            "body",
+            "media",
+            "created_at",
+            "edited_at",
+        ]
         read_only_fields = fields
 
 
@@ -66,5 +74,7 @@ class ChatMessageEditSerializer(serializers.Serializer):
 
 
 class ChatMessageCreateSerializer(serializers.Serializer):
-    body = serializers.CharField(required=False, allow_blank=True, default="", trim_whitespace=True)
+    body = serializers.CharField(
+        required=False, allow_blank=True, default="", trim_whitespace=True
+    )
     media = serializers.FileField(required=False, allow_null=True, default=None)

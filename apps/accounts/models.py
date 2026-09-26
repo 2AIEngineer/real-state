@@ -54,7 +54,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=150)
     last_name = models.CharField(max_length=150)
     phone = models.CharField(max_length=32, blank=True)
-    gender = models.CharField(max_length=12, choices=Gender.choices, default=Gender.UNDISCLOSED)
+    gender = models.CharField(
+        max_length=12, choices=Gender.choices, default=Gender.UNDISCLOSED
+    )
     preferred_language = models.CharField(
         max_length=5, choices=Language.choices, default=Language.FRENCH
     )
@@ -63,7 +65,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     )
 
     is_active = models.BooleanField(default=True)
-    is_staff = models.BooleanField(default=False, help_text="Technical back-office access only.")
+    is_staff = models.BooleanField(
+        default=False, help_text="Technical back-office access only."
+    )
     is_technical_account = models.BooleanField(
         default=False,
         help_text="Non-human account (e.g. a promoter's legal representative). Never logs in.",
@@ -88,7 +92,8 @@ class User(AbstractBaseUser, PermissionsMixin):
         constraints = [
             models.UniqueConstraint(Lower("email"), name="user_email_ci_unique"),
             models.CheckConstraint(
-                condition=models.Q(is_active=True) | models.Q(deactivated_at__isnull=False),
+                condition=models.Q(is_active=True)
+                | models.Q(deactivated_at__isnull=False),
                 name="user_inactive_has_deactivation_date",
             ),
         ]
@@ -127,7 +132,9 @@ class ProviderServiceType(models.TextChoices):
 class ProviderProfile(TimeStampedModel):
     """Complementary profile for accounts holding the `provider` role."""
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="provider_profile")
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name="provider_profile"
+    )
     company_name = models.CharField(max_length=200, blank=True)
     service_type = models.CharField(
         max_length=32,
@@ -162,7 +169,9 @@ REVOCATION_CONSISTENT = Q(is_active=True, revoked_at__isnull=True) | Q(
 
 
 class UserAssignmentBase(TimeStampedModel):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="+")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="+"
+    )
     granted_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,

@@ -38,7 +38,9 @@ def resolve_right(actor, unit: Unit) -> DeclarationRight:
         return DeclarationRight(InitiatorCapacity.MANAGEMENT)
     member = AccessService.active_lease_membership(actor, unit)
     if member:
-        return DeclarationRight(InitiatorCapacity.TENANT, lease=member.lease, member=member)
+        return DeclarationRight(
+            InitiatorCapacity.TENANT, lease=member.lease, member=member
+        )
     if AccessService.is_owner_of(actor, unit):
         return DeclarationRight(InitiatorCapacity.OWNER)
     raise PermissionDenied(
@@ -47,17 +49,28 @@ def resolve_right(actor, unit: Unit) -> DeclarationRight:
 
 
 def check_period(
-    right: DeclarationRight, unit: Unit, checkin: dt.date, checkout: dt.date, *, today: dt.date
+    right: DeclarationRight,
+    unit: Unit,
+    checkin: dt.date,
+    checkout: dt.date,
+    *,
+    today: dt.date,
 ) -> None:
     if checkout <= checkin:
         raise InvalidInput("Check-out must be after check-in.", field="checkout_date")
     if right.capacity != InitiatorCapacity.MANAGEMENT and checkin < today:
-        raise InvalidInput("A rental cannot be declared in the past.", field="checkin_date")
+        raise InvalidInput(
+            "A rental cannot be declared in the past.", field="checkin_date"
+        )
     if right.capacity == InitiatorCapacity.TENANT:
         lease = right.lease
         start_bound = max(lease.start_date, right.member.joined_at)
-        if checkin < start_bound or (lease.end_date is not None and checkout > lease.end_date):
-            end = lease.end_date.strftime("%d/%m/%Y") if lease.end_date else "open-ended"
+        if checkin < start_bound or (
+            lease.end_date is not None and checkout > lease.end_date
+        ):
+            end = (
+                lease.end_date.strftime("%d/%m/%Y") if lease.end_date else "open-ended"
+            )
             raise BusinessRuleViolation(
                 f"A sublet must rental within your lease ({start_bound:%d/%m/%Y} → {end}).",
                 code="outside_lease",
@@ -87,4 +100,6 @@ def require_editable(actor, rental: ShortTermRental) -> None:
     if not ShortTermRentalPolicy.can_update(actor, rental):
         raise NotFound("Short rental not found.")
     if rental.status not in BLOCKING_SHORT_TERM_RENTAL_STATUSES:
-        raise InvalidTransition("Members can only be changed on upcoming or ongoing rentals.")
+        raise InvalidTransition(
+            "Members can only be changed on upcoming or ongoing rentals."
+        )

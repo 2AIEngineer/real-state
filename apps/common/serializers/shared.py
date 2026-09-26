@@ -18,11 +18,15 @@ class UploadFileSerializer(serializers.Serializer):
 
 
 class ActionReasonSerializer(serializers.Serializer):
-    reason = serializers.CharField(required=False, allow_blank=True, default="", max_length=2000)
+    reason = serializers.CharField(
+        required=False, allow_blank=True, default="", max_length=2000
+    )
 
 
 class ActionNoteSerializer(serializers.Serializer):
-    note = serializers.CharField(required=False, allow_blank=True, default="", max_length=4000)
+    note = serializers.CharField(
+        required=False, allow_blank=True, default="", max_length=4000
+    )
 
 
 class BulkActionResultSerializer(serializers.Serializer):

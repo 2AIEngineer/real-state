@@ -173,7 +173,9 @@ class OwnershipPolicy:
     @staticmethod
     def can_delete(user, ownership: UnitOwnership) -> bool:
         """Erase a line recorded by mistake."""
-        return AccessService.manages_syndicat(user, ownership.unit.building.property.syndicat)
+        return AccessService.manages_syndicat(
+            user, ownership.unit.building.property.syndicat
+        )
 
 
 class HousekeepingPolicy:

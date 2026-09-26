@@ -25,7 +25,14 @@ class AssignmentSerializer(serializers.ModelSerializer):
     revoked_by = serializers.IntegerField(source="revoked_by_id", allow_null=True)
 
     class Meta:
-        fields = ["id", "is_active", "granted_by", "created_at", "revoked_at", "revoked_by"]
+        fields = [
+            "id",
+            "is_active",
+            "granted_by",
+            "created_at",
+            "revoked_at",
+            "revoked_by",
+        ]
         read_only_fields = fields
 
 

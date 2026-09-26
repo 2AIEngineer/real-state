@@ -20,14 +20,17 @@ from apps.accounts import errors
 from apps.accounts.audit import AssignmentAudit
 from apps.accounts.policies import can_assign_account, can_see_all_assignments_of
 from apps.common.db import translate_integrity_errors
-from apps.common.exceptions import BusinessRuleViolation, InvalidInput, NotFound, PermissionDenied
+from apps.common.exceptions import (
+    BusinessRuleViolation,
+    InvalidInput,
+    NotFound,
+    PermissionDenied,
+)
 from apps.common.services.audit import AuditService
 
 User = get_user_model()
 
-CANNOT_MANAGE = (
-    "You cannot manage this account's assignments on this syndicat, property or building."
-)
+CANNOT_MANAGE = "You cannot manage this account's assignments on this syndicat, property or building."
 
 
 def actor_or_none(actor):
@@ -48,7 +51,9 @@ def load_places(model: type[Model], ids, *, field: str) -> list:
     found = {obj.pk: obj for obj in model.objects.filter(pk__in=ids)}
     missing = [i for i in ids if i not in found]
     if missing:
-        raise NotFound(f"Unknown {model._meta.verbose_name} id(s): {missing}.", field=field)
+        raise NotFound(
+            f"Unknown {model._meta.verbose_name} id(s): {missing}.", field=field
+        )
     return [found[i] for i in ids]
 
 
@@ -95,14 +100,25 @@ class AssignmentService:
         cls.validate_places(user, places)
         created = []
         for place in places:
-            if not (can_assign_account(actor, user) and cls.can_assign_place(actor, place)):
+            if not (
+                can_assign_account(actor, user) and cls.can_assign_place(actor, place)
+            ):
                 raise PermissionDenied(CANNOT_MANAGE)
-            with translate_integrity_errors({cls.unique_constraint: errors.already_assigned}):
+            with translate_integrity_errors(
+                {cls.unique_constraint: errors.already_assigned}
+            ):
                 row = cls.model.objects.create(
-                    **{"user": user, cls.place_field: place, "granted_by": actor_or_none(actor)}
+                    **{
+                        "user": user,
+                        cls.place_field: place,
+                        "granted_by": actor_or_none(actor),
+                    }
                 )
             cls._audit_granted(
-                row, actor=actor, property_id=cls.property_id_of(place), reason="granted"
+                row,
+                actor=actor,
+                property_id=cls.property_id_of(place),
+                reason="granted",
             )
             created.append(row)
         return created
@@ -119,7 +135,9 @@ class AssignmentService:
         if not row.is_active:
             raise BusinessRuleViolation("This assignment is already revoked.")
         place = getattr(row, cls.place_field)
-        if not (can_assign_account(actor, row.user) and cls.can_assign_place(actor, place)):
+        if not (
+            can_assign_account(actor, row.user) and cls.can_assign_place(actor, place)
+        ):
             raise PermissionDenied(CANNOT_MANAGE)
         cls._revoke(row, actor=actor, reason="revoked")
         return row
@@ -152,7 +170,9 @@ class AssignmentService:
 
     # -- journal -----------------------------------------------------------------------------
     @classmethod
-    def _audit_granted(cls, row, *, actor, property_id: int | None, reason: str) -> None:
+    def _audit_granted(
+        cls, row, *, actor, property_id: int | None, reason: str
+    ) -> None:
         AuditService.record(
             actor=actor,
             action=AssignmentAudit.GRANTED,

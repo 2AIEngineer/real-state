@@ -46,7 +46,9 @@ class AttachmentService:
                 raise InvalidInput(f"'{upload.name}' is empty.", field=field)
             if upload.size > rule.max_size_bytes:
                 limit = rule.max_size_bytes // (1024 * 1024)
-                raise InvalidInput(f"'{upload.name}' exceeds the {limit} MB limit.", field=field)
+                raise InvalidInput(
+                    f"'{upload.name}' exceeds the {limit} MB limit.", field=field
+                )
             mime = detect_mime_type(upload)
             if mime is None or mime not in rule.allowed_types:
                 raise InvalidInput(
@@ -76,7 +78,9 @@ class AttachmentService:
             return []
         rule = RULES[entity_type]
         mime_types = AttachmentService.validate(files, rule, field=field)
-        existing = Attachment.objects.filter(entity_type=entity_type, entity_id=entity_id)
+        existing = Attachment.objects.filter(
+            entity_type=entity_type, entity_id=entity_id
+        )
 
         if rule.max_files == 1:
             if len(files) != 1:
@@ -131,7 +135,9 @@ class AttachmentService:
     @staticmethod
     def list_for_entities(entity_type: str, entity_ids) -> QuerySet[Attachment]:
         """Files of several entities of one type, in a single query (list pages)."""
-        return Attachment.objects.filter(entity_type=entity_type, entity_id__in=entity_ids)
+        return Attachment.objects.filter(
+            entity_type=entity_type, entity_id__in=entity_ids
+        )
 
     @staticmethod
     def count(entity_type: str, entity_id: int) -> int:

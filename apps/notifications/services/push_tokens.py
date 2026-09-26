@@ -20,11 +20,15 @@ class PushTokenService:
         stops receiving pushes on a device they no longer use.
         """
         if not expo_push_token.startswith(("ExponentPushToken[", "ExpoPushToken[")):
-            raise InvalidInput("This is not a valid Expo push token.", field="expo_push_token")
+            raise InvalidInput(
+                "This is not a valid Expo push token.", field="expo_push_token"
+            )
         now = timezone.now()
-        ExpoPushToken.objects.filter(expo_push_token=expo_push_token, is_active=True).exclude(
-            user=user, device_id=device_id
-        ).update(is_active=False, deactivated_reason="token_reassigned")
+        ExpoPushToken.objects.filter(
+            expo_push_token=expo_push_token, is_active=True
+        ).exclude(user=user, device_id=device_id).update(
+            is_active=False, deactivated_reason="token_reassigned"
+        )
         token, _ = ExpoPushToken.objects.update_or_create(
             user=user,
             device_id=device_id,
@@ -41,7 +45,9 @@ class PushTokenService:
     @staticmethod
     @transaction.atomic
     def unregister(*, user, device_id: str) -> None:
-        deleted, _ = ExpoPushToken.objects.filter(user=user, device_id=device_id).delete()
+        deleted, _ = ExpoPushToken.objects.filter(
+            user=user, device_id=device_id
+        ).delete()
         if not deleted:
             raise NotFound("No push token registered for this device.")
 

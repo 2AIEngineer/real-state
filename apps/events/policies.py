@@ -27,7 +27,9 @@ class EventPolicy:
     def can_view(user, event: Event) -> bool:
         return (
             event.archived_at is None
-            and Event.objects.filter(pk=event.pk).filter(EventPolicy.visible_filter(user)).exists()
+            and Event.objects.filter(pk=event.pk)
+            .filter(EventPolicy.visible_filter(user))
+            .exists()
         )
 
     @staticmethod

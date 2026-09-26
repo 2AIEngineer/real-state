@@ -17,15 +17,23 @@ class Product(TimeStampedModel):
     stock_quantity = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
     created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
     )
 
     class Meta:
         ordering = ["name", "id"]
         constraints = [
-            models.CheckConstraint(condition=Q(price__gte=0), name="product_price_non_negative"),
+            models.CheckConstraint(
+                condition=Q(price__gte=0), name="product_price_non_negative"
+            ),
             models.UniqueConstraint(
-                fields=["property", "sku"], condition=~Q(sku=""), name="product_sku_per_property"
+                fields=["property", "sku"],
+                condition=~Q(sku=""),
+                name="product_sku_per_property",
             ),
         ]
         indexes = [models.Index(fields=["property", "is_active"])]
@@ -49,7 +57,11 @@ class Order(TimeStampedModel):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="orders"
     )
     unit = models.ForeignKey(
-        "properties.Unit", null=True, blank=True, on_delete=models.CASCADE, related_name="orders"
+        "properties.Unit",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="orders",
     )
     status = models.CharField(
         max_length=10, choices=OrderStatus.choices, default=OrderStatus.PENDING
@@ -62,7 +74,11 @@ class Order(TimeStampedModel):
     delivered_at = models.DateTimeField(null=True, blank=True)
     cancelled_at = models.DateTimeField(null=True, blank=True)
     cancelled_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
     )
     cancellation_reason = models.TextField(blank=True)
 
@@ -86,7 +102,11 @@ class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
     # A deleted product leaves past orders intact: each line keeps its name and price.
     product = models.ForeignKey(
-        Product, null=True, blank=True, on_delete=models.SET_NULL, related_name="order_items"
+        Product,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="order_items",
     )
     # Frozen at order time: later catalogue edits never rewrite history.
     product_name = models.CharField(max_length=160)
@@ -97,7 +117,9 @@ class OrderItem(models.Model):
     class Meta:
         ordering = ["order_id", "id"]
         constraints = [
-            models.UniqueConstraint(fields=["order", "product"], name="unique_product_per_order"),
+            models.UniqueConstraint(
+                fields=["order", "product"], name="unique_product_per_order"
+            ),
             models.CheckConstraint(
                 condition=Q(quantity__gte=1), name="order_item_quantity_positive"
             ),

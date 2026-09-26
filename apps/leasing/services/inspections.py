@@ -11,7 +11,12 @@ from apps.common.attachments.rules import EntityType
 from apps.common.attachments.service import AttachmentService
 from apps.common.db import apply_changes, translate_integrity_errors
 from apps.common.deletion import destroy
-from apps.common.exceptions import InvalidInput, InvalidTransition, NotFound, PermissionDenied
+from apps.common.exceptions import (
+    InvalidInput,
+    InvalidTransition,
+    NotFound,
+    PermissionDenied,
+)
 from apps.common.services.audit import AuditService
 from apps.leasing import errors
 from apps.leasing.audit import LeaseAudit
@@ -19,7 +24,9 @@ from apps.leasing.models import CheckPhase, Lease, LeaseComponentState, LeaseSta
 from apps.leasing.policies import LeaseComponentStatePolicy, LeasePolicy
 
 COMPONENT_FIELDS = ("name", "description", "state", "on_check_date")
-COMPONENT_CONSTRAINTS = {"unique_component_per_inspection": errors.component_already_recorded}
+COMPONENT_CONSTRAINTS = {
+    "unique_component_per_inspection": errors.component_already_recorded
+}
 RECORDERS_ONLY = "Only the property management can record inspections."
 
 
@@ -40,7 +47,8 @@ def _check_phase(
         )
     if on_check_date < lease.start_date - dt.timedelta(days=31):
         raise InvalidInput(
-            "The inspection date is too far before the lease start.", field="on_check_date"
+            "The inspection date is too far before the lease start.",
+            field="on_check_date",
         )
     if on_check == CheckPhase.OUT:
         check_in = (
@@ -65,10 +73,14 @@ class LeaseComponentStateService:
         return LeaseComponentState.objects.filter(lease=lease)
 
     @staticmethod
-    def get(*, actor, lease: Lease, lease_component_state_id: int) -> LeaseComponentState:
+    def get(
+        *, actor, lease: Lease, lease_component_state_id: int
+    ) -> LeaseComponentState:
         """An inspection line only exists inside its lease."""
         state = (
-            LeaseComponentState.objects.select_related("lease__unit__building__property")
+            LeaseComponentState.objects.select_related(
+                "lease__unit__building__property"
+            )
             .filter(pk=lease_component_state_id, lease=lease)
             .first()
         )
@@ -123,7 +135,9 @@ class LeaseComponentStateService:
 
     @staticmethod
     @transaction.atomic
-    def update(*, actor, component: LeaseComponentState, changes: dict) -> LeaseComponentState:
+    def update(
+        *, actor, component: LeaseComponentState, changes: dict
+    ) -> LeaseComponentState:
         if not LeaseComponentStatePolicy.can_record(actor, component.lease):
             raise PermissionDenied(RECORDERS_ONLY)
         fields = apply_changes(component, changes, COMPONENT_FIELDS)

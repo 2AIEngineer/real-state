@@ -28,14 +28,16 @@ class VisitorPolicy:
             unit_id__in=list(AccessService.owned_or_rented_unit_ids(user))
         )
         if user.role == StructuralRole.SECURITY:
-            visible |= Q(unit__building_id__in=AccessService.assigned_building_ids(user))
+            visible |= Q(
+                unit__building_id__in=AccessService.assigned_building_ids(user)
+            )
         return visible
 
     @staticmethod
     def can_view(user, visitor: Visitor) -> bool:
-        return _is_gate_staff(user, visitor.unit) or AccessService.is_owner_or_tenant_of(
+        return _is_gate_staff(
             user, visitor.unit
-        )
+        ) or AccessService.is_owner_or_tenant_of(user, visitor.unit)
 
     @staticmethod
     def can_register(user, unit: Unit) -> bool:

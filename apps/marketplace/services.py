@@ -62,15 +62,17 @@ class ListingService:
         search: str | None = None,
         max_price: Decimal | None = None,
     ) -> QuerySet[MarketplaceListing]:
-        qs = MarketplaceListing.objects.filter(status=ListingStatus.PUBLISHED).select_related(
-            "seller", "property"
-        )
+        qs = MarketplaceListing.objects.filter(
+            status=ListingStatus.PUBLISHED
+        ).select_related("seller", "property")
         # Listings of a property whose plan excludes the marketplace are hidden.
         qs = qs.filter(property_id=property_id, property__include_marketplace=True)
         if category:
             qs = qs.filter(category=category)
         if search:
-            qs = qs.filter(Q(title__icontains=search) | Q(description__icontains=search))
+            qs = qs.filter(
+                Q(title__icontains=search) | Q(description__icontains=search)
+            )
         if max_price is not None:
             qs = qs.filter(price__lte=max_price)
         return qs
@@ -105,7 +107,9 @@ class ListingService:
             )
         if data.get("price") is not None and data["price"] < 0:
             raise InvalidInput("The price cannot be negative.", field="price")
-        listing = MarketplaceListing(seller=actor, property=prop, published_at=timezone.now())
+        listing = MarketplaceListing(
+            seller=actor, property=prop, published_at=timezone.now()
+        )
         apply_changes(listing, data, EDITABLE_FIELDS)
         listing.save()
         AttachmentService.attach(
@@ -126,7 +130,9 @@ class ListingService:
 
     @staticmethod
     def _lock_own_published(actor, listing: MarketplaceListing) -> MarketplaceListing:
-        listing = MarketplaceListing.objects.select_for_update(of=("self",)).get(pk=listing.pk)
+        listing = MarketplaceListing.objects.select_for_update(of=("self",)).get(
+            pk=listing.pk
+        )
         if not ListingPolicy.can_update(actor, listing):
             raise PermissionDenied("Only the seller can change this listing.")
         if listing.status != ListingStatus.PUBLISHED:
@@ -135,7 +141,9 @@ class ListingService:
 
     @staticmethod
     @transaction.atomic
-    def update(*, actor, listing: MarketplaceListing, changes: dict) -> MarketplaceListing:
+    def update(
+        *, actor, listing: MarketplaceListing, changes: dict
+    ) -> MarketplaceListing:
         listing = ListingService._lock_own_published(actor, listing)
         fields = apply_changes(listing, changes, EDITABLE_FIELDS)
         if listing.price is not None and listing.price < 0:
@@ -148,16 +156,22 @@ class ListingService:
     @transaction.atomic
     def mark_sold(*, actor, listing: MarketplaceListing) -> MarketplaceListing:
         """The item found a buyer: the ad leaves the catalogue as sold."""
-        return ListingService._close(actor=actor, listing=listing, status=ListingStatus.SOLD)
+        return ListingService._close(
+            actor=actor, listing=listing, status=ListingStatus.SOLD
+        )
 
     @staticmethod
     @transaction.atomic
     def archive(*, actor, listing: MarketplaceListing) -> MarketplaceListing:
         """The seller puts the ad away without selling; the record stays."""
-        return ListingService._close(actor=actor, listing=listing, status=ListingStatus.ARCHIVED)
+        return ListingService._close(
+            actor=actor, listing=listing, status=ListingStatus.ARCHIVED
+        )
 
     @staticmethod
-    def _close(*, actor, listing: MarketplaceListing, status: str) -> MarketplaceListing:
+    def _close(
+        *, actor, listing: MarketplaceListing, status: str
+    ) -> MarketplaceListing:
         listing = ListingService._lock_own_published(actor, listing)
         listing.status = status
         listing.closed_at = timezone.now()
@@ -172,7 +186,9 @@ class ListingService:
 
     @staticmethod
     @transaction.atomic
-    def moderate(*, actor, listing: MarketplaceListing, reason: str) -> MarketplaceListing:
+    def moderate(
+        *, actor, listing: MarketplaceListing, reason: str
+    ) -> MarketplaceListing:
         if not ListingPolicy.can_moderate(actor, listing):
             raise PermissionDenied("Only moderators can remove listings.")
         listing = (
@@ -187,7 +203,13 @@ class ListingService:
         listing.moderation_reason = reason
         listing.moderated_by = actor
         listing.save(
-            update_fields=["status", "closed_at", "moderation_reason", "moderated_by", "updated_at"]
+            update_fields=[
+                "status",
+                "closed_at",
+                "moderation_reason",
+                "moderated_by",
+                "updated_at",
+            ]
         )
         AuditService.record(
             actor=actor,

@@ -4,14 +4,24 @@ from apps.leasing import views
 
 urlpatterns = [
     path("leases/", views.LeaseListView.as_view(), name="lease-list"),
-    path("leases/expire-due/", views.LeaseExpireDueView.as_view(), name="lease-expire-due"),
-    path("leases/<int:lease_id>/", views.LeaseDetailView.as_view(), name="lease-detail"),
+    path(
+        "leases/expire-due/",
+        views.LeaseExpireDueView.as_view(),
+        name="lease-expire-due",
+    ),
+    path(
+        "leases/<int:lease_id>/", views.LeaseDetailView.as_view(), name="lease-detail"
+    ),
     path(
         "leases/<int:lease_id>/terminate/",
         views.LeaseTerminateView.as_view(),
         name="lease-terminate",
     ),
-    path("leases/<int:lease_id>/cancel/", views.LeaseCancelView.as_view(), name="lease-cancel"),
+    path(
+        "leases/<int:lease_id>/cancel/",
+        views.LeaseCancelView.as_view(),
+        name="lease-cancel",
+    ),
     path(
         "leases/<int:lease_id>/members/",
         views.LeaseMemberListView.as_view(),

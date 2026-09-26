@@ -27,7 +27,11 @@ class ChatRoom(TimeStampedModel):
         related_name="chat_room",
     )
     order = models.OneToOneField(
-        "store.Order", null=True, blank=True, on_delete=models.CASCADE, related_name="chat_room"
+        "store.Order",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="chat_room",
     )
     property = models.ForeignKey(
         "properties.Property", on_delete=models.CASCADE, related_name="chat_rooms"
@@ -39,9 +43,21 @@ class ChatRoom(TimeStampedModel):
         constraints = [
             models.CheckConstraint(
                 condition=(
-                    Q(service_request__isnull=False, booking__isnull=True, order__isnull=True)
-                    | Q(service_request__isnull=True, booking__isnull=False, order__isnull=True)
-                    | Q(service_request__isnull=True, booking__isnull=True, order__isnull=False)
+                    Q(
+                        service_request__isnull=False,
+                        booking__isnull=True,
+                        order__isnull=True,
+                    )
+                    | Q(
+                        service_request__isnull=True,
+                        booking__isnull=False,
+                        order__isnull=True,
+                    )
+                    | Q(
+                        service_request__isnull=True,
+                        booking__isnull=True,
+                        order__isnull=False,
+                    )
                 ),
                 name="chat_room_exactly_one_context",
             ),
@@ -54,7 +70,9 @@ class ChatRoom(TimeStampedModel):
 class ChatMessage(models.Model):
     """A message; its optional single media file is an Attachment (chat_media)."""
 
-    chat_room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE, related_name="messages")
+    chat_room = models.ForeignKey(
+        ChatRoom, on_delete=models.CASCADE, related_name="messages"
+    )
     sender = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="chat_messages"
     )
@@ -73,11 +91,17 @@ class ChatMessage(models.Model):
 class ChatReadMarker(models.Model):
     """How far a participant has read a room (drives unread counters)."""
 
-    chat_room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE, related_name="read_markers")
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="+")
+    chat_room = models.ForeignKey(
+        ChatRoom, on_delete=models.CASCADE, related_name="read_markers"
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="+"
+    )
     last_read_at = models.DateTimeField()
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["chat_room", "user"], name="unique_chat_read_marker")
+            models.UniqueConstraint(
+                fields=["chat_room", "user"], name="unique_chat_read_marker"
+            )
         ]

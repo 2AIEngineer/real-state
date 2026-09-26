@@ -17,6 +17,7 @@ class OutboxRetention:
         days = settings.NOTIFICATIONS["OUTBOX_RETENTION_DAYS"]
         threshold = (now or timezone.now()) - timedelta(days=days)
         deleted, _ = OutboxMessage.objects.filter(
-            status__in=(OutboxStatus.SENT, OutboxStatus.FAILED), created_at__lt=threshold
+            status__in=(OutboxStatus.SENT, OutboxStatus.FAILED),
+            created_at__lt=threshold,
         ).delete()
         return deleted

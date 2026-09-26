@@ -51,13 +51,19 @@ class ShortTermRentalMemberInput:
             short_term_rental=rental,
             first_name=self.first_name.strip(),
             last_name=self.last_name.strip(),
-            **{name: value for name, value in self.data.items() if name in MEMBER_FIELDS},
+            **{
+                name: value
+                for name, value in self.data.items()
+                if name in MEMBER_FIELDS
+            },
         )
 
 
 class ShortTermRentalMemberService:
     @staticmethod
-    def list_for_rental(*, actor, rental: ShortTermRental) -> QuerySet[ShortTermRentalMember]:
+    def list_for_rental(
+        *, actor, rental: ShortTermRental
+    ) -> QuerySet[ShortTermRentalMember]:
         if not ShortTermRentalPolicy.can_view(actor, rental):
             raise NotFound("Short rental not found.")
         return rental.members.all()
@@ -88,7 +94,11 @@ class ShortTermRentalMemberService:
     @staticmethod
     @transaction.atomic
     def update(
-        *, actor, member: ShortTermRentalMember, changes: dict, make_primary: bool = False
+        *,
+        actor,
+        member: ShortTermRentalMember,
+        changes: dict,
+        make_primary: bool = False,
     ) -> ShortTermRentalMember:
         rental = lock_rental(member.short_term_rental)
         require_editable(actor, rental)
@@ -112,10 +122,13 @@ class ShortTermRentalMemberService:
         rental = lock_rental(member.short_term_rental)
         require_editable(actor, rental)
         if rental.members.count() == 1:
-            raise BusinessRuleViolation("A rental needs at least one member.", code="last_member")
+            raise BusinessRuleViolation(
+                "A rental needs at least one member.", code="last_member"
+            )
         if rental.primary_member_id == member.pk:
             raise BusinessRuleViolation(
-                "Designate another primary member before removing this one.", code="primary_member"
+                "Designate another primary member before removing this one.",
+                code="primary_member",
             )
         AuditService.record(
             actor=actor,
@@ -123,7 +136,9 @@ class ShortTermRentalMemberService:
             target=member,
             property_id=rental.property_id,
         )
-        AttachmentService.delete_for_entity(EntityType.SHORT_TERM_RENTAL_MEMBER_ID_CARD, member.pk)
+        AttachmentService.delete_for_entity(
+            EntityType.SHORT_TERM_RENTAL_MEMBER_ID_CARD, member.pk
+        )
         member.delete()
 
     @staticmethod

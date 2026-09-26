@@ -10,7 +10,10 @@ class AuditLogEntry(models.Model):
     """Append-only journal of sensitive actions."""
 
     actor = models.ForeignKey(
-        settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="audit_entries"
+        settings.AUTH_USER_MODEL,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="audit_entries",
     )
     action = models.CharField(max_length=80)
     content_type = models.ForeignKey(
@@ -20,7 +23,11 @@ class AuditLogEntry(models.Model):
     target = GenericForeignKey("content_type", "object_id")
     object_repr = models.CharField(max_length=255, blank=True)
     property = models.ForeignKey(
-        "properties.Property", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+        "properties.Property",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
     )
     metadata = models.JSONField(default=dict, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)

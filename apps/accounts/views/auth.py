@@ -29,7 +29,9 @@ class LoginView(LoginThrottleMixin, TokenObtainPairView):
             raise InvalidToken(exc.args[0]) from exc
         tokens = serializer.validated_data
         session = SessionService.configure(
-            user=serializer.user, access_token=tokens["access"], refresh_token=tokens["refresh"]
+            user=serializer.user,
+            access_token=tokens["access"],
+            refresh_token=tokens["refresh"],
         )
         return Response(s.SessionContextSerializer(session).data)
 

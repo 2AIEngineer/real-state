@@ -4,7 +4,11 @@ from __future__ import annotations
 
 from apps.announcements.models import Announcement, AnnouncementPriority
 from apps.notifications.models import NotificationCategory, Severity
-from apps.notifications.services import NotificationIntent, NotificationService, SnapshotService
+from apps.notifications.services import (
+    NotificationIntent,
+    NotificationService,
+    SnapshotService,
+)
 
 PRIORITY_SEVERITY = {
     AnnouncementPriority.NORMAL: Severity.INFO,
@@ -24,7 +28,10 @@ def published(announcement: Announcement, *, recipients, actor) -> None:
             target=announcement,
             severity=PRIORITY_SEVERITY[announcement.priority],
             exclude=[actor],
-            data={"announcement_id": announcement.pk, "property_id": announcement.property_id},
+            data={
+                "announcement_id": announcement.pk,
+                "property_id": announcement.property_id,
+            },
             action_path=f"/announcements/{announcement.pk}",
         )
     )
@@ -40,6 +47,9 @@ def archived(announcement: Announcement, *, actor) -> None:
             bcc=SnapshotService.recipients(announcement),
             target=announcement,
             exclude=[actor],
-            data={"announcement_id": announcement.pk, "property_id": announcement.property_id},
+            data={
+                "announcement_id": announcement.pk,
+                "property_id": announcement.property_id,
+            },
         )
     )

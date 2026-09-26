@@ -13,7 +13,11 @@ class Folder(TimeStampedModel):
         "properties.Property", on_delete=models.CASCADE, related_name="library_folders"
     )
     parent_folder = models.ForeignKey(
-        "self", null=True, blank=True, on_delete=models.CASCADE, related_name="subfolders"
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="subfolders",
     )
     en_name = models.CharField(max_length=160)
     fr_name = models.CharField(max_length=160)
@@ -44,7 +48,8 @@ class Folder(TimeStampedModel):
                 name="folder_fr_name_per_parent",
             ),
             models.CheckConstraint(
-                condition=~Q(parent_folder=models.F("id")), name="folder_not_its_own_parent"
+                condition=~Q(parent_folder=models.F("id")),
+                name="folder_not_its_own_parent",
             ),
         ]
 
@@ -55,22 +60,33 @@ class Folder(TimeStampedModel):
 class LibraryDocument(TimeStampedModel):
     """A published document; its file is an attachment of type `library_document`."""
 
-    folder = models.ForeignKey(Folder, on_delete=models.CASCADE, related_name="documents")
+    folder = models.ForeignKey(
+        Folder, on_delete=models.CASCADE, related_name="documents"
+    )
     property = models.ForeignKey(
-        "properties.Property", on_delete=models.CASCADE, related_name="library_documents"
+        "properties.Property",
+        on_delete=models.CASCADE,
+        related_name="library_documents",
     )
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
-    target_roles = ArrayField(models.CharField(max_length=16, choices=PropertyRole.choices))
+    target_roles = ArrayField(
+        models.CharField(max_length=16, choices=PropertyRole.choices)
+    )
     created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
     )
 
     class Meta:
         ordering = ["-created_at", "-id"]
         constraints = [
             models.CheckConstraint(
-                condition=Q(target_roles__len__gt=0), name="library_document_has_target_roles"
+                condition=Q(target_roles__len__gt=0),
+                name="library_document_has_target_roles",
             )
         ]
         indexes = [models.Index(fields=["property", "folder"])]

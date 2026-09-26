@@ -52,7 +52,9 @@ AMENITY_CONSTRAINTS = {"amenity_name_per_property": errors.amenity_name_taken}
 
 class AmenityService:
     @staticmethod
-    def list_visible(*, actor, prop: Property, include_inactive: bool = False) -> QuerySet[Amenity]:
+    def list_visible(
+        *, actor, prop: Property, include_inactive: bool = False
+    ) -> QuerySet[Amenity]:
         if not AmenityPolicy.can_list(actor, prop):
             raise PermissionDenied("You have no link with this property.")
         FeatureGate.require(prop, Feature.AMENITIES)
@@ -78,33 +80,46 @@ class AmenityService:
             raise InvalidInput("Capacity must be at least 1.", field="capacity")
         if amenity.max_duration_minutes < amenity.min_duration_minutes:
             raise InvalidInput(
-                "Maximum duration is shorter than the minimum.", field="max_duration_minutes"
+                "Maximum duration is shorter than the minimum.",
+                field="max_duration_minutes",
             )
         if (amenity.opening_time is None) != (amenity.closing_time is None):
-            raise InvalidInput("Opening and closing times go together.", field="opening_time")
+            raise InvalidInput(
+                "Opening and closing times go together.", field="opening_time"
+            )
         if amenity.opening_time and amenity.closing_time <= amenity.opening_time:
-            raise InvalidInput("Closing time must follow opening time.", field="closing_time")
+            raise InvalidInput(
+                "Closing time must follow opening time.", field="closing_time"
+            )
         for price in ("fee", "security_fee", "hourly_price"):
             if getattr(amenity, price) is None or getattr(amenity, price) < 0:
                 raise InvalidInput(
-                    "Prices cannot be negative (use 0 when there is nothing to pay).", field=price
+                    "Prices cannot be negative (use 0 when there is nothing to pay).",
+                    field=price,
                 )
 
     @staticmethod
     @transaction.atomic
-    def create(*, actor, prop: Property, data: dict, building: Building | None = None) -> Amenity:
+    def create(
+        *, actor, prop: Property, data: dict, building: Building | None = None
+    ) -> Amenity:
         if not AmenityPolicy.can_create(actor, prop):
             raise PermissionDenied("Only the property management can create amenities.")
         FeatureGate.require(prop, Feature.AMENITIES)
         if building is not None and building.property_id != prop.pk:
-            raise InvalidInput("The building belongs to another property.", field="building_id")
+            raise InvalidInput(
+                "The building belongs to another property.", field="building_id"
+            )
         amenity = Amenity(property=prop, building=building, created_by=actor)
         apply_changes(amenity, data, AMENITY_FIELDS)
         AmenityService._validate(amenity)
         with translate_integrity_errors(AMENITY_CONSTRAINTS):
             amenity.save()
         AuditService.record(
-            actor=actor, action=AmenityAudit.CREATED, target=amenity, property_id=prop.pk
+            actor=actor,
+            action=AmenityAudit.CREATED,
+            target=amenity,
+            property_id=prop.pk,
         )
         return amenity
 
@@ -148,7 +163,9 @@ class AmenityService:
             raise PermissionDenied("Only the property management can edit amenities.")
         AttachmentService.delete(
             attachment=AttachmentService.get(
-                entity_type=EntityType.AMENITY, entity_id=amenity.pk, attachment_id=attachment_id
+                entity_type=EntityType.AMENITY,
+                entity_id=amenity.pk,
+                attachment_id=attachment_id,
             )
         )
 

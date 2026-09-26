@@ -102,7 +102,10 @@ def _places_of(user) -> Iterator[tuple[str, _Places]]:
     owned = active_ownerships().filter(owner=user)
     yield (
         PropertyRole.OWNER,
-        _Places(owned.values("unit__building__property_id"), owned.values("unit__building_id")),
+        _Places(
+            owned.values("unit__building__property_id"),
+            owned.values("unit__building_id"),
+        ),
     )
 
     rented = active_lease_memberships().filter(user=user)

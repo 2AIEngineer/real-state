@@ -63,11 +63,15 @@ class ApiMixin:
     def parse(
         self, serializer_class: type[serializers.Serializer], data: Any = None, **kwargs
     ) -> dict:
-        serializer = serializer_class(data=self.request.data if data is None else data, **kwargs)
+        serializer = serializer_class(
+            data=self.request.data if data is None else data, **kwargs
+        )
         serializer.is_valid(raise_exception=True)
         return serializer.validated_data
 
-    def parse_query_params(self, serializer_class: type[serializers.Serializer]) -> dict:
+    def parse_query_params(
+        self, serializer_class: type[serializers.Serializer]
+    ) -> dict:
         serializer = serializer_class(data=self.request.query_params)
         serializer.is_valid(raise_exception=True)
         return serializer.validated_data
@@ -75,13 +79,17 @@ class ApiMixin:
     def render(
         self, serializer_class, instance, *, status: int = 200, many: bool = False
     ) -> Response:
-        data = serializer_class(instance, many=many, context=self.get_serializer_context()).data
+        data = serializer_class(
+            instance, many=many, context=self.get_serializer_context()
+        ).data
         return Response(data, status=status)
 
     def render_page(self, serializer_class, queryset) -> Response:
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(queryset, self.request, view=self)
-        data = serializer_class(page, many=True, context=self.get_serializer_context()).data
+        data = serializer_class(
+            page, many=True, context=self.get_serializer_context()
+        ).data
         return paginator.get_paginated_response(data)
 
     def get_serializer_context(self) -> dict:
@@ -129,7 +137,9 @@ class ApiMixin:
         if raw in (None, ""):
             return None
         if raw not in UIConfigStep.values:
-            raise InvalidInput(f"Unknown UI configuration step '{raw}'.", field=STEP_HEADER)
+            raise InvalidInput(
+                f"Unknown UI configuration step '{raw}'.", field=STEP_HEADER
+            )
         return raw
 
     def require_ui_config_step(self, expected: str) -> None:

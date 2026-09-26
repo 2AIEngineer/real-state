@@ -13,16 +13,21 @@ from apps.common.views import BaseAPIView
 @extend_schema(tags=["Bookings"])
 class BookingListView(BaseAPIView):
     @extend_schema(
-        parameters=[s.BookingsQueryParamsSerializer], responses=s.BookingSerializer(many=True)
+        parameters=[s.BookingsQueryParamsSerializer],
+        responses=s.BookingSerializer(many=True),
     )
     def get(self, request):
         query = self.parse_query_params(s.BookingsQueryParamsSerializer)
         return self.render_page(
             s.BookingSerializer,
-            BookingService.list_visible(actor=request.user, property_id=self.property.pk, **query),
+            BookingService.list_visible(
+                actor=request.user, property_id=self.property.pk, **query
+            ),
         )
 
-    @extend_schema(request=s.BookingCreateSerializer, responses={201: s.BookingSerializer})
+    @extend_schema(
+        request=s.BookingCreateSerializer, responses={201: s.BookingSerializer}
+    )
     def post(self, request):
         data = self.parse(s.BookingCreateSerializer)
         amenity = AmenityService.get_visible(
@@ -51,7 +56,8 @@ class BookingDetailView(BaseAPIView):
         )
 
     @extend_schema(
-        responses={204: None}, description="Permanently deletes the booking and its conversation."
+        responses={204: None},
+        description="Permanently deletes the booking and its conversation.",
     )
     def delete(self, request, booking_id: int):
         booking = BookingService.get_visible(
@@ -70,7 +76,8 @@ class BookingDecisionView(BaseAPIView):
         )
         data = self.parse(s.BookingDecisionSerializer)
         return self.render(
-            s.BookingSerializer, BookingService.decide(actor=request.user, booking=booking, **data)
+            s.BookingSerializer,
+            BookingService.decide(actor=request.user, booking=booking, **data),
         )
 
 
@@ -84,7 +91,9 @@ class BookingCancelView(BaseAPIView):
         data = self.parse(ActionReasonSerializer)
         return self.render(
             s.BookingSerializer,
-            BookingService.cancel(actor=request.user, booking=booking, reason=data["reason"]),
+            BookingService.cancel(
+                actor=request.user, booking=booking, reason=data["reason"]
+            ),
         )
 
 

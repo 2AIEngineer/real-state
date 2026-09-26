@@ -41,7 +41,9 @@ class SessionPropertySerializer(SessionSelectionSerializer):
 
 class SessionUIConfigSerializer(serializers.Serializer):
     app_mode = serializers.ChoiceField(choices=["web", "mobile"], allow_null=True)
-    step = serializers.ChoiceField(choices=["syndicat", "property", "dashboard"], allow_null=True)
+    step = serializers.ChoiceField(
+        choices=["syndicat", "property", "dashboard"], allow_null=True
+    )
     syndicat = SessionSelectionSerializer()
     property = SessionPropertySerializer()
 

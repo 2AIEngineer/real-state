@@ -26,9 +26,11 @@ def _tell(
             title=title,
             body=body,
             to=list(to),
-            bcc=UserDirectory.management(rental.unit.building.property)
-            if include_management
-            else [],
+            bcc=(
+                UserDirectory.management(rental.unit.building.property)
+                if include_management
+                else []
+            ),
             target=rental,
             severity=severity,
             exclude=[actor] if actor else [],

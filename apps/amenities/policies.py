@@ -45,7 +45,9 @@ class BookingPolicy:
     @staticmethod
     def visible_filter(user) -> Q:
         """The user's own bookings, plus every booking of the properties they manage."""
-        return Q(booker=user) | Q(amenity__property_id__in=AccessService.managed_property_ids(user))
+        return Q(booker=user) | Q(
+            amenity__property_id__in=AccessService.managed_property_ids(user)
+        )
 
     @staticmethod
     def can_view(user, booking: Booking) -> bool:
@@ -55,9 +57,9 @@ class BookingPolicy:
 
     @staticmethod
     def can_book(user, prop: Property) -> bool:
-        return AccessService.is_resident_of_property(user, prop) or AccessService.manages_property(
+        return AccessService.is_resident_of_property(
             user, prop
-        )
+        ) or AccessService.manages_property(user, prop)
 
     @staticmethod
     def can_decide(user, booking: Booking) -> bool:

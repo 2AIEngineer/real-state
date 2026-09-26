@@ -11,7 +11,12 @@ from django.utils import timezone
 from apps.common.attachments.rules import EntityType
 from apps.common.attachments.service import AttachmentService
 from apps.common.deletion import destroy
-from apps.common.exceptions import InvalidInput, InvalidTransition, NotFound, PermissionDenied
+from apps.common.exceptions import (
+    InvalidInput,
+    InvalidTransition,
+    NotFound,
+    PermissionDenied,
+)
 from apps.common.services.audit import AuditService
 from apps.events import notices
 from apps.events.audit import EventAudit
@@ -80,7 +85,11 @@ class EventService:
         A archived event is out of everyone's feed but must stay reachable
         for the people who may erase it for good.
         """
-        event = Event.objects.select_related("property").filter(pk=event_id, property=prop).first()
+        event = (
+            Event.objects.select_related("property")
+            .filter(pk=event_id, property=prop)
+            .first()
+        )
         if event is None or not EventPolicy.can_update(actor, event):
             raise NotFound("Event not found.")
         return event
@@ -106,9 +115,13 @@ class EventService:
         roles = SnapshotService.validate_target_roles(target_roles)
         _validate_schedule(start_at, end_at)
         if end_at <= timezone.now():
-            raise InvalidInput("An event cannot be scheduled entirely in the past.", field="end_at")
+            raise InvalidInput(
+                "An event cannot be scheduled entirely in the past.", field="end_at"
+            )
         if building is not None and building.property_id != prop.pk:
-            raise InvalidInput("The building belongs to another property.", field="building_id")
+            raise InvalidInput(
+                "The building belongs to another property.", field="building_id"
+            )
         event = Event.objects.create(
             property=prop,
             building=building,
@@ -121,9 +134,14 @@ class EventService:
             created_by=actor,
         )
         AttachmentService.attach(
-            entity_type=EntityType.EVENT, entity_id=event.pk, files=list(files), uploaded_by=actor
+            entity_type=EntityType.EVENT,
+            entity_id=event.pk,
+            files=list(files),
+            uploaded_by=actor,
         )
-        SnapshotService.freeze(target=event, prop=prop, target_roles=roles, building=building)
+        SnapshotService.freeze(
+            target=event, prop=prop, target_roles=roles, building=building
+        )
         AuditService.record(
             actor=actor, action=EventAudit.CREATED, target=event, property_id=prop.pk
         )
@@ -150,7 +168,8 @@ class EventService:
             raise PermissionDenied("Only the property management can edit events.")
         if "target_roles" in changes or "building" in changes:
             raise InvalidInput(
-                "The target roles of a published event cannot change.", field="target_roles"
+                "The target roles of a published event cannot change.",
+                field="target_roles",
             )
         event = EventService._lock_scheduled(event)
         fields = [
@@ -184,9 +203,19 @@ class EventService:
         event.status = EventStatus.CANCELLED
         event.cancelled_at = timezone.now()
         event.cancellation_reason = reason
-        event.save(update_fields=["status", "cancelled_at", "cancellation_reason", "updated_at"])
+        event.save(
+            update_fields=[
+                "status",
+                "cancelled_at",
+                "cancellation_reason",
+                "updated_at",
+            ]
+        )
         AuditService.record(
-            actor=actor, action=EventAudit.CANCELLED, target=event, property_id=event.property_id
+            actor=actor,
+            action=EventAudit.CANCELLED,
+            target=event,
+            property_id=event.property_id,
         )
         notices.cancelled(event, actor=actor, reason=reason)
         return event
@@ -218,12 +247,17 @@ class EventService:
             .select_related("property")
             .get(pk=event.pk)
         )
-        was_upcoming = event.status == EventStatus.SCHEDULED and event.end_at > timezone.now()
+        was_upcoming = (
+            event.status == EventStatus.SCHEDULED and event.end_at > timezone.now()
+        )
         event.archived_at = timezone.now()
         event.archived_by = actor
         event.save(update_fields=["archived_at", "archived_by", "updated_at"])
         AuditService.record(
-            actor=actor, action=EventAudit.ARCHIVED, target=event, property_id=event.property_id
+            actor=actor,
+            action=EventAudit.ARCHIVED,
+            target=event,
+            property_id=event.property_id,
         )
         if was_upcoming:
             notices.archived(event, actor=actor)
@@ -234,7 +268,10 @@ class EventService:
         if not EventPolicy.can_update(actor, event):
             raise PermissionDenied("Only the property management can edit events.")
         return AttachmentService.attach(
-            entity_type=EntityType.EVENT, entity_id=event.pk, files=list(files), uploaded_by=actor
+            entity_type=EntityType.EVENT,
+            entity_id=event.pk,
+            files=list(files),
+            uploaded_by=actor,
         )
 
     @staticmethod
@@ -244,12 +281,16 @@ class EventService:
             raise PermissionDenied("Only the property management can edit events.")
         AttachmentService.delete(
             attachment=AttachmentService.get(
-                entity_type=EntityType.EVENT, entity_id=event.pk, attachment_id=attachment_id
+                entity_type=EntityType.EVENT,
+                entity_id=event.pk,
+                attachment_id=attachment_id,
             )
         )
 
     @staticmethod
-    def complete_past(*, now: dt.datetime | None = None, prop: Property | None = None) -> int:
+    def complete_past(
+        *, now: dt.datetime | None = None, prop: Property | None = None
+    ) -> int:
         """Events whose end has passed become COMPLETED (all properties, or `prop`).
 
         The people the event was addressed to are told it is over, each event

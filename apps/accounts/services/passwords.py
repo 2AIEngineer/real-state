@@ -57,7 +57,9 @@ class PasswordService:
             user_id = int(force_str(urlsafe_base64_decode(uid)))
         except (TypeError, ValueError, OverflowError):
             raise _invalid_link() from None
-        user = User.objects.filter(pk=user_id, is_active=True, is_technical_account=False).first()
+        user = User.objects.filter(
+            pk=user_id, is_active=True, is_technical_account=False
+        ).first()
         if user is None or not setup_links.is_valid(user, token):
             raise _invalid_link()
         first_activation = not user.has_usable_password()
@@ -81,9 +83,13 @@ class PasswordService:
                 "Only the account holder changes their own password; send a new invitation instead."
             )
         if not user.check_password(current_password):
-            raise PermissionDenied("Current password is incorrect.", code="invalid_password")
+            raise PermissionDenied(
+                "Current password is incorrect.", code="invalid_password"
+            )
         PasswordService.apply_new_password(user, new_password)
-        AuditService.record(actor=user, action=AccountAudit.PASSWORD_CHANGED, target=user)
+        AuditService.record(
+            actor=user, action=AccountAudit.PASSWORD_CHANGED, target=user
+        )
         notices.critical_change(
             user,
             title="Mot de passe modifié",

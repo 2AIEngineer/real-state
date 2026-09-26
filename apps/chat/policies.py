@@ -45,7 +45,8 @@ class ChatPolicy:
             ctx.initiator.pk == user.pk
             or ChatPolicy.is_moderator(user, ctx)
             or (
-                ctx.kind == "service_request" and ctx.obj.assignments.filter(resolver=user).exists()
+                ctx.kind == "service_request"
+                and ctx.obj.assignments.filter(resolver=user).exists()
             )
         )
 

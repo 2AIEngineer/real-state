@@ -26,14 +26,26 @@ urlpatterns = [
     path("auth/token/refresh/", auth.RefreshView.as_view(), name="auth-token-refresh"),
     path("auth/logout/", auth.LogoutView.as_view(), name="auth-logout"),
     path(
-        "auth/password/reset/", auth.PasswordResetRequestView.as_view(), name="auth-password-reset"
+        "auth/password/reset/",
+        auth.PasswordResetRequestView.as_view(),
+        name="auth-password-reset",
     ),
-    path("auth/password/set/", auth.PasswordSetView.as_view(), name="auth-password-set"),
-    path("users/", users.UserListView.as_view(), name="user-list"),
-    path("users/<account:user_id>/", users.UserDetailView.as_view(), name="user-detail"),
-    path("users/<account:user_id>/email/", users.UserEmailView.as_view(), name="user-email"),
     path(
-        "users/<account:user_id>/password/", users.UserPasswordView.as_view(), name="user-password"
+        "auth/password/set/", auth.PasswordSetView.as_view(), name="auth-password-set"
+    ),
+    path("users/", users.UserListView.as_view(), name="user-list"),
+    path(
+        "users/<account:user_id>/", users.UserDetailView.as_view(), name="user-detail"
+    ),
+    path(
+        "users/<account:user_id>/email/",
+        users.UserEmailView.as_view(),
+        name="user-email",
+    ),
+    path(
+        "users/<account:user_id>/password/",
+        users.UserPasswordView.as_view(),
+        name="user-password",
     ),
     path(
         "users/<account:user_id>/invitation/",
@@ -56,7 +68,11 @@ urlpatterns = [
         name="user-provider-profile",
     ),
     # Roles, and one endpoint per assignment table
-    path("users/<account:user_id>/role/", assignments.UserRoleView.as_view(), name="user-role"),
+    path(
+        "users/<account:user_id>/role/",
+        assignments.UserRoleView.as_view(),
+        name="user-role",
+    ),
     path(
         "users/<account:user_id>/syndicat-assignments/",
         assignments.UserSyndicatAssignmentsView.as_view(),

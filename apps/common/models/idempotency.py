@@ -6,7 +6,9 @@ from django.db import models
 
 class IdempotencyKey(models.Model):
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="idempotency_keys"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="idempotency_keys",
     )
     key = models.CharField(max_length=255)
     # Method, path, selection and body of the first request: a retry must match it.
@@ -18,7 +20,9 @@ class IdempotencyKey(models.Model):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["user", "key"], name="idempotency_key_per_user")
+            models.UniqueConstraint(
+                fields=["user", "key"], name="idempotency_key_per_user"
+            )
         ]
 
     def __str__(self) -> str:

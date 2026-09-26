@@ -12,7 +12,10 @@ from __future__ import annotations
 
 from django.utils import timezone
 from rest_framework_simplejwt.exceptions import TokenError
-from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
+from rest_framework_simplejwt.token_blacklist.models import (
+    BlacklistedToken,
+    OutstandingToken,
+)
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.common.exceptions import InvalidInput
@@ -24,7 +27,9 @@ class TokenService:
         try:
             RefreshToken(refresh_token).blacklist()
         except TokenError:
-            raise InvalidInput("This session token is invalid or expired.", code="invalid_token")
+            raise InvalidInput(
+                "This session token is invalid or expired.", code="invalid_token"
+            )
 
     @staticmethod
     def revoke_all(*, user) -> int:
@@ -38,5 +43,7 @@ class TokenService:
     @staticmethod
     def flush_expired() -> int:
         """Forget the tokens that expired on their own (they are useless to keep)."""
-        deleted, _ = OutstandingToken.objects.filter(expires_at__lte=timezone.now()).delete()
+        deleted, _ = OutstandingToken.objects.filter(
+            expires_at__lte=timezone.now()
+        ).delete()
         return deleted

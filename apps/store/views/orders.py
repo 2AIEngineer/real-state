@@ -17,20 +17,25 @@ from apps.store.services import OrderLine, OrderService
 @extend_schema(tags=["Store"])
 class OrderListView(BaseAPIView):
     @extend_schema(
-        parameters=[s.OrdersQueryParamsSerializer], responses=s.OrderSerializer(many=True)
+        parameters=[s.OrdersQueryParamsSerializer],
+        responses=s.OrderSerializer(many=True),
     )
     def get(self, request):
         query = self.parse_query_params(s.OrdersQueryParamsSerializer)
         return self.render_page(
             s.OrderSerializer,
-            OrderService.list_visible(actor=request.user, property_id=self.property.pk, **query),
+            OrderService.list_visible(
+                actor=request.user, property_id=self.property.pk, **query
+            ),
         )
 
     @extend_schema(request=s.OrderCreateSerializer, responses={201: s.OrderSerializer})
     def post(self, request):
         data = self.parse(s.OrderCreateSerializer)
         unit = (
-            UnitService.get_visible(actor=request.user, prop=self.property, unit_id=data["unit_id"])
+            UnitService.get_visible(
+                actor=request.user, prop=self.property, unit_id=data["unit_id"]
+            )
             if data["unit_id"]
             else None
         )
@@ -44,7 +49,9 @@ class OrderListView(BaseAPIView):
         )
         return self.render(
             s.OrderSerializer,
-            OrderService.get_visible(actor=request.user, prop=self.property, order_id=order.pk),
+            OrderService.get_visible(
+                actor=request.user, prop=self.property, order_id=order.pk
+            ),
             status=status.HTTP_201_CREATED,
         )
 
@@ -55,7 +62,9 @@ class OrderDetailView(BaseAPIView):
     def get(self, request, order_id: int):
         return self.render(
             s.OrderSerializer,
-            OrderService.get_visible(actor=request.user, prop=self.property, order_id=order_id),
+            OrderService.get_visible(
+                actor=request.user, prop=self.property, order_id=order_id
+            ),
         )
 
     @extend_schema(
@@ -63,7 +72,9 @@ class OrderDetailView(BaseAPIView):
         description="Permanently deletes the order; reserved stock is restored.",
     )
     def delete(self, request, order_id: int):
-        order = OrderService.get_visible(actor=request.user, prop=self.property, order_id=order_id)
+        order = OrderService.get_visible(
+            actor=request.user, prop=self.property, order_id=order_id
+        )
         OrderService.delete(actor=request.user, order=order)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -71,14 +82,22 @@ class OrderDetailView(BaseAPIView):
 class _OrderTransitionView(BaseAPIView):
     transition: str = ""
 
-    @extend_schema(tags=["Store"], request=ActionNoteSerializer, responses=s.OrderSerializer)
+    @extend_schema(
+        tags=["Store"], request=ActionNoteSerializer, responses=s.OrderSerializer
+    )
     def post(self, request, order_id: int):
-        order = OrderService.get_visible(actor=request.user, prop=self.property, order_id=order_id)
+        order = OrderService.get_visible(
+            actor=request.user, prop=self.property, order_id=order_id
+        )
         data = self.parse(ActionNoteSerializer)
-        getattr(OrderService, self.transition)(actor=request.user, order=order, note=data["note"])
+        getattr(OrderService, self.transition)(
+            actor=request.user, order=order, note=data["note"]
+        )
         return self.render(
             s.OrderSerializer,
-            OrderService.get_visible(actor=request.user, prop=self.property, order_id=order_id),
+            OrderService.get_visible(
+                actor=request.user, prop=self.property, order_id=order_id
+            ),
         )
 
 
@@ -94,10 +113,14 @@ class OrderDeliverView(_OrderTransitionView):
 class OrderCancelView(BaseAPIView):
     @extend_schema(request=ActionReasonSerializer, responses=s.OrderSerializer)
     def post(self, request, order_id: int):
-        order = OrderService.get_visible(actor=request.user, prop=self.property, order_id=order_id)
+        order = OrderService.get_visible(
+            actor=request.user, prop=self.property, order_id=order_id
+        )
         data = self.parse(ActionReasonSerializer)
         OrderService.cancel(actor=request.user, order=order, reason=data["reason"])
         return self.render(
             s.OrderSerializer,
-            OrderService.get_visible(actor=request.user, prop=self.property, order_id=order_id),
+            OrderService.get_visible(
+                actor=request.user, prop=self.property, order_id=order_id
+            ),
         )

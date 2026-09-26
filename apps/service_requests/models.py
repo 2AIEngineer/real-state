@@ -48,24 +48,36 @@ class ServiceRequest(TimeStampedModel):
         help_text="Empty when the request concerns common areas.",
     )
     requester = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="service_requests"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="service_requests",
     )
     title = models.CharField(max_length=200)
     description = models.TextField()
     category = models.CharField(
-        max_length=16, choices=ServiceRequestCategory.choices, default=ServiceRequestCategory.OTHER
+        max_length=16,
+        choices=ServiceRequestCategory.choices,
+        default=ServiceRequestCategory.OTHER,
     )
     priority = models.CharField(
-        max_length=8, choices=ServiceRequestPriority.choices, default=ServiceRequestPriority.MEDIUM
+        max_length=8,
+        choices=ServiceRequestPriority.choices,
+        default=ServiceRequestPriority.MEDIUM,
     )
     status = models.CharField(
-        max_length=12, choices=ServiceRequestStatus.choices, default=ServiceRequestStatus.OPEN
+        max_length=12,
+        choices=ServiceRequestStatus.choices,
+        default=ServiceRequestStatus.OPEN,
     )
     current_round = models.PositiveIntegerField(default=1)
     resolved_at = models.DateTimeField(null=True, blank=True)
     closed_at = models.DateTimeField(null=True, blank=True)
     closed_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
     )
     cancelled_at = models.DateTimeField(null=True, blank=True)
     cancellation_reason = models.TextField(blank=True)
@@ -99,11 +111,17 @@ class ServiceRequestAssignment(TimeStampedModel):
         ServiceRequest, on_delete=models.CASCADE, related_name="assignments"
     )
     resolver = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="service_assignments"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="service_assignments",
     )
     resolution_round = models.PositiveIntegerField(default=1)
     assigned_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
     )
     is_resolved = models.BooleanField(default=False)
     resolved_at = models.DateTimeField(null=True, blank=True)

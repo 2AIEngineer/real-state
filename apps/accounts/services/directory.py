@@ -53,26 +53,38 @@ class UserDirectory:
 
     @staticmethod
     def syndics_of(syndicat: Syndicat) -> QuerySet:
-        assigned = UserSyndicat.objects.filter(is_active=True, syndicat=syndicat).values("user_id")
+        assigned = UserSyndicat.objects.filter(
+            is_active=True, syndicat=syndicat
+        ).values("user_id")
         return _reachable_users().filter(role=StructuralRole.SYNDIC, pk__in=assigned)
 
     @staticmethod
     def managers_of(prop: Property) -> QuerySet:
-        assigned = UserProperty.objects.filter(is_active=True, property=prop).values("user_id")
+        assigned = UserProperty.objects.filter(is_active=True, property=prop).values(
+            "user_id"
+        )
         return _reachable_users().filter(role=StructuralRole.MANAGER, pk__in=assigned)
 
     @staticmethod
     def maintenance_of(prop: Property) -> QuerySet:
-        assigned = UserProperty.objects.filter(is_active=True, property=prop).values("user_id")
-        return _reachable_users().filter(role=StructuralRole.MAINTENANCE, pk__in=assigned)
+        assigned = UserProperty.objects.filter(is_active=True, property=prop).values(
+            "user_id"
+        )
+        return _reachable_users().filter(
+            role=StructuralRole.MAINTENANCE, pk__in=assigned
+        )
 
     @staticmethod
-    def security_agents_of(prop: Property, building: Building | None = None) -> QuerySet:
+    def security_agents_of(
+        prop: Property, building: Building | None = None
+    ) -> QuerySet:
         """Security agents of one building, or of any building of the property."""
         return _agents_of(StructuralRole.SECURITY, prop, building)
 
     @staticmethod
-    def cleaning_agents_of(prop: Property, building: Building | None = None) -> QuerySet:
+    def cleaning_agents_of(
+        prop: Property, building: Building | None = None
+    ) -> QuerySet:
         """Cleaning agents of one building, or of any building of the property."""
         return _agents_of(StructuralRole.CLEANING, prop, building)
 
@@ -88,9 +100,9 @@ class UserDirectory:
     # --------------------------------------------------- owners and tenants
     @staticmethod
     def unit_owners(unit: Unit) -> QuerySet:
-        owner_ids = UnitOwnership.objects.filter(unit=unit, status=OwnershipStatus.ACTIVE).values(
-            "owner_id"
-        )
+        owner_ids = UnitOwnership.objects.filter(
+            unit=unit, status=OwnershipStatus.ACTIVE
+        ).values("owner_id")
         return _reachable_users().filter(id__in=owner_ids)
 
     @staticmethod

@@ -4,11 +4,23 @@ from __future__ import annotations
 
 from apps.events.models import Event
 from apps.notifications.models import NotificationCategory, Severity
-from apps.notifications.services import NotificationIntent, NotificationService, SnapshotService
+from apps.notifications.services import (
+    NotificationIntent,
+    NotificationService,
+    SnapshotService,
+)
 from apps.properties import timezones
 
 
-def _tell(event: Event, *, kind: str, title: str, body: str, actor, severity: str = Severity.INFO):
+def _tell(
+    event: Event,
+    *,
+    kind: str,
+    title: str,
+    body: str,
+    actor,
+    severity: str = Severity.INFO,
+):
     """Tell everyone the event was frozen for, by BCC."""
     NotificationService.notify(
         NotificationIntent(

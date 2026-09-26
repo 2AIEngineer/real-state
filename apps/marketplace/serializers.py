@@ -43,7 +43,9 @@ class MarketplaceListingFieldsSerializer(serializers.Serializer):
     currency = serializers.CharField(min_length=3, max_length=3, required=False)
     is_negotiable = serializers.BooleanField(required=False)
     location = serializers.CharField(max_length=200, required=False, allow_blank=True)
-    contact_phone = serializers.CharField(max_length=32, required=False, allow_blank=True)
+    contact_phone = serializers.CharField(
+        max_length=32, required=False, allow_blank=True
+    )
     contact_email = serializers.EmailField(required=False, allow_blank=True)
 
 
@@ -64,7 +66,9 @@ class MarketplaceListingUpdateSerializer(MarketplaceListingFieldsSerializer):
 class MarketplaceListingsQueryParamsSerializer(serializers.Serializer):
     category = serializers.ChoiceField(choices=ListingCategory.choices, required=False)
     search = serializers.CharField(required=False, allow_blank=True, max_length=120)
-    max_price = serializers.DecimalField(max_digits=14, decimal_places=2, required=False)
+    max_price = serializers.DecimalField(
+        max_digits=14, decimal_places=2, required=False
+    )
     mine = serializers.BooleanField(required=False, default=False)
     status = serializers.ChoiceField(choices=ListingStatus.choices, required=False)
 

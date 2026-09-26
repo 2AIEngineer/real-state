@@ -43,7 +43,9 @@ class UnitService:
 
     @staticmethod
     def list_mine(*, actor) -> QuerySet[Unit]:
-        return UnitService._base().filter(pk__in=AccessService.owned_or_rented_unit_ids(actor))
+        return UnitService._base().filter(
+            pk__in=AccessService.owned_or_rented_unit_ids(actor)
+        )
 
     @staticmethod
     def get_visible(*, actor, prop: Property | None, unit_id: int) -> Unit:
@@ -78,10 +80,16 @@ class UnitService:
             unit.save()
         # A unit always has an owner: the promoter holds it until it is sold.
         open_promoter_default(
-            unit, prop=building.property, start_date=timezones.today(building.property), actor=actor
+            unit,
+            prop=building.property,
+            start_date=timezones.today(building.property),
+            actor=actor,
         )
         AuditService.record(
-            actor=actor, action=UnitAudit.CREATED, target=unit, property_id=building.property_id
+            actor=actor,
+            action=UnitAudit.CREATED,
+            target=unit,
+            property_id=building.property_id,
         )
         return unit
 

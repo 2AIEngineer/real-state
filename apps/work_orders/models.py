@@ -64,10 +64,14 @@ class WorkOrder(TimeStampedModel):
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     category = models.CharField(
-        max_length=16, choices=WorkOrderCategory.choices, default=WorkOrderCategory.CORRECTIVE
+        max_length=16,
+        choices=WorkOrderCategory.choices,
+        default=WorkOrderCategory.CORRECTIVE,
     )
     priority = models.CharField(
-        max_length=8, choices=WorkOrderPriority.choices, default=WorkOrderPriority.MEDIUM
+        max_length=8,
+        choices=WorkOrderPriority.choices,
+        default=WorkOrderPriority.MEDIUM,
     )
     status = models.CharField(
         max_length=12, choices=WorkOrderStatus.choices, default=WorkOrderStatus.OPEN
@@ -88,7 +92,11 @@ class WorkOrder(TimeStampedModel):
     cancelled_at = models.DateTimeField(null=True, blank=True)
     cancellation_reason = models.TextField(blank=True)
     created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
     )
 
     class Meta:

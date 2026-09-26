@@ -84,7 +84,9 @@ def resolved(sr: ServiceRequest, *, actor) -> None:
     )
 
 
-def confirmed_by_requester(sr: ServiceRequest, *, actor, resolvers, rating: int | None) -> None:
+def confirmed_by_requester(
+    sr: ServiceRequest, *, actor, resolvers, rating: int | None
+) -> None:
     _tell(
         sr,
         event="closed",
@@ -92,7 +94,8 @@ def confirmed_by_requester(sr: ServiceRequest, *, actor, resolvers, rating: int 
         to=resolvers,
         severity=Severity.SUCCESS,
         title=f"Demande #{sr.pk} clôturée",
-        body="Le demandeur a confirmé la résolution." + (f" Note : {rating}/5." if rating else ""),
+        body="Le demandeur a confirmé la résolution."
+        + (f" Note : {rating}/5." if rating else ""),
     )
 
 

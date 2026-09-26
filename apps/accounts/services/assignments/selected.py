@@ -37,7 +37,9 @@ def is_assignable_role(role: str) -> bool:
 
 def assign_to_selected_syndicat(*, actor, user, syndicat_id: int) -> list[UserSyndicat]:
     """Assign a syndic to the selected syndicat."""
-    return SyndicatAssignmentService.assign(actor=actor, user=user, syndicat_ids=(syndicat_id,))
+    return SyndicatAssignmentService.assign(
+        actor=actor, user=user, syndicat_ids=(syndicat_id,)
+    )
 
 
 def assign_to_selected_property(
@@ -45,7 +47,9 @@ def assign_to_selected_property(
 ) -> list[UserProperty]:
     """Assign a manager or a maintenance agent to the selected property."""
     prop = _selected_property(syndicat_id, property_id)
-    return PropertyAssignmentService.assign(actor=actor, user=user, property_ids=(prop.pk,))
+    return PropertyAssignmentService.assign(
+        actor=actor, user=user, property_ids=(prop.pk,)
+    )
 
 
 def assign_to_buildings_of_selected_property(
@@ -69,7 +73,9 @@ def assign_according_to_role(
     one of the three functions above.
     """
     if user.role == StructuralRole.SYNDIC:
-        return assign_to_selected_syndicat(actor=actor, user=user, syndicat_id=syndicat_id)
+        return assign_to_selected_syndicat(
+            actor=actor, user=user, syndicat_id=syndicat_id
+        )
     if user.role in (StructuralRole.MANAGER, StructuralRole.MAINTENANCE):
         return assign_to_selected_property(
             actor=actor, user=user, syndicat_id=syndicat_id, property_id=property_id
@@ -115,7 +121,9 @@ def _buildings_of(prop: Property, building_ids, *, role: str) -> tuple[int, ...]
             code="assignment_required",
         )
     inside = set(
-        Building.objects.filter(pk__in=building_ids, property=prop).values_list("id", flat=True)
+        Building.objects.filter(pk__in=building_ids, property=prop).values_list(
+            "id", flat=True
+        )
     )
     outside = [i for i in building_ids if i not in inside]
     if outside:

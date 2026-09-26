@@ -15,7 +15,12 @@ from django.db.models import QuerySet
 
 from apps.common.db import translate_integrity_errors
 from apps.common.deletion import destroy
-from apps.common.exceptions import BusinessRuleViolation, InvalidInput, NotFound, PermissionDenied
+from apps.common.exceptions import (
+    BusinessRuleViolation,
+    InvalidInput,
+    NotFound,
+    PermissionDenied,
+)
 from apps.common.services.audit import AuditService
 from apps.properties import notices, timezones
 from apps.properties.audit import OwnershipAudit
@@ -55,7 +60,9 @@ def open_promoter_default(
     )
 
 
-def close_ownership(ownership: UnitOwnership, *, end_date: dt.date, reason: str, actor) -> None:
+def close_ownership(
+    ownership: UnitOwnership, *, end_date: dt.date, reason: str, actor
+) -> None:
     if end_date < ownership.start_date:
         raise InvalidInput(
             f"The effective date cannot precede the start of ownership #{ownership.pk} "
@@ -66,7 +73,9 @@ def close_ownership(ownership: UnitOwnership, *, end_date: dt.date, reason: str,
     ownership.end_date = end_date
     ownership.end_reason = reason
     ownership.ended_by = actor
-    ownership.save(update_fields=["status", "end_date", "end_reason", "ended_by", "updated_at"])
+    ownership.save(
+        update_fields=["status", "end_date", "end_reason", "ended_by", "updated_at"]
+    )
 
 
 def _validate_shares(shares: list[Decimal | None]) -> None:
@@ -74,7 +83,9 @@ def _validate_shares(shares: list[Decimal | None]) -> None:
     if any(share <= 0 or share > FULL_SHARE for share in explicit):
         raise InvalidInput("Ownership shares must be between 0 and 100.", field="share")
     if sum(explicit, Decimal("0")) > FULL_SHARE:
-        raise InvalidInput("Ownership shares cannot exceed 100% in total.", field="share")
+        raise InvalidInput(
+            "Ownership shares cannot exceed 100% in total.", field="share"
+        )
 
 
 def _require_personal_accounts(users, *, message: str, field: str) -> None:
@@ -114,7 +125,9 @@ class OwnershipService:
         )
 
     @staticmethod
-    def _ensure_not_orphan(unit: Unit, *, start_date: dt.date, actor) -> UnitOwnership | None:
+    def _ensure_not_orphan(
+        unit: Unit, *, start_date: dt.date, actor
+    ) -> UnitOwnership | None:
         """Reversion to the promoter when the last active owner is gone."""
         if OwnershipService.active(unit).exists():
             return None
@@ -143,7 +156,9 @@ class OwnershipService:
     ) -> list[UnitOwnership]:
         """Sale: every active ownership ends and the acquirers become owners."""
         if not OwnershipPolicy.can_change(actor, unit):
-            raise PermissionDenied("Only the property management can change ownerships.")
+            raise PermissionDenied(
+                "Only the property management can change ownerships."
+            )
         if not acquirers:
             raise InvalidInput("At least one acquirer is required.", field="acquirers")
         user_ids = [a.user.pk for a in acquirers]
@@ -160,16 +175,21 @@ class OwnershipService:
         previous = list(OwnershipService.active(unit).select_related("owner"))
         for ownership in previous:
             close_ownership(
-                ownership, end_date=effective_date, reason=OwnershipEndReason.SALE, actor=actor
+                ownership,
+                end_date=effective_date,
+                reason=OwnershipEndReason.SALE,
+                actor=actor,
             )
         sole_acquirer = len(acquirers) == 1
         created = [
             UnitOwnership.objects.create(
                 unit=unit,
                 owner=a.user,
-                ownership_share=a.share
-                if a.share is not None
-                else (FULL_SHARE if sole_acquirer else None),
+                ownership_share=(
+                    a.share
+                    if a.share is not None
+                    else (FULL_SHARE if sole_acquirer else None)
+                ),
                 start_date=effective_date,
                 acquisition_reference=reference,
                 created_by=actor,
@@ -201,7 +221,9 @@ class OwnershipService:
     ) -> UnitOwnership:
         """Joint ownership next to existing (non-promoter) owners."""
         if not OwnershipPolicy.can_change(actor, unit):
-            raise PermissionDenied("Only the property management can change ownerships.")
+            raise PermissionDenied(
+                "Only the property management can change ownerships."
+            )
         _require_personal_accounts(
             [user], message="Owners must be active personal accounts.", field="user_id"
         )
@@ -214,7 +236,9 @@ class OwnershipService:
             )
         _validate_shares([o.ownership_share for o in active] + [share])
         with translate_integrity_errors(
-            {"unique_active_ownership_per_user_unit": "This user already owns this unit."}
+            {
+                "unique_active_ownership_per_user_unit": "This user already owns this unit."
+            }
         ):
             ownership = UnitOwnership.objects.create(
                 unit=unit,
@@ -246,9 +270,13 @@ class OwnershipService:
         If it was the last active one, the unit reverts to the promoter.
         """
         if not OwnershipPolicy.can_change(actor, ownership.unit):
-            raise PermissionDenied("Only the property management can change ownerships.")
+            raise PermissionDenied(
+                "Only the property management can change ownerships."
+            )
         unit = OwnershipService._lock_unit(ownership.unit)
-        ownership = UnitOwnership.objects.select_for_update(of=("self",)).get(pk=ownership.pk)
+        ownership = UnitOwnership.objects.select_for_update(of=("self",)).get(
+            pk=ownership.pk
+        )
         if ownership.status != OwnershipStatus.ACTIVE:
             raise BusinessRuleViolation("This ownership is already terminated.")
         if ownership.is_promoter_default:
@@ -257,7 +285,9 @@ class OwnershipService:
                 code="promoter_default",
             )
         close_ownership(ownership, end_date=end_date, reason=reason, actor=actor)
-        reverted = OwnershipService._ensure_not_orphan(unit, start_date=end_date, actor=actor)
+        reverted = OwnershipService._ensure_not_orphan(
+            unit, start_date=end_date, actor=actor
+        )
         AuditService.record(
             actor=actor,
             action=OwnershipAudit.ENDED,
@@ -279,7 +309,9 @@ class OwnershipService:
         reverts to the promoter.
         """
         if not OwnershipPolicy.can_delete(actor, ownership):
-            raise PermissionDenied("Only administrators and syndics can erase an ownership record.")
+            raise PermissionDenied(
+                "Only administrators and syndics can erase an ownership record."
+            )
         unit = OwnershipService._lock_unit(ownership.unit)
         AuditService.record(
             actor=actor,

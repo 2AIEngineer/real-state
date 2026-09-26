@@ -31,7 +31,9 @@ class BuildingAssignmentService(AssignmentService):
     @classmethod
     def restrict_to_managed(cls, rows, actor):
         """Someone else only sees the buildings of the properties they manage."""
-        return rows.filter(building__property_id__in=AccessService.managed_property_ids(actor))
+        return rows.filter(
+            building__property_id__in=AccessService.managed_property_ids(actor)
+        )
 
     @classmethod
     def validate_places(cls, user, buildings: list) -> None:

@@ -17,7 +17,10 @@ class PerAccountLoginThrottle(SimpleRateThrottle):
         email = request.data.get("email") if hasattr(request.data, "get") else None
         if not isinstance(email, str) or not email.strip():
             return None
-        return self.cache_format % {"scope": self.scope, "ident": normalize_email(email)}
+        return self.cache_format % {
+            "scope": self.scope,
+            "ident": normalize_email(email),
+        }
 
 
 class AuthThrottleMixin:

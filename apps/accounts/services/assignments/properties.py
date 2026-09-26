@@ -10,7 +10,11 @@ from apps.accounts.audit import AssignmentAudit
 from apps.accounts.enums import StructuralRole
 from apps.accounts.models import ROLES_ASSIGNED_TO_PROPERTIES, UserProperty
 from apps.accounts.policies import can_assign_property
-from apps.accounts.services.assignments.base import AssignmentService, User, actor_or_none
+from apps.accounts.services.assignments.base import (
+    AssignmentService,
+    User,
+    actor_or_none,
+)
 from apps.accounts.services.authorization import AccessService
 from apps.common.services.audit import AuditService
 from apps.properties.models import Property
@@ -43,7 +47,9 @@ class PropertyAssignmentService(AssignmentService):
         return cls._assign(actor=actor, user=user, ids=property_ids)
 
     @classmethod
-    def assign_new_property_to_its_managers(cls, *, prop: Property, actor) -> list[UserProperty]:
+    def assign_new_property_to_its_managers(
+        cls, *, prop: Property, actor
+    ) -> list[UserProperty]:
         """Give a new property to the managers already running a property of its syndicat.
 
         Called by `PropertyService.create`, in the same transaction.

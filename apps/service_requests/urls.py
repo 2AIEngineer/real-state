@@ -3,7 +3,11 @@ from django.urls import path
 from apps.service_requests import views
 
 urlpatterns = [
-    path("service-requests/", views.ServiceRequestListView.as_view(), name="service-request-list"),
+    path(
+        "service-requests/",
+        views.ServiceRequestListView.as_view(),
+        name="service-request-list",
+    ),
     path(
         "service-requests/<int:request_id>/",
         views.ServiceRequestDetailView.as_view(),

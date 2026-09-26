@@ -14,16 +14,21 @@ from apps.properties.services import BuildingService
 @extend_schema(tags=["Amenities"])
 class AmenityListView(BaseAPIView):
     @extend_schema(
-        parameters=[s.AmenitiesQueryParamsSerializer], responses=s.AmenitySerializer(many=True)
+        parameters=[s.AmenitiesQueryParamsSerializer],
+        responses=s.AmenitySerializer(many=True),
     )
     def get(self, request):
         query = self.parse_query_params(s.AmenitiesQueryParamsSerializer)
         qs = AmenityService.list_visible(
-            actor=request.user, prop=self.property, include_inactive=query["include_inactive"]
+            actor=request.user,
+            prop=self.property,
+            include_inactive=query["include_inactive"],
         )
         return self.render_page(s.AmenitySerializer, qs)
 
-    @extend_schema(request=s.AmenityCreateSerializer, responses={201: s.AmenitySerializer})
+    @extend_schema(
+        request=s.AmenityCreateSerializer, responses={201: s.AmenitySerializer}
+    )
     def post(self, request):
         data = dict(self.parse(s.AmenityCreateSerializer))
         building_id = data.pop("building_id")
@@ -62,7 +67,9 @@ class AmenityDetailView(BaseAPIView):
             AmenityService.update(actor=request.user, amenity=amenity, changes=data),
         )
 
-    @extend_schema(responses={204: None}, description="Deletes an amenity that was never booked.")
+    @extend_schema(
+        responses={204: None}, description="Deletes an amenity that was never booked."
+    )
     def delete(self, request, amenity_id: int):
         amenity = AmenityService.get_visible(
             actor=request.user, prop=self.property, amenity_id=amenity_id
@@ -99,7 +106,9 @@ class AmenityImagesView(BaseAPIView):
             actor=request.user, prop=self.property, amenity_id=amenity_id
         )
         data = self.parse(UploadFilesSerializer)
-        AmenityService.add_images(actor=request.user, amenity=amenity, files=data["files"])
+        AmenityService.add_images(
+            actor=request.user, amenity=amenity, files=data["files"]
+        )
         return self.render(s.AmenitySerializer, amenity, status=status.HTTP_201_CREATED)
 
 

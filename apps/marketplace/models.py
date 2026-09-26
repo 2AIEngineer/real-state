@@ -22,7 +22,9 @@ class MarketplaceListing(TimeStampedModel):
     """Platform-wide classified ad, optionally attached to a property."""
 
     seller = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="marketplace_listings"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="marketplace_listings",
     )
     property = models.ForeignKey(
         "properties.Property",
@@ -47,14 +49,19 @@ class MarketplaceListing(TimeStampedModel):
     closed_at = models.DateTimeField(null=True, blank=True)
     moderation_reason = models.TextField(blank=True)
     moderated_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
     )
 
     class Meta:
         ordering = ["-published_at", "-id"]
         constraints = [
             models.CheckConstraint(
-                condition=Q(price__isnull=True) | Q(price__gte=0), name="listing_price_non_negative"
+                condition=Q(price__isnull=True) | Q(price__gte=0),
+                name="listing_price_non_negative",
             )
         ]
         indexes = [

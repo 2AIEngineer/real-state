@@ -26,11 +26,15 @@ class ShortTermRentalPolicy:
     def visible_filter(user) -> Q:
         visible = (
             Q(initiated_by=user)
-            | Q(unit__building__property_id__in=AccessService.managed_property_ids(user))
+            | Q(
+                unit__building__property_id__in=AccessService.managed_property_ids(user)
+            )
             | Q(unit_id__in=list(AccessService.owned_or_rented_unit_ids(user)))
         )
         if user.role == StructuralRole.SECURITY:
-            visible |= Q(unit__building_id__in=AccessService.assigned_building_ids(user))
+            visible |= Q(
+                unit__building_id__in=AccessService.assigned_building_ids(user)
+            )
         return visible
 
     @staticmethod

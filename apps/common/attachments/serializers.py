@@ -67,7 +67,9 @@ class AttachmentsField(serializers.Field):
         key = self.entity_type
         bucket = cache.setdefault(key, {"loaded": set(), "rows": defaultdict(list)})
         if obj.pk not in bucket["loaded"]:
-            entities = [o for o in self._siblings(obj) if o.pk not in bucket["loaded"]] or [obj]
+            entities = [
+                o for o in self._siblings(obj) if o.pk not in bucket["loaded"]
+            ] or [obj]
             ids = {o.pk for o in entities} | {obj.pk}
             for row in AttachmentService.list_for_entities(self.entity_type, ids):
                 bucket["rows"][row.entity_id].append(row)

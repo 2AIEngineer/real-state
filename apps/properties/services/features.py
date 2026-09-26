@@ -15,7 +15,9 @@ class FeatureGate:
     @staticmethod
     def require(prop: Property, feature: str) -> None:
         if not prop.is_active:
-            raise BusinessRuleViolation("This property is inactive.", code="property_inactive")
+            raise BusinessRuleViolation(
+                "This property is inactive.", code="property_inactive"
+            )
         if not FeatureGate.is_enabled(prop, feature):
             raise FeatureDisabled(
                 f"The '{Feature(feature).label}' module is not enabled for this property."

@@ -57,15 +57,21 @@ class RoundService:
 
     @staticmethod
     @transaction.atomic
-    def assign(*, actor, sr: ServiceRequest, resolvers: list) -> list[ServiceRequestAssignment]:
+    def assign(
+        *, actor, sr: ServiceRequest, resolvers: list
+    ) -> list[ServiceRequestAssignment]:
         """Assign maintenance staff to the current round (adds to existing ones)."""
         if not ServiceRequestPolicy.can_assign(actor, sr):
-            raise PermissionDenied("Only the property management can assign service requests.")
+            raise PermissionDenied(
+                "Only the property management can assign service requests."
+            )
         sr = lock(sr)
         if sr.status not in OPEN_STATES:
             raise InvalidTransition("Only open requests can be assigned.")
         if not resolvers:
-            raise InvalidInput("At least one resolver is required.", field="resolver_ids")
+            raise InvalidInput(
+                "At least one resolver is required.", field="resolver_ids"
+            )
         for resolver in resolvers:
             if not AccessService.is_maintenance_of(resolver, sr.property):
                 raise InvalidInput(
@@ -94,7 +100,10 @@ class RoundService:
             action=ServiceRequestAudit.ASSIGNED,
             target=sr,
             property_id=sr.property_id,
-            metadata={"resolvers": [a.resolver_id for a in created], "round": sr.current_round},
+            metadata={
+                "resolvers": [a.resolver_id for a in created],
+                "round": sr.current_round,
+            },
         )
         notices.assigned(sr, actor=actor, resolvers=[a.resolver for a in created])
 
@@ -102,14 +111,21 @@ class RoundService:
 
     @staticmethod
     @transaction.atomic
-    def resolve(*, actor, sr: ServiceRequest, note: str = "", files=()) -> ServiceRequestAssignment:
+    def resolve(
+        *, actor, sr: ServiceRequest, note: str = "", files=()
+    ) -> ServiceRequestAssignment:
         """The assigned resolver reports their work as done for the current round."""
         sr = lock(sr)
         assignment = (
-            current_assignments(sr).select_for_update(of=("self",)).filter(resolver=actor).first()
+            current_assignments(sr)
+            .select_for_update(of=("self",))
+            .filter(resolver=actor)
+            .first()
         )
         if assignment is None:
-            raise PermissionDenied("You are not assigned to the current round of this request.")
+            raise PermissionDenied(
+                "You are not assigned to the current round of this request."
+            )
         if sr.status != ServiceRequestStatus.IN_PROGRESS:
             raise InvalidTransition("Only requests in progress can be resolved.")
         if assignment.is_resolved:
@@ -119,7 +135,12 @@ class RoundService:
         assignment.resolved_at = now
         assignment.resolution_note = note
         assignment.save(
-            update_fields=["is_resolved", "resolved_at", "resolution_note", "updated_at"]
+            update_fields=[
+                "is_resolved",
+                "resolved_at",
+                "resolution_note",
+                "updated_at",
+            ]
         )
         AttachmentService.attach(
             entity_type=EntityType.SERVICE_REQUEST_RESOLUTION,
@@ -142,13 +163,17 @@ class RoundService:
 
     @staticmethod
     @transaction.atomic
-    def give_feedback(*, actor, sr: ServiceRequest, feedback: Feedback) -> ServiceRequest:
+    def give_feedback(
+        *, actor, sr: ServiceRequest, feedback: Feedback
+    ) -> ServiceRequest:
         """Requester's verdict on the current round: DONE closes, NOT_DONE reopens."""
         sr = lock(sr)
         if not ServiceRequestPolicy.can_give_feedback(actor, sr):
             raise PermissionDenied("Only the requester can give feedback.")
         if sr.status != ServiceRequestStatus.RESOLVED:
-            raise InvalidTransition("Feedback is expected once the request is resolved.")
+            raise InvalidTransition(
+                "Feedback is expected once the request is resolved."
+            )
         if feedback.rating is not None and not 1 <= feedback.rating <= 5:
             raise InvalidInput("The rating must be between 1 and 5.", field="rating")
         now = timezone.now()
@@ -178,7 +203,9 @@ class RoundService:
             sr.status = ServiceRequestStatus.OPEN
             sr.current_round += 1
             sr.resolved_at = None
-            sr.save(update_fields=["status", "current_round", "resolved_at", "updated_at"])
+            sr.save(
+                update_fields=["status", "current_round", "resolved_at", "updated_at"]
+            )
             AuditService.record(
                 actor=actor,
                 action=ServiceRequestAudit.REOPENED,

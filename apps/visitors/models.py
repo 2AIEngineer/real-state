@@ -12,7 +12,9 @@ class VisitStatus(models.TextChoices):
 
 
 class Visitor(TimeStampedModel):
-    unit = models.ForeignKey("properties.Unit", on_delete=models.CASCADE, related_name="visitors")
+    unit = models.ForeignKey(
+        "properties.Unit", on_delete=models.CASCADE, related_name="visitors"
+    )
     property = models.ForeignKey(
         "properties.Property", on_delete=models.CASCADE, related_name="visitors"
     )
@@ -27,10 +29,18 @@ class Visitor(TimeStampedModel):
     denial_reason = models.TextField(blank=True)
     notes = models.TextField(blank=True)
     registered_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
     )
     checked_out_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
     )
 
     class Meta:

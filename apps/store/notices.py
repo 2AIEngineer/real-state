@@ -10,7 +10,13 @@ from apps.store.models import Order
 
 
 def _tell_customer(
-    order: Order, *, kind: str, title: str, body: str, actor, severity: str = Severity.INFO
+    order: Order,
+    *,
+    kind: str,
+    title: str,
+    body: str,
+    actor,
+    severity: str = Severity.INFO,
 ) -> None:
     NotificationService.notify(
         NotificationIntent(

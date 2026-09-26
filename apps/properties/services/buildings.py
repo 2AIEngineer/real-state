@@ -51,7 +51,10 @@ class BuildingService:
         with translate_integrity_errors(BUILDING_CONSTRAINTS):
             building.save()
         AuditService.record(
-            actor=actor, action=BuildingAudit.CREATED, target=building, property_id=prop.pk
+            actor=actor,
+            action=BuildingAudit.CREATED,
+            target=building,
+            property_id=prop.pk,
         )
         return building
 

@@ -74,7 +74,11 @@ urlpatterns = [
         buildings.BuildingDetailView.as_view(),
         name="building-detail",
     ),
-    path("buildings/<int:building_id>/units/", units.UnitListView.as_view(), name="unit-list"),
+    path(
+        "buildings/<int:building_id>/units/",
+        units.UnitListView.as_view(),
+        name="unit-list",
+    ),
     path("units/mine/", units.MyUnitsView.as_view(), name="unit-mine"),
     path("units/<int:unit_id>/", units.UnitDetailView.as_view(), name="unit-detail"),
     path(

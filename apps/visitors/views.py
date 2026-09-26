@@ -12,16 +12,21 @@ from apps.visitors.services import DETAIL_FIELDS, VisitorService
 @extend_schema(tags=["Visitors"])
 class VisitorListView(BaseAPIView):
     @extend_schema(
-        parameters=[s.VisitorsQueryParamsSerializer], responses=s.VisitorSerializer(many=True)
+        parameters=[s.VisitorsQueryParamsSerializer],
+        responses=s.VisitorSerializer(many=True),
     )
     def get(self, request):
         query = self.parse_query_params(s.VisitorsQueryParamsSerializer)
         return self.render_page(
             s.VisitorSerializer,
-            VisitorService.list_visible(actor=request.user, property_id=self.property.pk, **query),
+            VisitorService.list_visible(
+                actor=request.user, property_id=self.property.pk, **query
+            ),
         )
 
-    @extend_schema(request=s.VisitorCreateSerializer, responses={201: s.VisitorSerializer})
+    @extend_schema(
+        request=s.VisitorCreateSerializer, responses={201: s.VisitorSerializer}
+    )
     def post(self, request):
         data = self.parse(s.VisitorCreateSerializer)
         unit = UnitService.get_visible(
@@ -59,11 +64,14 @@ class VisitorDetailView(BaseAPIView):
         data = self.parse(s.VisitorUpdateSerializer)
         return self.render(
             s.VisitorSerializer,
-            VisitorService.update_details(actor=request.user, visitor=visitor, changes=data),
+            VisitorService.update_details(
+                actor=request.user, visitor=visitor, changes=data
+            ),
         )
 
     @extend_schema(
-        responses={204: None}, description="Deletes an entry logged by mistake (management only)."
+        responses={204: None},
+        description="Deletes an entry logged by mistake (management only).",
     )
     def delete(self, request, visitor_id: int):
         visitor = VisitorService.get_visible(
@@ -83,7 +91,9 @@ class VisitorDepartureView(BaseAPIView):
         data = self.parse(s.VisitorDepartureSerializer)
         return self.render(
             s.VisitorSerializer,
-            VisitorService.mark_left(actor=request.user, visitor=visitor, left_at=data["left_at"]),
+            VisitorService.mark_left(
+                actor=request.user, visitor=visitor, left_at=data["left_at"]
+            ),
         )
 
 
@@ -95,5 +105,7 @@ class VisitorIdCardView(BaseAPIView):
             actor=request.user, prop=self.property, visitor_id=visitor_id
         )
         data = self.parse(UploadFileSerializer)
-        VisitorService.set_id_card(actor=request.user, visitor=visitor, upload=data["file"])
+        VisitorService.set_id_card(
+            actor=request.user, visitor=visitor, upload=data["file"]
+        )
         return self.render(s.VisitorSerializer, visitor)

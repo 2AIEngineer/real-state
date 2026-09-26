@@ -18,7 +18,9 @@ def listing_published(listing: MarketplaceListing, *, actor) -> None:
     residents = UserDirectory.users_by_property_role(
         listing.property, [PropertyRole.OWNER, PropertyRole.TENANT]
     )
-    price = f" — {listing.price} {listing.currency}" if listing.price is not None else ""
+    price = (
+        f" — {listing.price} {listing.currency}" if listing.price is not None else ""
+    )
     NotificationService.notify(
         NotificationIntent(
             event_type="marketplace.listing_created",

@@ -19,10 +19,14 @@ def contract_reference_taken() -> InvalidInput:
 
 
 def component_already_recorded() -> InvalidInput:
-    return InvalidInput("This component is already recorded for this inspection.", field="name")
+    return InvalidInput(
+        "This component is already recorded for this inspection.", field="name"
+    )
 
 
 def already_member() -> InvalidInput:
     return InvalidInput(
-        "This user is already recorded on this lease.", field="user_id", code="already_member"
+        "This user is already recorded on this lease.",
+        field="user_id",
+        code="already_member",
     )

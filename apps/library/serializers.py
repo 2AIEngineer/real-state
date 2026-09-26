@@ -72,7 +72,9 @@ class LibraryFolderUpdateSerializer(serializers.Serializer):
     en_name = serializers.CharField(max_length=160, required=False)
     fr_name = serializers.CharField(max_length=160, required=False)
     description = serializers.CharField(required=False, allow_blank=True)
-    parent_folder_id = serializers.IntegerField(min_value=1, required=False, allow_null=True)
+    parent_folder_id = serializers.IntegerField(
+        min_value=1, required=False, allow_null=True
+    )
 
 
 class LibraryDocumentsQueryParamsSerializer(serializers.Serializer):

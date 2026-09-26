@@ -20,7 +20,9 @@ def _user(user_id: int, field: str = "user_id"):
 class OwnershipListView(BaseAPIView):
     @extend_schema(responses=s.OwnershipSerializer(many=True))
     def get(self, request, unit_id: int):
-        unit = UnitService.get_visible(actor=request.user, prop=self.property, unit_id=unit_id)
+        unit = UnitService.get_visible(
+            actor=request.user, prop=self.property, unit_id=unit_id
+        )
         return self.render_page(
             s.OwnershipSerializer,
             OwnershipService.history(actor=request.user, unit=unit),
@@ -36,7 +38,9 @@ class OwnershipTransferView(BaseAPIView):
         responses={201: s.OwnershipSerializer(many=True)},
     )
     def post(self, request, unit_id: int):
-        unit = UnitService.get_visible(actor=request.user, prop=self.property, unit_id=unit_id)
+        unit = UnitService.get_visible(
+            actor=request.user, prop=self.property, unit_id=unit_id
+        )
         data = self.parse(s.OwnershipTransferSerializer)
         acquirers = [
             Acquirer(user=_user(a["user_id"], "acquirers"), share=a["share"])
@@ -56,9 +60,13 @@ class OwnershipTransferView(BaseAPIView):
 
 @extend_schema(tags=["Ownership"])
 class CoOwnerView(BaseAPIView):
-    @extend_schema(request=s.OwnershipCoOwnerSerializer, responses={201: s.OwnershipSerializer})
+    @extend_schema(
+        request=s.OwnershipCoOwnerSerializer, responses={201: s.OwnershipSerializer}
+    )
     def post(self, request, unit_id: int):
-        unit = UnitService.get_visible(actor=request.user, prop=self.property, unit_id=unit_id)
+        unit = UnitService.get_visible(
+            actor=request.user, prop=self.property, unit_id=unit_id
+        )
         data = self.parse(s.OwnershipCoOwnerSerializer)
         ownership = OwnershipService.add_co_owner(
             actor=request.user,
@@ -67,7 +75,9 @@ class CoOwnerView(BaseAPIView):
             share=data["share"],
             start_date=data["start_date"],
         )
-        return self.render(s.OwnershipSerializer, ownership, status=status.HTTP_201_CREATED)
+        return self.render(
+            s.OwnershipSerializer, ownership, status=status.HTTP_201_CREATED
+        )
 
 
 @extend_schema(tags=["Ownership"])
