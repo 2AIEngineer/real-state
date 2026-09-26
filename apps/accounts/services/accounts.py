@@ -37,6 +37,7 @@ from apps.common.exceptions import (
     PermissionDenied,
 )
 from apps.common.services.audit import AuditService
+from apps.notifications.services import PreferenceService
 
 User = get_user_model()
 
@@ -157,6 +158,7 @@ class AccountService:
             target=user,
             metadata={"role": role},
         )
+        PreferenceService.auto_setup(user)
         if ownerships:
             registration.register_ownerships(
                 actor=actor, user=user, ownerships=ownerships

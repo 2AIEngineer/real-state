@@ -7,11 +7,14 @@ before a developer finds `seed_demo` broken.
 import io
 
 import pytest
+from django.contrib.auth import get_user_model
 from django.core.management import call_command
 
+from apps.accounts.enums import StructuralRole
 from apps.amenities.models import Booking
 from apps.demo.seed import commerce, operations, referential
 from apps.leasing.models import Lease, LeaseStatus
+from apps.notifications.models import NotificationPreference
 from apps.properties.models import Building, Property, Syndicat, Unit, UnitOwnership
 from apps.service_requests.models import ServiceRequest, ServiceRequestStatus
 from apps.store.models import Order
@@ -49,6 +52,10 @@ def test_the_demo_builds_a_complete_portfolio(small_demo):
     statuses = set(ServiceRequest.objects.values_list("status", flat=True))
     assert {ServiceRequestStatus.OPEN, ServiceRequestStatus.CLOSED} <= statuses
     assert Booking.objects.exists() and Order.objects.exists() and Visitor.objects.exists()
+    users = get_user_model().objects.filter(is_technical_account=False)
+    assert not users.filter(notification_preference__isnull=True).exists()
+    security = NotificationPreference.objects.filter(user__role=StructuralRole.SECURITY)
+    assert security.exists() and not security.filter(announcements_enabled=True).exists()
 
 
 def test_it_refuses_to_run_on_a_database_holding_data(small_demo, world):

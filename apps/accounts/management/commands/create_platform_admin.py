@@ -9,6 +9,7 @@ from django.db import transaction
 from apps.accounts.services.passwords import PasswordService
 from apps.accounts.services.roles import RoleService
 from apps.common.exceptions import DomainError
+from apps.notifications.services import PreferenceService
 
 User = get_user_model()
 
@@ -36,4 +37,5 @@ class Command(BaseCommand):
             except DomainError as exc:
                 raise CommandError(exc.message) from exc
         RoleService.bootstrap_platform_admin(user=user)
+        PreferenceService.auto_setup(user)
         self.stdout.write(self.style.SUCCESS(f"{email} is a platform administrator."))

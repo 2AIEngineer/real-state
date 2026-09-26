@@ -6,15 +6,7 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 
 from apps.accounts.enums import StructuralRole
-from apps.leasing.models import LeaseMember, LeaseStatus
 from apps.notifications.models import CATEGORY_PREFERENCE_FIELD, NotificationPreference
-from apps.properties.models import OwnershipStatus, UnitOwnership
-
-# Field staff only get what concerns them directly by default: broadcast
-# feature notifications start disabled (they remain free to opt in).
-FIELD_ONLY_ROLES = frozenset(
-    {StructuralRole.SECURITY, StructuralRole.CLEANING, StructuralRole.PROVIDER}
-)
 
 PREFERENCE_FIELDS: tuple[str, ...] = (
     "enabled_push",
@@ -35,8 +27,16 @@ def _defaults_for(
 
 class PreferenceService:
     @staticmethod
+    def auto_setup(user) -> NotificationPreference:
+        """Sets up the preferences of a new account from its role (kept if they exist)."""
+        preference, _ = NotificationPreference.objects.get_or_create(
+            user=user, defaults=defaults_for(user.role)
+        )
+        return preference
+
+    @staticmethod
     def resolve_many(user_ids: Iterable[int]) -> dict[int, NotificationPreference]:
-        """Preferences for many users; missing rows are created with role-based defaults."""
+        """Preferences for many users; a missing row is created from the role defaults."""
         ids = set(user_ids)
         prefs = {
             p.user_id: p for p in NotificationPreference.objects.filter(user_id__in=ids)

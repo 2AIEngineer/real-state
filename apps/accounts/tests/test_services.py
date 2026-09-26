@@ -15,7 +15,12 @@ from apps.accounts.services.status import AccountStatusService
 from apps.common.exceptions import BusinessRuleViolation, InvalidInput, NotFound, PermissionDenied
 from apps.common.models import AuditLogEntry
 from apps.leasing.models import Lease, LeaseMember, LeaseStatus
-from apps.notifications.models import InboxNotification, OutboxChannel, OutboxMessage
+from apps.notifications.models import (
+    InboxNotification,
+    NotificationPreference,
+    OutboxChannel,
+    OutboxMessage,
+)
 from apps.properties.models import OwnershipStatus, UnitOwnership
 from tests import factories as f
 
@@ -43,6 +48,7 @@ class TestAccountCreation:
             tenancy=RentedUnit(unit_id=world.unit.pk),
         )
         assert user.email == "new.tenant@example.test" and not user.has_usable_password()
+        assert NotificationPreference.objects.get(user=user).store_enabled is True
         uid, token = invitation_link(user)
         PasswordService.set_password_with_token(
             uid=uid, token=token, password="A-very-long-passw0rd"

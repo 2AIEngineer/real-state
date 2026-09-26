@@ -62,6 +62,11 @@ apps/<module>/
 - **Notifications** : les services décrivent l'événement dans `notices.py` ; le dispatcher applique les
   préférences, écrit la boîte de réception et l'outbox dans la même transaction que le changement métier.
   Un échec d'envoi n'annule donc jamais une opération, et une opération annulée ne notifie personne.
+  Un compte créé par `AccountService.create_account`, les commandes `create_platform_admin` /
+  `create_default_superuser` ou `seed_demo` reçoit ses préférences selon son rôle
+  (`PreferenceService.auto_setup`) : admin, standard et maintenance ont toutes les
+  fonctionnalités activées, syndic et manager toutes sauf la boutique, security, cleaning et provider aucune
+  (les canaux push et e-mail restent actifs pour ce qui les concerne directement).
 
 ### Ce qui vit où
 
