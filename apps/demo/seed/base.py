@@ -13,6 +13,7 @@ from django.utils import timezone
 
 from apps.accounts.enums import Gender, StructuralRole
 from apps.demo import content
+from apps.notifications.services import PreferenceService
 
 User = get_user_model()
 
@@ -81,7 +82,7 @@ class Demo:
         first = self.rng.choice(content.FIRST_NAMES_FEMALE if female else content.FIRST_NAMES_MALE)
         last = self.rng.choice(content.LAST_NAMES)
         email = self._unique_email(email_hint or f"{slug(first)}.{slug(last)}")
-        return User.objects.create(
+        user = User.objects.create(
             email=email,
             password=self.password_hash,
             first_name=first,
@@ -95,6 +96,8 @@ class Demo:
             password_changed_at=self.now,
             **extra,
         )
+        PreferenceService.auto_setup(user)
+        return user
 
     def _unique_email(self, local: str) -> str:
         candidate, n = f"{local}@{EMAIL_DOMAIN}", 1
