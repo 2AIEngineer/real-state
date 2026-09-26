@@ -27,9 +27,7 @@ class Product(TimeStampedModel):
     class Meta:
         ordering = ["name", "id"]
         constraints = [
-            models.CheckConstraint(
-                condition=Q(price__gte=0), name="product_price_non_negative"
-            ),
+            models.CheckConstraint(condition=Q(price__gte=0), name="product_price_non_negative"),
             models.UniqueConstraint(
                 fields=["property", "sku"],
                 condition=~Q(sku=""),
@@ -117,9 +115,7 @@ class OrderItem(models.Model):
     class Meta:
         ordering = ["order_id", "id"]
         constraints = [
-            models.UniqueConstraint(
-                fields=["order", "product"], name="unique_product_per_order"
-            ),
+            models.UniqueConstraint(fields=["order", "product"], name="unique_product_per_order"),
             models.CheckConstraint(
                 condition=Q(quantity__gte=1), name="order_item_quantity_positive"
             ),

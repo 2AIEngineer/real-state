@@ -75,18 +75,16 @@ class RoleService:
         if role not in StructuralRole.values:
             raise InvalidInput("Unknown role.", field="role")
         user = User.objects.select_for_update().get(pk=user.pk)
-        _check_can_change_role(
-            actor, user, role
-        )  # after the lock: judged on the current role
+        _check_can_change_role(actor, user, role)  # after the lock: judged on the current role
         if not user.is_active or user.is_technical_account:
             raise BusinessRuleViolation("The role of this account cannot be changed.")
         if role == user.role:
             return user
         _refuse_while_still_assigned(user)
         if user.role == StructuralRole.ADMIN:
-            others = User.objects.filter(
-                role=StructuralRole.ADMIN, is_active=True
-            ).exclude(pk=user.pk)
+            others = User.objects.filter(role=StructuralRole.ADMIN, is_active=True).exclude(
+                pk=user.pk
+            )
             if not others.exists():
                 raise BusinessRuleViolation(
                     "The last platform administrator cannot lose that role.",

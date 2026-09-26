@@ -9,9 +9,7 @@ urlpatterns = [
         views.EventCompletePastView.as_view(),
         name="event-complete-past",
     ),
-    path(
-        "events/<int:event_id>/", views.EventDetailView.as_view(), name="event-detail"
-    ),
+    path("events/<int:event_id>/", views.EventDetailView.as_view(), name="event-detail"),
     path(
         "events/<int:event_id>/cancel/",
         views.EventCancelView.as_view(),

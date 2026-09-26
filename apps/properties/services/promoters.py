@@ -37,9 +37,7 @@ class PromoterService:
 
     @staticmethod
     def get_visible(*, actor, promoter_id: int) -> Promoter:
-        promoter = (
-            PromoterService.list_visible(actor=actor).filter(pk=promoter_id).first()
-        )
+        promoter = PromoterService.list_visible(actor=actor).filter(pk=promoter_id).first()
         if promoter is None:
             raise NotFound("Promoter not found.")
         return promoter
@@ -96,9 +94,7 @@ class PromoterService:
         AuditService.record(actor=actor, action=PromoterAudit.DELETED, target=promoter)
         # A promoter is a reference, not a container: a property it develops is
         # moved to another promoter (PATCH /properties/{id}/promoter/), never deleted with it.
-        with deleting(
-            "promoter", hint="Assign another promoter to its properties first."
-        ):
+        with deleting("promoter", hint="Assign another promoter to its properties first."):
             destroy(promoter)
         try:
             with transaction.atomic():

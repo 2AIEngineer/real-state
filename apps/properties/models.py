@@ -26,9 +26,7 @@ class Syndicat(TimeStampedModel):
     class Meta:
         ordering = ["name", "id"]
         constraints = [
-            models.UniqueConstraint(
-                models.functions.Lower("name"), name="syndicat_name_ci_unique"
-            ),
+            models.UniqueConstraint(models.functions.Lower("name"), name="syndicat_name_ci_unique"),
         ]
 
     def __str__(self) -> str:
@@ -60,9 +58,7 @@ class Promoter(TimeStampedModel):
     class Meta:
         ordering = ["name", "id"]
         constraints = [
-            models.UniqueConstraint(
-                models.functions.Lower("name"), name="promoter_name_ci_unique"
-            ),
+            models.UniqueConstraint(models.functions.Lower("name"), name="promoter_name_ci_unique"),
         ]
 
     def __str__(self) -> str:
@@ -77,12 +73,8 @@ FEATURE_FLAG_FIELDS: dict[str, str] = {
 class Property(TimeStampedModel):
     """A residence belonging to a syndicat, developed by a single promoter."""
 
-    syndicat = models.ForeignKey(
-        Syndicat, on_delete=models.CASCADE, related_name="properties"
-    )
-    promoter = models.ForeignKey(
-        Promoter, on_delete=models.PROTECT, related_name="properties"
-    )
+    syndicat = models.ForeignKey(Syndicat, on_delete=models.CASCADE, related_name="properties")
+    promoter = models.ForeignKey(Promoter, on_delete=models.PROTECT, related_name="properties")
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     address = models.TextField(blank=True)
@@ -131,9 +123,7 @@ class Property(TimeStampedModel):
 
 
 class Building(TimeStampedModel):
-    property = models.ForeignKey(
-        Property, on_delete=models.CASCADE, related_name="buildings"
-    )
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name="buildings")
     name = models.CharField(max_length=120)
     address = models.TextField(blank=True)
     floors_count = models.PositiveSmallIntegerField(null=True, blank=True)
@@ -166,9 +156,7 @@ class UnitType(models.TextChoices):
 class Unit(TimeStampedModel):
     """A lot inside a building. Ownership and occupancy are never stored here."""
 
-    building = models.ForeignKey(
-        Building, on_delete=models.CASCADE, related_name="units"
-    )
+    building = models.ForeignKey(Building, on_delete=models.CASCADE, related_name="units")
     number = models.CharField(max_length=32)
     label = models.CharField(max_length=120, blank=True)
     # Signed on purpose: basements are negative floors.
@@ -176,9 +164,7 @@ class Unit(TimeStampedModel):
     unit_type = models.CharField(
         max_length=16, choices=UnitType.choices, default=UnitType.APARTMENT
     )
-    area_sqm = models.DecimalField(
-        max_digits=8, decimal_places=2, null=True, blank=True
-    )
+    area_sqm = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     rooms_count = models.PositiveSmallIntegerField(null=True, blank=True)
     notes = models.TextField(blank=True)
 
@@ -219,9 +205,7 @@ class UnitOwnership(TimeStampedModel):
         on_delete=models.CASCADE,
         related_name="unit_ownerships",
     )
-    ownership_share = models.DecimalField(
-        max_digits=5, decimal_places=2, null=True, blank=True
-    )
+    ownership_share = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     start_date = models.DateField()
     end_date = models.DateField(null=True, blank=True)
     status = models.CharField(
@@ -230,9 +214,7 @@ class UnitOwnership(TimeStampedModel):
     is_promoter_default = models.BooleanField(
         default=False, help_text="Automatic ownership held by the property's promoter."
     )
-    end_reason = models.CharField(
-        max_length=24, choices=OwnershipEndReason.choices, blank=True
-    )
+    end_reason = models.CharField(max_length=24, choices=OwnershipEndReason.choices, blank=True)
     acquisition_reference = models.CharField(max_length=120, blank=True)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+"

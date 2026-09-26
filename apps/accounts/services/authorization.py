@@ -53,9 +53,7 @@ def active_ownerships() -> QuerySet[UnitOwnership]:
 
 def active_lease_memberships() -> QuerySet[LeaseMember]:
     """Members still living under a lease that is still running."""
-    return LeaseMember.objects.filter(
-        left_at__isnull=True, lease__status=LeaseStatus.ACTIVE
-    )
+    return LeaseMember.objects.filter(left_at__isnull=True, lease__status=LeaseStatus.ACTIVE)
 
 
 def _no_ids(model) -> QuerySet:
@@ -74,9 +72,7 @@ class AccessService:
         return (
             user.is_active
             and user.role == StructuralRole.SYNDIC
-            and UserSyndicat.objects.filter(
-                user=user, is_active=True, syndicat=syndicat
-            ).exists()
+            and UserSyndicat.objects.filter(user=user, is_active=True, syndicat=syndicat).exists()
         )
 
     @staticmethod
@@ -85,9 +81,7 @@ class AccessService:
         return (
             user.is_active
             and user.role == StructuralRole.MANAGER
-            and UserProperty.objects.filter(
-                user=user, is_active=True, property=prop
-            ).exists()
+            and UserProperty.objects.filter(user=user, is_active=True, property=prop).exists()
         )
 
     @staticmethod
@@ -96,9 +90,7 @@ class AccessService:
         return (
             user.is_active
             and user.role == StructuralRole.MAINTENANCE
-            and UserProperty.objects.filter(
-                user=user, is_active=True, property=prop
-            ).exists()
+            and UserProperty.objects.filter(user=user, is_active=True, property=prop).exists()
         )
 
     @staticmethod
@@ -107,9 +99,7 @@ class AccessService:
         return (
             user.is_active
             and user.role == StructuralRole.SECURITY
-            and UserBuilding.objects.filter(
-                user=user, is_active=True, building=building
-            ).exists()
+            and UserBuilding.objects.filter(user=user, is_active=True, building=building).exists()
         )
 
     @staticmethod
@@ -118,9 +108,7 @@ class AccessService:
         return (
             user.is_active
             and user.role == StructuralRole.CLEANING
-            and UserBuilding.objects.filter(
-                user=user, is_active=True, building=building
-            ).exists()
+            and UserBuilding.objects.filter(user=user, is_active=True, building=building).exists()
         )
 
     @staticmethod
@@ -158,9 +146,7 @@ class AccessService:
     @staticmethod
     def manages_syndicat(user, syndicat: Syndicat) -> bool:
         """Has authority over the syndicat itself: an admin or its syndic (managers excluded)."""
-        return AccessService.is_platform_admin(user) or AccessService.is_syndic_of(
-            user, syndicat
-        )
+        return AccessService.is_platform_admin(user) or AccessService.is_syndic_of(user, syndicat)
 
     @staticmethod
     def works_on_site_in_property(user, prop: Property) -> bool:
@@ -212,9 +198,7 @@ class AccessService:
     def is_owner_or_tenant_of(user, unit: Unit) -> bool:
         if not user or not user.is_active:
             return False
-        return AccessService.is_owner_of(user, unit) or AccessService.is_tenant_of(
-            user, unit
-        )
+        return AccessService.is_owner_of(user, unit) or AccessService.is_tenant_of(user, unit)
 
     @staticmethod
     def active_lease_membership(user, unit: Unit) -> LeaseMember | None:
@@ -229,11 +213,7 @@ class AccessService:
     @staticmethod
     def is_owner_in_property(user, prop: Property) -> bool:
         """Owns at least one unit of the property."""
-        return (
-            active_ownerships()
-            .filter(owner=user, unit__building__property=prop)
-            .exists()
-        )
+        return active_ownerships().filter(owner=user, unit__building__property=prop).exists()
 
     @staticmethod
     def is_tenant_in_property(user, prop: Property) -> bool:
@@ -268,27 +248,21 @@ class AccessService:
         """Syndicats a syndic is assigned to (empty for every other role)."""
         if not user.is_active or user.role not in ROLES_ASSIGNED_TO_SYNDICATS:
             return UserSyndicat.objects.none().values("syndicat_id")
-        return UserSyndicat.objects.filter(user=user, is_active=True).values(
-            "syndicat_id"
-        )
+        return UserSyndicat.objects.filter(user=user, is_active=True).values("syndicat_id")
 
     @staticmethod
     def assigned_property_ids(user) -> QuerySet:
         """Properties a manager or a maintenance agent is assigned to (empty for every other role)."""
         if not user.is_active or user.role not in ROLES_ASSIGNED_TO_PROPERTIES:
             return UserProperty.objects.none().values("property_id")
-        return UserProperty.objects.filter(user=user, is_active=True).values(
-            "property_id"
-        )
+        return UserProperty.objects.filter(user=user, is_active=True).values("property_id")
 
     @staticmethod
     def assigned_building_ids(user) -> QuerySet:
         """Buildings a security or cleaning agent is assigned to (empty for every other role)."""
         if not user.is_active or user.role not in ROLES_ASSIGNED_TO_BUILDINGS:
             return UserBuilding.objects.none().values("building_id")
-        return UserBuilding.objects.filter(user=user, is_active=True).values(
-            "building_id"
-        )
+        return UserBuilding.objects.filter(user=user, is_active=True).values("building_id")
 
     @staticmethod
     def managed_property_ids(user) -> QuerySet:
@@ -306,9 +280,9 @@ class AccessService:
                 syndicat_id__in=AccessService.assigned_syndicat_ids(user)
             ).values("id")
         if user.role == StructuralRole.MANAGER:
-            return Property.objects.filter(
-                id__in=AccessService.assigned_property_ids(user)
-            ).values("id")
+            return Property.objects.filter(id__in=AccessService.assigned_property_ids(user)).values(
+                "id"
+            )
         return _no_ids(Property)
 
     @staticmethod
@@ -321,9 +295,9 @@ class AccessService:
         if not user.is_active:
             return _no_ids(Property)
         if user.role == StructuralRole.MAINTENANCE:
-            return Property.objects.filter(
-                id__in=AccessService.assigned_property_ids(user)
-            ).values("id")
+            return Property.objects.filter(id__in=AccessService.assigned_property_ids(user)).values(
+                "id"
+            )
         if user.role in ROLES_ASSIGNED_TO_BUILDINGS:
             return Property.objects.filter(
                 buildings__id__in=AccessService.assigned_building_ids(user)
@@ -334,9 +308,7 @@ class AccessService:
     def staff_property_ids(user) -> set[int]:
         """Properties the user works for (`is_staff_of_property`): management and on-site."""
         managed = AccessService.managed_property_ids(user).values_list("id", flat=True)
-        on_site = AccessService.property_ids_worked_on_site(user).values_list(
-            "id", flat=True
-        )
+        on_site = AccessService.property_ids_worked_on_site(user).values_list("id", flat=True)
         return set(managed) | set(on_site)
 
     @staticmethod
@@ -349,29 +321,23 @@ class AccessService:
 
     @staticmethod
     def owned_or_rented_unit_ids(user) -> set[int]:
-        owned = set(
-            AccessService.owned_unit_ids(user).values_list("unit_id", flat=True)
-        )
-        rented = set(
-            AccessService.rented_unit_ids(user).values_list("lease__unit_id", flat=True)
-        )
+        owned = set(AccessService.owned_unit_ids(user).values_list("unit_id", flat=True))
+        rented = set(AccessService.rented_unit_ids(user).values_list("lease__unit_id", flat=True))
         return owned | rented
 
     @staticmethod
     def resident_property_ids(user) -> set[int]:
         """Properties where the user owns or rents a unit (`is_resident_of_property`)."""
         return set(
-            Unit.objects.filter(
-                id__in=AccessService.owned_or_rented_unit_ids(user)
-            ).values_list("building__property_id", flat=True)
+            Unit.objects.filter(id__in=AccessService.owned_or_rented_unit_ids(user)).values_list(
+                "building__property_id", flat=True
+            )
         )
 
     @staticmethod
     def accessible_property_ids(user) -> set[int]:
         """Properties the user may open (`is_staff_or_resident_of_property`)."""
-        return AccessService.staff_property_ids(
-            user
-        ) | AccessService.resident_property_ids(user)
+        return AccessService.staff_property_ids(user) | AccessService.resident_property_ids(user)
 
     @staticmethod
     def accessible_syndicat_ids(user) -> set[int] | None:
@@ -384,9 +350,7 @@ class AccessService:
             return set()
         if user.role == StructuralRole.ADMIN:
             return None
-        assigned = AccessService.assigned_syndicat_ids(user).values_list(
-            "syndicat_id", flat=True
-        )
+        assigned = AccessService.assigned_syndicat_ids(user).values_list("syndicat_id", flat=True)
         through_properties = Property.objects.filter(
             id__in=AccessService.accessible_property_ids(user)
         ).values_list("syndicat_id", flat=True)

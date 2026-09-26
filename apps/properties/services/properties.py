@@ -65,9 +65,7 @@ class PropertyService:
         return properties.order_by("name", "id")
 
     @staticmethod
-    def get_visible(
-        *, actor, property_id: int, syndicat_id: int | None = None
-    ) -> Property:
+    def get_visible(*, actor, property_id: int, syndicat_id: int | None = None) -> Property:
         """The property, checked against the selected syndicat when one is given.
 
         `syndicat_id` is the syndicat selected by the client (header
@@ -111,9 +109,7 @@ class PropertyService:
                 "Only administrators and syndics covering the whole syndicat can create properties."
             )
         if not syndicat.is_active:
-            raise BusinessRuleViolation(
-                "Properties cannot be added to an inactive syndicat."
-            )
+            raise BusinessRuleViolation("Properties cannot be added to an inactive syndicat.")
         prop = Property(syndicat=syndicat, promoter=promoter, created_by=actor)
         apply_changes(prop, data, PROPERTY_FIELDS)
         if features:
@@ -128,9 +124,7 @@ class PropertyService:
             actor=actor, action=PropertyAudit.CREATED, target=prop, property_id=prop.pk
         )
         # Managers already running a property of this syndicat run this one too.
-        PropertyAssignmentService.assign_new_property_to_its_managers(
-            prop=prop, actor=actor
-        )
+        PropertyAssignmentService.assign_new_property_to_its_managers(prop=prop, actor=actor)
         # A new property starts with the standard library tree. Local import:
         # the library module is built on top of properties.
         from apps.library.services import FolderService
@@ -213,9 +207,7 @@ class PropertyService:
                 reason=OwnershipEndReason.PROMOTER_CHANGE,
                 actor=actor,
             )
-            open_promoter_default(
-                ownership.unit, prop=prop, start_date=handover, actor=actor
-            )
+            open_promoter_default(ownership.unit, prop=prop, start_date=handover, actor=actor)
         AuditService.record(
             actor=actor,
             action=PropertyAudit.PROMOTER_CHANGED,

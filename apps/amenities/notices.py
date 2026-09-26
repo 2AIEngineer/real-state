@@ -53,8 +53,7 @@ def booked(booking: Booking) -> None:
         kind="created",
         actor=None,
         title=f"Réservation #{booking.pk} — {booking.amenity.name}",
-        body=f"{_slot(booking)}. "
-        + ("En attente de validation." if is_pending else "Confirmée."),
+        body=f"{_slot(booking)}. " + ("En attente de validation." if is_pending else "Confirmée."),
     )
 
 

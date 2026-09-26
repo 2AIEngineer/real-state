@@ -22,9 +22,7 @@ class TimeZoneField(serializers.CharField):
     def to_internal_value(self, data):
         value = super().to_internal_value(data)
         if not timezones.is_known(value):
-            raise serializers.ValidationError(
-                f"'{value}' is not a known IANA time zone."
-            )
+            raise serializers.ValidationError(f"'{value}' is not a known IANA time zone.")
         return value
 
 
@@ -55,17 +53,12 @@ class PropertySerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
     def get_features(self, obj) -> dict[str, bool]:
-        return {
-            feature: getattr(obj, flag) for feature, flag in FEATURE_FLAG_FIELDS.items()
-        }
+        return {feature: getattr(obj, flag) for feature, flag in FEATURE_FLAG_FIELDS.items()}
 
 
 class PropertyFeaturesSerializer(serializers.Serializer):
     def get_fields(self):
-        return {
-            feature.value: serializers.BooleanField(required=False)
-            for feature in Feature
-        }
+        return {feature.value: serializers.BooleanField(required=False) for feature in Feature}
 
 
 class PropertyInputSerializer(serializers.Serializer):
@@ -77,9 +70,7 @@ class PropertyInputSerializer(serializers.Serializer):
     city = serializers.CharField(max_length=120, required=False, allow_blank=True)
     country = serializers.CharField(max_length=120, required=False, allow_blank=True)
     contact_email = serializers.EmailField(required=False, allow_blank=True)
-    contact_phone = serializers.CharField(
-        max_length=32, required=False, allow_blank=True
-    )
+    contact_phone = serializers.CharField(max_length=32, required=False, allow_blank=True)
     timezone = TimeZoneField(required=False)
     features = PropertyFeaturesSerializer(required=False)
 
@@ -92,9 +83,7 @@ class PropertyUpdateSerializer(serializers.Serializer):
     city = serializers.CharField(max_length=120, required=False, allow_blank=True)
     country = serializers.CharField(max_length=120, required=False, allow_blank=True)
     contact_email = serializers.EmailField(required=False, allow_blank=True)
-    contact_phone = serializers.CharField(
-        max_length=32, required=False, allow_blank=True
-    )
+    contact_phone = serializers.CharField(max_length=32, required=False, allow_blank=True)
     timezone = TimeZoneField(required=False)
     is_active = serializers.BooleanField(required=False)
 

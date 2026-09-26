@@ -33,13 +33,9 @@ class PromoterInputSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=200)
     representative_email = serializers.EmailField()
     legal_name = serializers.CharField(max_length=255, required=False, allow_blank=True)
-    registration_number = serializers.CharField(
-        max_length=64, required=False, allow_blank=True
-    )
+    registration_number = serializers.CharField(max_length=64, required=False, allow_blank=True)
     contact_email = serializers.EmailField(required=False, allow_blank=True)
-    contact_phone = serializers.CharField(
-        max_length=32, required=False, allow_blank=True
-    )
+    contact_phone = serializers.CharField(max_length=32, required=False, allow_blank=True)
     address = serializers.CharField(required=False, allow_blank=True)
 
 
@@ -47,13 +43,9 @@ class PromoterInputSerializer(serializers.Serializer):
 class PromoterUpdateSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=200, required=False)
     legal_name = serializers.CharField(max_length=255, required=False, allow_blank=True)
-    registration_number = serializers.CharField(
-        max_length=64, required=False, allow_blank=True
-    )
+    registration_number = serializers.CharField(max_length=64, required=False, allow_blank=True)
     contact_email = serializers.EmailField(required=False, allow_blank=True)
-    contact_phone = serializers.CharField(
-        max_length=32, required=False, allow_blank=True
-    )
+    contact_phone = serializers.CharField(max_length=32, required=False, allow_blank=True)
     address = serializers.CharField(required=False, allow_blank=True)
 
 

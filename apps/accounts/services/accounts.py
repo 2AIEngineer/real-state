@@ -61,9 +61,7 @@ class AccountService:
     ) -> QuerySet:
         if not AccountPolicy.can_manage_accounts(actor):
             raise PermissionDenied(MANAGE_ACCOUNTS_ONLY)
-        reach = AccountPolicy.searchable_filter(
-            actor, property_id=property_id, query=query
-        )
+        reach = AccountPolicy.searchable_filter(actor, property_id=property_id, query=query)
         users = User.objects.filter(reach, is_technical_account=False)
         if not include_inactive:
             users = users.filter(is_active=True)
@@ -160,9 +158,7 @@ class AccountService:
         )
         PreferenceService.auto_setup(user)
         if ownerships:
-            registration.register_ownerships(
-                actor=actor, user=user, ownerships=ownerships
-            )
+            registration.register_ownerships(actor=actor, user=user, ownerships=ownerships)
         if tenancy is not None:
             registration.register_tenancy(actor=actor, user=user, tenancy=tenancy)
         if is_assignable_role(role):
@@ -196,9 +192,7 @@ class AccountService:
         the author has selected. Keeping the same role and naming buildings adds them.
         """
         previous_role = (
-            User.objects.select_for_update()
-            .values_list("role", flat=True)
-            .get(pk=user.pk)
+            User.objects.select_for_update().values_list("role", flat=True).get(pk=user.pk)
         )
         user = RoleService.set_role(actor=actor, user=user, role=role)
         if is_assignable_role(role) and (role != previous_role or building_ids):
@@ -222,9 +216,7 @@ class AccountService:
             raise BusinessRuleViolation("This account has already been activated.")
         if not user.is_active or user.is_technical_account:
             raise BusinessRuleViolation("This account cannot receive an invitation.")
-        AuditService.record(
-            actor=actor, action=AccountAudit.INVITATION_RESENT, target=user
-        )
+        AuditService.record(actor=actor, action=AccountAudit.INVITATION_RESENT, target=user)
         notices.password_setup(user, first_time=True)
 
     # ------------------------------------------------------------------ profile
@@ -232,9 +224,7 @@ class AccountService:
     @transaction.atomic
     def update_profile(*, actor, user, changes: dict):
         if not AccountPolicy.can_edit_profile(actor, user):
-            raise PermissionDenied(
-                "You can only edit your own profile or an account you manage."
-            )
+            raise PermissionDenied("You can only edit your own profile or an account you manage.")
         fields = apply_changes(user, changes, PROFILE_FIELDS)
         if fields:
             user.save(update_fields=[*fields, "updated_at"])
@@ -248,18 +238,14 @@ class AccountService:
 
     @staticmethod
     @transaction.atomic
-    def change_email(
-        *, actor, user, new_email: str, current_password: str | None = None
-    ):
+    def change_email(*, actor, user, new_email: str, current_password: str | None = None):
         """Critical change: the login identifier. Both addresses are warned."""
         if not AccountPolicy.can_change_email(actor, user):
             raise PermissionDenied()
         if actor.pk == user.pk and (
             not current_password or not user.check_password(current_password)
         ):
-            raise PermissionDenied(
-                "Current password is incorrect.", code="invalid_password"
-            )
+            raise PermissionDenied("Current password is incorrect.", code="invalid_password")
         new_email = normalize_email(new_email)
         if new_email == user.email:
             return user

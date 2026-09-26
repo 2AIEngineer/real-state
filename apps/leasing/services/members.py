@@ -38,9 +38,7 @@ class LeaseMemberService:
     @staticmethod
     def get_visible(*, actor, prop: Property, member_id: int) -> LeaseMember:
         member = (
-            LeaseMember.objects.select_related(
-                "lease__unit__building__property", "user"
-            )
+            LeaseMember.objects.select_related("lease__unit__building__property", "user")
             .filter(pk=member_id, lease__unit__building__property=prop)
             .first()
         )
@@ -52,9 +50,7 @@ class LeaseMemberService:
     @transaction.atomic
     def add(*, actor, lease: Lease, member: MemberInput) -> LeaseMember:
         if not LeaseMemberPolicy.can_manage_members(actor, lease):
-            raise PermissionDenied(
-                "Only the property management can add lease members."
-            )
+            raise PermissionDenied("Only the property management can add lease members.")
         lease = lock_active_lease(lease)
         check_member_account(member.user)
         joined_at = member.joined_at or max(
@@ -81,22 +77,16 @@ class LeaseMemberService:
 
     @staticmethod
     @transaction.atomic
-    def record_departure(
-        *, actor, member: LeaseMember, left_at: dt.date
-    ) -> LeaseMember:
+    def record_departure(*, actor, member: LeaseMember, left_at: dt.date) -> LeaseMember:
         """A co-tenant leaves: the row is kept and stamped, the lease goes on."""
         if not LeaseMemberPolicy.can_manage_members(actor, member.lease):
-            raise PermissionDenied(
-                "Only the property management can record a departure."
-            )
+            raise PermissionDenied("Only the property management can record a departure.")
         lease = lock_active_lease(member.lease)
         member = LeaseMember.objects.select_for_update(of=("self",)).get(pk=member.pk)
         if member.left_at is not None:
             raise BusinessRuleViolation("This member has already left.")
         if left_at < member.joined_at:
-            raise InvalidInput(
-                "The departure cannot precede the arrival.", field="left_at"
-            )
+            raise InvalidInput("The departure cannot precede the arrival.", field="left_at")
         if not lease.active_members().exclude(pk=member.pk).exists():
             raise BusinessRuleViolation(
                 "The last active member cannot leave an active lease: terminate the lease instead.",
@@ -117,17 +107,13 @@ class LeaseMemberService:
     @transaction.atomic
     def update(*, actor, member: LeaseMember, changes: dict) -> LeaseMember:
         if not LeaseMemberPolicy.can_update(actor, member):
-            raise PermissionDenied(
-                "Members edit their own details; management edits any."
-            )
+            raise PermissionDenied("Members edit their own details; management edits any.")
         if member.lease.status != LeaseStatus.ACTIVE:
             raise InvalidTransition("The lease is closed; its members are frozen.")
         fields = apply_changes(member, changes, MEMBER_EXTRA_FIELDS)
         if "is_signatory" in changes:
             if not LeaseMemberPolicy.can_change_signatory(actor, member):
-                raise PermissionDenied(
-                    "Only management can change the signatory status."
-                )
+                raise PermissionDenied("Only management can change the signatory status.")
             member.is_signatory = changes["is_signatory"]
             fields.append("is_signatory")
         if fields:
@@ -164,13 +150,9 @@ class LeaseMemberService:
         )
 
     @staticmethod
-    def _set_proof(
-        actor, member: LeaseMember, entity_type: str, audit_action: str, upload
-    ) -> None:
+    def _set_proof(actor, member: LeaseMember, entity_type: str, audit_action: str, upload) -> None:
         if not LeaseMemberPolicy.can_update(actor, member):
-            raise PermissionDenied(
-                "Members edit their own details; management edits any."
-            )
+            raise PermissionDenied("Members edit their own details; management edits any.")
         AttachmentService.attach_one(
             entity_type=entity_type,
             entity_id=member.pk,

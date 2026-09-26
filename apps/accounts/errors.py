@@ -12,6 +12,4 @@ def email_taken() -> InvalidInput:
 
 
 def already_assigned() -> BusinessRuleViolation:
-    return BusinessRuleViolation(
-        "This assignment already exists.", code="already_assigned"
-    )
+    return BusinessRuleViolation("This assignment already exists.", code="already_assigned")

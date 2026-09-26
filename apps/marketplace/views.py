@@ -14,13 +14,9 @@ class ListingListView(BaseAPIView):
         responses=s.MarketplaceListingSerializer(many=True),
     )
     def get(self, request):
-        query = dict(
-            self.parse_query_params(s.MarketplaceListingsQueryParamsSerializer)
-        )
+        query = dict(self.parse_query_params(s.MarketplaceListingsQueryParamsSerializer))
         if query.pop("mine"):
-            qs = ListingService.list_mine(
-                actor=request.user, status=query.get("status")
-            )
+            qs = ListingService.list_mine(actor=request.user, status=query.get("status"))
         else:
             query.pop("status", None)
             qs = ListingService.list_published(
@@ -38,9 +34,7 @@ class ListingListView(BaseAPIView):
         listing = ListingService.publish(
             actor=request.user, data=data, images=images, prop=self.property
         )
-        return self.render(
-            s.MarketplaceListingSerializer, listing, status=status.HTTP_201_CREATED
-        )
+        return self.render(s.MarketplaceListingSerializer, listing, status=status.HTTP_201_CREATED)
 
 
 @extend_schema(tags=["Marketplace"])
@@ -68,9 +62,7 @@ class ListingDetailView(BaseAPIView):
             ListingService.update(actor=request.user, listing=listing, changes=data),
         )
 
-    @extend_schema(
-        responses={204: None}, description="Deletes the listing (seller or moderator)."
-    )
+    @extend_schema(responses={204: None}, description="Deletes the listing (seller or moderator).")
     def delete(self, request, listing_id: int):
         listing = ListingService.get_visible(
             actor=request.user, prop=self.property, listing_id=listing_id
@@ -122,9 +114,7 @@ class ListingModerationView(BaseAPIView):
         data = self.parse(s.MarketplaceListingModerationSerializer)
         return self.render(
             s.MarketplaceListingSerializer,
-            ListingService.moderate(
-                actor=request.user, listing=listing, reason=data["reason"]
-            ),
+            ListingService.moderate(actor=request.user, listing=listing, reason=data["reason"]),
         )
 
 
@@ -139,12 +129,8 @@ class ListingImagesView(BaseAPIView):
             actor=request.user, prop=self.property, listing_id=listing_id
         )
         data = self.parse(s.MarketplaceListingImagesSerializer)
-        ListingService.add_images(
-            actor=request.user, listing=listing, images=data["images"]
-        )
-        return self.render(
-            s.MarketplaceListingSerializer, listing, status=status.HTTP_201_CREATED
-        )
+        ListingService.add_images(actor=request.user, listing=listing, images=data["images"])
+        return self.render(s.MarketplaceListingSerializer, listing, status=status.HTTP_201_CREATED)
 
 
 @extend_schema(tags=["Marketplace"])

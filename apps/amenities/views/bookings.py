@@ -20,14 +20,10 @@ class BookingListView(BaseAPIView):
         query = self.parse_query_params(s.BookingsQueryParamsSerializer)
         return self.render_page(
             s.BookingSerializer,
-            BookingService.list_visible(
-                actor=request.user, property_id=self.property.pk, **query
-            ),
+            BookingService.list_visible(actor=request.user, property_id=self.property.pk, **query),
         )
 
-    @extend_schema(
-        request=s.BookingCreateSerializer, responses={201: s.BookingSerializer}
-    )
+    @extend_schema(request=s.BookingCreateSerializer, responses={201: s.BookingSerializer})
     def post(self, request):
         data = self.parse(s.BookingCreateSerializer)
         amenity = AmenityService.get_visible(
@@ -91,9 +87,7 @@ class BookingCancelView(BaseAPIView):
         data = self.parse(ActionReasonSerializer)
         return self.render(
             s.BookingSerializer,
-            BookingService.cancel(
-                actor=request.user, booking=booking, reason=data["reason"]
-            ),
+            BookingService.cancel(actor=request.user, booking=booking, reason=data["reason"]),
         )
 
 

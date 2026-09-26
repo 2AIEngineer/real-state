@@ -106,9 +106,9 @@ class ExpoPushTransport:
             and (ticket.get("details") or {}).get("error") == "DeviceNotRegistered"
         ]
         if dead_tokens:
-            ExpoPushToken.objects.filter(
-                expo_push_token__in=dead_tokens, is_active=True
-            ).update(is_active=False, deactivated_reason="DeviceNotRegistered")
+            ExpoPushToken.objects.filter(expo_push_token__in=dead_tokens, is_active=True).update(
+                is_active=False, deactivated_reason="DeviceNotRegistered"
+            )
 
 
 TRANSPORTS = {
@@ -162,9 +162,7 @@ class OutboxRelay:
                         exc,
                     )
                 else:
-                    message.next_attempt_at = timezone.now() + _backoff(
-                        message.attempts
-                    )
+                    message.next_attempt_at = timezone.now() + _backoff(message.attempts)
                     logger.warning(
                         "Outbox message %s failed (attempt %s): %s",
                         message.pk,
@@ -191,9 +189,7 @@ class OutboxRelay:
 
     @staticmethod
     def deliver_ids(message_ids) -> int:
-        return sum(
-            1 for message_id in message_ids if OutboxRelay._deliver_one(message_id)
-        )
+        return sum(1 for message_id in message_ids if OutboxRelay._deliver_one(message_id))
 
     @staticmethod
     def run_once(batch_size: int | None = None) -> int:

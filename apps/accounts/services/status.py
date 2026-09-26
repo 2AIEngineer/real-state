@@ -46,18 +46,14 @@ class AccountStatusService:
                 "Record their departure before deactivating the account.",
                 code="active_lease_member",
             )
-        if UnitOwnership.objects.filter(
-            owner=user, status=OwnershipStatus.ACTIVE
-        ).exists():
+        if UnitOwnership.objects.filter(owner=user, status=OwnershipStatus.ACTIVE).exists():
             raise BusinessRuleViolation(
                 "This user still owns units. "
                 "Transfer the ownerships before deactivating the account.",
                 code="active_owner",
             )
         if user.is_technical_account:
-            raise BusinessRuleViolation(
-                "Technical accounts are managed with their promoter."
-            )
+            raise BusinessRuleViolation("Technical accounts are managed with their promoter.")
 
     @staticmethod
     @transaction.atomic
@@ -106,9 +102,7 @@ class AccountStatusService:
         user.deactivated_at = None
         user.save(update_fields=["is_active", "deactivated_at", "updated_at"])
         AuditService.record(actor=actor, action=AccountAudit.REACTIVATED, target=user)
-        notices.critical_change(
-            user, title="Compte réactivé", body="Votre compte a été réactivé."
-        )
+        notices.critical_change(user, title="Compte réactivé", body="Votre compte a été réactivé.")
         return user
 
     @staticmethod
@@ -130,13 +124,9 @@ class AccountStatusService:
         if actor.pk == user.pk:
             raise BusinessRuleViolation("You cannot delete your own account.")
         if user.is_technical_account:
-            raise BusinessRuleViolation(
-                "Technical accounts are managed with their promoter."
-            )
+            raise BusinessRuleViolation("Technical accounts are managed with their promoter.")
         owned_units = list(
-            Unit.objects.filter(
-                ownerships__owner=user, ownerships__status=OwnershipStatus.ACTIVE
-            )
+            Unit.objects.filter(ownerships__owner=user, ownerships__status=OwnershipStatus.ACTIVE)
             .select_related("building__property")
             .distinct()
         )

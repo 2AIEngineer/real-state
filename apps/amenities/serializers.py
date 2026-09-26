@@ -83,19 +83,11 @@ class AmenityFieldsSerializer(serializers.Serializer):
     requires_approval = serializers.BooleanField(required=False)
     opening_time = serializers.TimeField(required=False, allow_null=True)
     closing_time = serializers.TimeField(required=False, allow_null=True)
-    min_duration_minutes = serializers.IntegerField(
-        min_value=5, max_value=10080, required=False
-    )
-    max_duration_minutes = serializers.IntegerField(
-        min_value=5, max_value=10080, required=False
-    )
-    max_advance_days = serializers.IntegerField(
-        min_value=0, max_value=730, required=False
-    )
+    min_duration_minutes = serializers.IntegerField(min_value=5, max_value=10080, required=False)
+    max_duration_minutes = serializers.IntegerField(min_value=5, max_value=10080, required=False)
+    max_advance_days = serializers.IntegerField(min_value=0, max_value=730, required=False)
     # Left out on creation: 0 (nothing to pay).
-    fee = serializers.DecimalField(
-        max_digits=12, decimal_places=2, min_value=0, required=False
-    )
+    fee = serializers.DecimalField(max_digits=12, decimal_places=2, min_value=0, required=False)
     security_fee = serializers.DecimalField(
         max_digits=12, decimal_places=2, min_value=0, required=False
     )
@@ -140,9 +132,7 @@ class BookingCreateSerializer(serializers.Serializer):
     start_datetime = serializers.DateTimeField()
     end_datetime = serializers.DateTimeField()
     party_size = serializers.IntegerField(min_value=1, default=1)
-    note = serializers.CharField(
-        required=False, allow_blank=True, default="", max_length=2000
-    )
+    note = serializers.CharField(required=False, allow_blank=True, default="", max_length=2000)
 
 
 class BookingsQueryParamsSerializer(serializers.Serializer):
@@ -153,6 +143,4 @@ class BookingsQueryParamsSerializer(serializers.Serializer):
 
 class BookingDecisionSerializer(serializers.Serializer):
     approve = serializers.BooleanField()
-    note = serializers.CharField(
-        required=False, allow_blank=True, default="", max_length=2000
-    )
+    note = serializers.CharField(required=False, allow_blank=True, default="", max_length=2000)

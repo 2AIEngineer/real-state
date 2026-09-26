@@ -16,9 +16,7 @@ def password_setup(user, *, first_time: bool) -> None:
     hours = setup_links.lifetime_seconds(user) // 3600
     NotificationService.notify(
         NotificationIntent(
-            event_type=(
-                "account.invited" if first_time else "account.password_reset_requested"
-            ),
+            event_type=("account.invited" if first_time else "account.password_reset_requested"),
             category=NotificationCategory.ACCOUNT,
             title=(
                 "Bienvenue — activez votre compte"
@@ -40,9 +38,7 @@ def password_setup(user, *, first_time: bool) -> None:
     )
 
 
-def critical_change(
-    user, *, title: str, body: str, extra_emails: tuple[str, ...] = ()
-) -> None:
+def critical_change(user, *, title: str, body: str, extra_emails: tuple[str, ...] = ()) -> None:
     """A change of the login identifier, the password or the status of the account."""
     NotificationService.notify(
         NotificationIntent(

@@ -52,9 +52,7 @@ def exception_handler(exc, context):
         # Services translate the constraints they know about; anything reaching
         # this point is an unexpected constraint violation (usually a race).
         constraint = constraint_name_of(exc)
-        logger.warning(
-            "Unhandled integrity error on constraint %s", constraint, exc_info=exc
-        )
+        logger.warning("Unhandled integrity error on constraint %s", constraint, exc_info=exc)
         return Response(
             _envelope(
                 "conflict",
@@ -80,11 +78,7 @@ def exception_handler(exc, context):
     if isinstance(exc, drf_exceptions.ValidationError):
         response.data = _envelope("invalid", "Invalid input.", details=response.data)
     else:
-        detail = (
-            response.data.get("detail")
-            if isinstance(response.data, dict)
-            else response.data
-        )
+        detail = response.data.get("detail") if isinstance(response.data, dict) else response.data
         code = getattr(detail, "code", None) or getattr(exc, "default_code", "error")
         response.data = _envelope(str(code), str(detail))
     return response

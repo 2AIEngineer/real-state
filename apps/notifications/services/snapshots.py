@@ -26,9 +26,7 @@ class SnapshotService:
         """
         roles = sorted(set(target_roles))
         if not roles:
-            raise InvalidInput(
-                "At least one target role is required.", field="target_roles"
-            )
+            raise InvalidInput("At least one target role is required.", field="target_roles")
         invalid = [role for role in roles if role not in TARGETABLE_ROLES]
         if invalid:
             raise InvalidInput(

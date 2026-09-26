@@ -39,9 +39,7 @@ class ShortTermRental(TimeStampedModel):
         on_delete=models.CASCADE,
         related_name="initiated_short_term_rentals",
     )
-    initiator_capacity = models.CharField(
-        max_length=12, choices=InitiatorCapacity.choices
-    )
+    initiator_capacity = models.CharField(max_length=12, choices=InitiatorCapacity.choices)
     lease = models.ForeignKey(
         "leasing.Lease",
         null=True,
@@ -85,8 +83,7 @@ class ShortTermRental(TimeStampedModel):
                 name="short_term_rental_checkout_after_checkin",
             ),
             models.CheckConstraint(
-                condition=~Q(initiator_capacity=InitiatorCapacity.TENANT)
-                | Q(lease__isnull=False),
+                condition=~Q(initiator_capacity=InitiatorCapacity.TENANT) | Q(lease__isnull=False),
                 name="short_term_rental_tenant_has_lease",
             ),
             # Checkout day may be the next check-in day: half-open range.
@@ -124,9 +121,7 @@ class ShortTermRentalMember(TimeStampedModel):
     )
     first_name = models.CharField(max_length=120)
     last_name = models.CharField(max_length=120)
-    gender = models.CharField(
-        max_length=12, choices=Gender.choices, default=Gender.UNDISCLOSED
-    )
+    gender = models.CharField(max_length=12, choices=Gender.choices, default=Gender.UNDISCLOSED)
     date_of_birth = models.DateField(null=True, blank=True)
     nationality = models.CharField(max_length=80, blank=True)
     id_document_number = models.CharField(max_length=64, blank=True)

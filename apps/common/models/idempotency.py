@@ -20,9 +20,7 @@ class IdempotencyKey(models.Model):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(
-                fields=["user", "key"], name="idempotency_key_per_user"
-            )
+            models.UniqueConstraint(fields=["user", "key"], name="idempotency_key_per_user")
         ]
 
     def __str__(self) -> str:

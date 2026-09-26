@@ -9,9 +9,7 @@ urlpatterns = [
         views.LeaseExpireDueView.as_view(),
         name="lease-expire-due",
     ),
-    path(
-        "leases/<int:lease_id>/", views.LeaseDetailView.as_view(), name="lease-detail"
-    ),
+    path("leases/<int:lease_id>/", views.LeaseDetailView.as_view(), name="lease-detail"),
     path(
         "leases/<int:lease_id>/terminate/",
         views.LeaseTerminateView.as_view(),

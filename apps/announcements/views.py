@@ -42,9 +42,7 @@ class AnnouncementListView(BaseAPIView):
         announcement = AnnouncementService.publish(
             actor=request.user, prop=self.property, building=building, **data
         )
-        return self.render(
-            s.AnnouncementSerializer, announcement, status=status.HTTP_201_CREATED
-        )
+        return self.render(s.AnnouncementSerializer, announcement, status=status.HTTP_201_CREATED)
 
 
 @extend_schema(tags=["Announcements"])
@@ -58,9 +56,7 @@ class AnnouncementDetailView(BaseAPIView):
             ),
         )
 
-    @extend_schema(
-        request=s.AnnouncementUpdateSerializer, responses=s.AnnouncementSerializer
-    )
+    @extend_schema(request=s.AnnouncementUpdateSerializer, responses=s.AnnouncementSerializer)
     def patch(self, request, announcement_id: int):
         announcement = AnnouncementService.get_visible(
             actor=request.user, prop=self.property, announcement_id=announcement_id
@@ -68,9 +64,7 @@ class AnnouncementDetailView(BaseAPIView):
         data = self.parse(s.AnnouncementUpdateSerializer)
         return self.render(
             s.AnnouncementSerializer,
-            AnnouncementService.update(
-                actor=request.user, announcement=announcement, changes=data
-            ),
+            AnnouncementService.update(actor=request.user, announcement=announcement, changes=data),
         )
 
     @extend_schema(
@@ -103,9 +97,7 @@ class AnnouncementArchiveView(BaseAPIView):
 
 @extend_schema(tags=["Announcements"])
 class AnnouncementFilesView(BaseAPIView):
-    @extend_schema(
-        request=UploadFilesSerializer, responses={201: s.AnnouncementSerializer}
-    )
+    @extend_schema(request=UploadFilesSerializer, responses={201: s.AnnouncementSerializer})
     def post(self, request, announcement_id: int):
         announcement = AnnouncementService.get_visible(
             actor=request.user, prop=self.property, announcement_id=announcement_id
@@ -114,9 +106,7 @@ class AnnouncementFilesView(BaseAPIView):
         AnnouncementService.add_files(
             actor=request.user, announcement=announcement, files=data["files"]
         )
-        return self.render(
-            s.AnnouncementSerializer, announcement, status=status.HTTP_201_CREATED
-        )
+        return self.render(s.AnnouncementSerializer, announcement, status=status.HTTP_201_CREATED)
 
 
 @extend_schema(tags=["Announcements"])

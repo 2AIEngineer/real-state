@@ -19,9 +19,7 @@ class PropertyStatistics:
     @staticmethod
     def of(*, actor, prop: Property) -> dict[str, int]:
         if not PropertyPolicy.can_view_statistics(actor, prop):
-            raise PermissionDenied(
-                "Only the property management can see its statistics."
-            )
+            raise PermissionDenied("Only the property management can see its statistics.")
         units = Unit.objects.filter(building__property=prop)
         leased = (
             Lease.objects.filter(

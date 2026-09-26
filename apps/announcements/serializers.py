@@ -52,32 +52,20 @@ class AnnouncementCreateSerializer(serializers.Serializer):
     target_roles = serializers.ListField(
         child=serializers.ChoiceField(choices=PropertyRole.choices), allow_empty=False
     )
-    published_at = serializers.DateTimeField(
-        required=False, allow_null=True, default=None
-    )
-    expires_at = serializers.DateTimeField(
-        required=False, allow_null=True, default=None
-    )
-    files = serializers.ListField(
-        child=serializers.FileField(), required=False, default=list
-    )
+    published_at = serializers.DateTimeField(required=False, allow_null=True, default=None)
+    expires_at = serializers.DateTimeField(required=False, allow_null=True, default=None)
+    files = serializers.ListField(child=serializers.FileField(), required=False, default=list)
 
 
 @extend_schema_serializer(component_name="Announcement")
 class AnnouncementUpdateSerializer(serializers.Serializer):
     title = serializers.CharField(max_length=200, required=False)
     body = serializers.CharField(required=False)
-    category = serializers.ChoiceField(
-        choices=AnnouncementCategory.choices, required=False
-    )
-    priority = serializers.ChoiceField(
-        choices=AnnouncementPriority.choices, required=False
-    )
+    category = serializers.ChoiceField(choices=AnnouncementCategory.choices, required=False)
+    priority = serializers.ChoiceField(choices=AnnouncementPriority.choices, required=False)
     expires_at = serializers.DateTimeField(required=False, allow_null=True)
 
 
 class AnnouncementsQueryParamsSerializer(serializers.Serializer):
-    category = serializers.ChoiceField(
-        choices=AnnouncementCategory.choices, required=False
-    )
+    category = serializers.ChoiceField(choices=AnnouncementCategory.choices, required=False)
     include_expired = serializers.BooleanField(required=False, default=False)

@@ -85,9 +85,7 @@ class ProductCreateSerializer(ProductFieldsSerializer):
 @extend_schema_serializer(component_name="Product")
 class ProductUpdateSerializer(ProductFieldsSerializer):
     name = serializers.CharField(max_length=160, required=False)
-    price = serializers.DecimalField(
-        max_digits=12, decimal_places=2, min_value=0, required=False
-    )
+    price = serializers.DecimalField(max_digits=12, decimal_places=2, min_value=0, required=False)
 
 
 class ProductsQueryParamsSerializer(serializers.Serializer):
@@ -101,9 +99,7 @@ class OrderLineSerializer(serializers.Serializer):
 
 
 class OrderCreateSerializer(serializers.Serializer):
-    unit_id = serializers.IntegerField(
-        min_value=1, required=False, allow_null=True, default=None
-    )
+    unit_id = serializers.IntegerField(min_value=1, required=False, allow_null=True, default=None)
     items = OrderLineSerializer(many=True, allow_empty=False)
     delivery_instructions = serializers.CharField(
         required=False, allow_blank=True, default="", max_length=1000

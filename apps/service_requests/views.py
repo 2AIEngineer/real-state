@@ -33,18 +33,12 @@ class ServiceRequestListView(BaseAPIView):
         data = dict(self.parse(s.ServiceRequestCreateSerializer))
         unit_id = data.pop("unit_id")
         unit = (
-            UnitService.get_visible(
-                actor=request.user, prop=self.property, unit_id=unit_id
-            )
+            UnitService.get_visible(actor=request.user, prop=self.property, unit_id=unit_id)
             if unit_id
             else None
         )
-        sr = ServiceRequestService.submit(
-            actor=request.user, prop=self.property, unit=unit, **data
-        )
-        return self.render(
-            s.ServiceRequestSerializer, sr, status=status.HTTP_201_CREATED
-        )
+        sr = ServiceRequestService.submit(actor=request.user, prop=self.property, unit=unit, **data)
+        return self.render(s.ServiceRequestSerializer, sr, status=status.HTTP_201_CREATED)
 
 
 @extend_schema(tags=["Service requests"])
@@ -72,18 +66,14 @@ class ServiceRequestDetailView(BaseAPIView):
 
 @extend_schema(tags=["Service requests"])
 class ServiceRequestFilesView(BaseAPIView):
-    @extend_schema(
-        request=UploadFilesSerializer, responses={201: s.ServiceRequestSerializer}
-    )
+    @extend_schema(request=UploadFilesSerializer, responses={201: s.ServiceRequestSerializer})
     def post(self, request, request_id: int):
         sr = ServiceRequestService.get_visible(
             actor=request.user, prop=self.property, request_id=request_id
         )
         data = self.parse(UploadFilesSerializer)
         ServiceRequestService.add_files(actor=request.user, sr=sr, files=data["files"])
-        return self.render(
-            s.ServiceRequestSerializer, sr, status=status.HTTP_201_CREATED
-        )
+        return self.render(s.ServiceRequestSerializer, sr, status=status.HTTP_201_CREATED)
 
 
 @extend_schema(tags=["Service requests"])
@@ -93,9 +83,7 @@ class ServiceRequestFileDetailView(BaseAPIView):
         sr = ServiceRequestService.get_visible(
             actor=request.user, prop=self.property, request_id=request_id
         )
-        ServiceRequestService.remove_file(
-            actor=request.user, sr=sr, attachment_id=attachment_id
-        )
+        ServiceRequestService.remove_file(actor=request.user, sr=sr, attachment_id=attachment_id)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -123,9 +111,7 @@ class AssignmentListView(BaseAPIView):
             actor=request.user, prop=self.property, request_id=request_id
         )
         data = self.parse(s.ServiceRequestAssignSerializer)
-        resolvers = AccountService.resolve_many(
-            user_ids=data["resolver_ids"], field="resolver_ids"
-        )
+        resolvers = AccountService.resolve_many(user_ids=data["resolver_ids"], field="resolver_ids")
         created = RoundService.assign(actor=request.user, sr=sr, resolvers=resolvers)
         return self.render(
             s.ServiceRequestAssignmentSerializer,
@@ -154,9 +140,7 @@ class ResolveView(BaseAPIView):
 
 @extend_schema(tags=["Service requests"])
 class FeedbackView(BaseAPIView):
-    @extend_schema(
-        request=s.ServiceRequestFeedbackSerializer, responses=s.ServiceRequestSerializer
-    )
+    @extend_schema(request=s.ServiceRequestFeedbackSerializer, responses=s.ServiceRequestSerializer)
     def post(self, request, request_id: int):
         sr = ServiceRequestService.get_visible(
             actor=request.user, prop=self.property, request_id=request_id
@@ -164,9 +148,7 @@ class FeedbackView(BaseAPIView):
         data = self.parse(s.ServiceRequestFeedbackSerializer)
         return self.render(
             s.ServiceRequestSerializer,
-            RoundService.give_feedback(
-                actor=request.user, sr=sr, feedback=Feedback(**data)
-            ),
+            RoundService.give_feedback(actor=request.user, sr=sr, feedback=Feedback(**data)),
         )
 
 
@@ -193,7 +175,5 @@ class CancelView(BaseAPIView):
         data = self.parse(ActionReasonSerializer)
         return self.render(
             s.ServiceRequestSerializer,
-            ServiceRequestService.cancel(
-                actor=request.user, sr=sr, reason=data["reason"]
-            ),
+            ServiceRequestService.cancel(actor=request.user, sr=sr, reason=data["reason"]),
         )

@@ -37,9 +37,7 @@ class SyndicatService:
 
     @staticmethod
     def get_visible(*, actor, syndicat_id: int) -> Syndicat:
-        syndicat = (
-            SyndicatService.list_visible(actor=actor).filter(pk=syndicat_id).first()
-        )
+        syndicat = SyndicatService.list_visible(actor=actor).filter(pk=syndicat_id).first()
         if syndicat is None:
             raise NotFound("Syndicat not found.")
         return syndicat
@@ -74,9 +72,7 @@ class SyndicatService:
 
     @staticmethod
     def get_reachable(*, actor, syndicat_id: int) -> Syndicat:
-        syndicat = (
-            SyndicatService.list_reachable(actor=actor).filter(pk=syndicat_id).first()
-        )
+        syndicat = SyndicatService.list_reachable(actor=actor).filter(pk=syndicat_id).first()
         if syndicat is None:
             raise NotFound("Syndicat not found.")
         return syndicat

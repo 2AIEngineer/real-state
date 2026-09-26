@@ -74,9 +74,7 @@ class ShortTermRentalService:
         return qs.distinct()
 
     @staticmethod
-    def get_visible(
-        *, actor, prop: Property, short_term_rental_id: int
-    ) -> ShortTermRental:
+    def get_visible(*, actor, prop: Property, short_term_rental_id: int) -> ShortTermRental:
         rental = (
             ShortTermRental.objects.select_related(
                 "unit__building__property", "initiated_by", "lease"
@@ -110,9 +108,7 @@ class ShortTermRentalService:
         if not members:
             raise InvalidInput("At least one member is required.", field="members")
         if not 0 <= primary_index < len(members):
-            raise InvalidInput(
-                "The primary member index is out of range.", field="primary_index"
-            )
+            raise InvalidInput("The primary member index is out of range.", field="primary_index")
         check_period(
             right,
             unit,
@@ -183,9 +179,7 @@ class ShortTermRentalService:
     def check_in(*, actor, rental: ShortTermRental) -> ShortTermRental:
         rental = lock_rental(rental)
         if not ShortTermRentalPolicy.can_check_in(actor, rental):
-            raise PermissionDenied(
-                "Only management or on-site security can record arrivals."
-            )
+            raise PermissionDenied("Only management or on-site security can record arrivals.")
         if rental.status != ShortTermRentalStatus.SCHEDULED:
             raise InvalidTransition("Only scheduled rentals can be checked in.")
         rental.status = ShortTermRentalStatus.CHECKED_IN
@@ -220,9 +214,7 @@ class ShortTermRentalService:
         return rental
 
     @staticmethod
-    def complete_past(
-        *, today: dt.date | None = None, prop: Property | None = None
-    ) -> int:
+    def complete_past(*, today: dt.date | None = None, prop: Property | None = None) -> int:
         """Rentals whose checkout date has passed become COMPLETED (all properties, or `prop`).
 
         Checked in or still scheduled, the stay is over either way and the unit
@@ -237,9 +229,7 @@ class ShortTermRentalService:
             candidates = candidates.filter(unit__building__property=prop)
         completed = 0
         for rental in candidates:
-            if rental.checkout_date >= (
-                today or timezones.today(rental.unit.building.property)
-            ):
+            if rental.checkout_date >= (today or timezones.today(rental.unit.building.property)):
                 continue
             with transaction.atomic():
                 rental = lock_rental(rental)
@@ -312,9 +302,7 @@ class ShortTermRentalService:
     def delete(*, actor, rental: ShortTermRental) -> None:
         """Permanent removal of a rental and of its members' documents."""
         if not ShortTermRentalPolicy.can_delete(actor, rental):
-            raise PermissionDenied(
-                "Only the property management can delete a short rental."
-            )
+            raise PermissionDenied("Only the property management can delete a short rental.")
         AuditService.record(
             actor=actor,
             action=ShortTermRentalAudit.DELETED,

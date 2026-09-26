@@ -74,7 +74,5 @@ class ChatMessageEditSerializer(serializers.Serializer):
 
 
 class ChatMessageCreateSerializer(serializers.Serializer):
-    body = serializers.CharField(
-        required=False, allow_blank=True, default="", trim_whitespace=True
-    )
+    body = serializers.CharField(required=False, allow_blank=True, default="", trim_whitespace=True)
     media = serializers.FileField(required=False, allow_null=True, default=None)

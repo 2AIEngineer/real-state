@@ -32,9 +32,7 @@ class Event(TimeStampedModel, ArchivableModel):
     status = models.CharField(
         max_length=12, choices=EventStatus.choices, default=EventStatus.SCHEDULED
     )
-    target_roles = ArrayField(
-        models.CharField(max_length=16, choices=PropertyRole.choices)
-    )
+    target_roles = ArrayField(models.CharField(max_length=16, choices=PropertyRole.choices))
     cancelled_at = models.DateTimeField(null=True, blank=True)
     cancellation_reason = models.TextField(blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)
@@ -56,8 +54,7 @@ class Event(TimeStampedModel, ArchivableModel):
                 condition=Q(target_roles__len__gt=0), name="event_has_target_roles"
             ),
             models.CheckConstraint(
-                condition=~Q(status=EventStatus.CANCELLED)
-                | Q(cancelled_at__isnull=False),
+                condition=~Q(status=EventStatus.CANCELLED) | Q(cancelled_at__isnull=False),
                 name="event_cancelled_has_timestamp",
             ),
         ]

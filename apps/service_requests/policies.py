@@ -68,9 +68,7 @@ class ServiceRequestPolicy:
 
     @staticmethod
     def can_cancel(user, sr: ServiceRequest) -> bool:
-        return sr.requester_id == user.pk or ServiceRequestPolicy.is_management(
-            user, sr
-        )
+        return sr.requester_id == user.pk or ServiceRequestPolicy.is_management(user, sr)
 
     @staticmethod
     def can_delete(user, sr: ServiceRequest) -> bool:

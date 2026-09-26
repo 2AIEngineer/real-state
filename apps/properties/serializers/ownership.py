@@ -44,9 +44,7 @@ class OwnershipAcquirerSerializer(serializers.Serializer):
 class OwnershipTransferSerializer(serializers.Serializer):
     acquirers = OwnershipAcquirerSerializer(many=True, allow_empty=False)
     effective_date = serializers.DateField()
-    reference = serializers.CharField(
-        max_length=120, required=False, allow_blank=True, default=""
-    )
+    reference = serializers.CharField(max_length=120, required=False, allow_blank=True, default="")
 
 
 class OwnershipCoOwnerSerializer(serializers.Serializer):

@@ -147,9 +147,7 @@ class UserDeactivateView(AccountMixin, ApiMixin, APIView):
         data = self.parse(s.AccountDeactivationSerializer)
         return self.render(
             s.UserSerializer,
-            AccountStatusService.deactivate(
-                actor=request.user, user=user, reason=data["reason"]
-            ),
+            AccountStatusService.deactivate(actor=request.user, user=user, reason=data["reason"]),
         )
 
 
@@ -161,9 +159,7 @@ class UserReactivateView(AccountMixin, ApiMixin, APIView):
     def post(self, request, user_id: str):
         return self.render(
             s.UserSerializer,
-            AccountStatusService.reactivate(
-                actor=request.user, user=self.account(user_id)
-            ),
+            AccountStatusService.reactivate(actor=request.user, user=self.account(user_id)),
         )
 
 
@@ -178,9 +174,7 @@ class ProviderProfileView(AccountMixin, ApiMixin, APIView):
             ProviderProfileService.get(actor=request.user, user=self.account(user_id)),
         )
 
-    @extend_schema(
-        request=s.ProviderProfileUpdateSerializer, responses=s.ProviderProfileSerializer
-    )
+    @extend_schema(request=s.ProviderProfileUpdateSerializer, responses=s.ProviderProfileSerializer)
     def patch(self, request, user_id: str):
         user = self.account(user_id)
         data = self.parse(s.ProviderProfileUpdateSerializer)

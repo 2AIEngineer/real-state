@@ -18,9 +18,7 @@ class PromoterListView(ApiMixin, APIView):
             s.PromoterSerializer, PromoterService.list_visible(actor=request.user)
         )
 
-    @extend_schema(
-        request=s.PromoterInputSerializer, responses={201: s.PromoterSerializer}
-    )
+    @extend_schema(request=s.PromoterInputSerializer, responses={201: s.PromoterSerializer})
     def post(self, request):
         data = dict(self.parse(s.PromoterInputSerializer))
         promoter = PromoterService.create(
@@ -28,9 +26,7 @@ class PromoterListView(ApiMixin, APIView):
             representative_email=data.pop("representative_email"),
             data=data,
         )
-        return self.render(
-            s.PromoterSerializer, promoter, status=status.HTTP_201_CREATED
-        )
+        return self.render(s.PromoterSerializer, promoter, status=status.HTTP_201_CREATED)
 
 
 @extend_schema(tags=["Promoters"])
@@ -44,9 +40,7 @@ class PromoterDetailView(ApiMixin, APIView):
 
     @extend_schema(request=s.PromoterUpdateSerializer, responses=s.PromoterSerializer)
     def patch(self, request, promoter_id: int):
-        promoter = PromoterService.get_visible(
-            actor=request.user, promoter_id=promoter_id
-        )
+        promoter = PromoterService.get_visible(actor=request.user, promoter_id=promoter_id)
         data = self.parse(s.PromoterUpdateSerializer)
         return self.render(
             s.PromoterSerializer,
@@ -58,8 +52,6 @@ class PromoterDetailView(ApiMixin, APIView):
         description="Deletes a promoter that develops no property.",
     )
     def delete(self, request, promoter_id: int):
-        promoter = PromoterService.get_visible(
-            actor=request.user, promoter_id=promoter_id
-        )
+        promoter = PromoterService.get_visible(actor=request.user, promoter_id=promoter_id)
         PromoterService.delete(actor=request.user, promoter=promoter)
         return Response(status=status.HTTP_204_NO_CONTENT)

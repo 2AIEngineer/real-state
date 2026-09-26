@@ -42,9 +42,7 @@ class UIConfigPropertySerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
     def get_features(self, obj) -> dict[str, bool]:
-        return {
-            feature: getattr(obj, flag) for feature, flag in FEATURE_FLAG_FIELDS.items()
-        }
+        return {feature: getattr(obj, flag) for feature, flag in FEATURE_FLAG_FIELDS.items()}
 
 
 class UIConfigSearchQueryParamsSerializer(serializers.Serializer):

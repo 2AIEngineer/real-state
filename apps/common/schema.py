@@ -19,9 +19,7 @@ from apps.common.views import (
 )
 
 
-def _header(
-    name: str, description: str, *, required: bool, **extra
-) -> OpenApiParameter:
+def _header(name: str, description: str, *, required: bool, **extra) -> OpenApiParameter:
     return OpenApiParameter(
         name,
         extra.pop("type", OpenApiTypes.INT),

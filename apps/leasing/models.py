@@ -24,9 +24,7 @@ class LeaseTerminationReason(models.TextChoices):
 
 
 class Lease(TimeStampedModel):
-    unit = models.ForeignKey(
-        "properties.Unit", on_delete=models.CASCADE, related_name="leases"
-    )
+    unit = models.ForeignKey("properties.Unit", on_delete=models.CASCADE, related_name="leases")
     start_date = models.DateField()
     end_date = models.DateField(
         null=True, blank=True, help_text="NULL = open-ended / tacit renewal."
@@ -63,19 +61,16 @@ class Lease(TimeStampedModel):
                 name="lease_end_after_start",
             ),
             models.CheckConstraint(
-                condition=~Q(status=LeaseStatus.TERMINATED)
-                | Q(terminated_on__isnull=False),
+                condition=~Q(status=LeaseStatus.TERMINATED) | Q(terminated_on__isnull=False),
                 name="lease_terminated_has_date",
             ),
             models.CheckConstraint(
-                condition=~Q(status=LeaseStatus.CANCELLED)
-                | Q(cancelled_at__isnull=False),
+                condition=~Q(status=LeaseStatus.CANCELLED) | Q(cancelled_at__isnull=False),
                 name="lease_cancelled_has_timestamp",
             ),
             models.UniqueConstraint(
                 fields=["contract_reference"],
-                condition=Q(contract_reference__isnull=False)
-                & ~Q(contract_reference=""),
+                condition=Q(contract_reference__isnull=False) & ~Q(contract_reference=""),
                 name="lease_contract_reference_unique",
             ),
             ExclusionConstraint(
@@ -148,9 +143,7 @@ class LeaseMember(TimeStampedModel):
     class Meta:
         ordering = ["lease_id", "joined_at", "id"]
         constraints = [
-            models.UniqueConstraint(
-                fields=["lease", "user"], name="unique_lease_member"
-            ),
+            models.UniqueConstraint(fields=["lease", "user"], name="unique_lease_member"),
             models.CheckConstraint(
                 condition=Q(left_at__isnull=True) | Q(left_at__gte=F("joined_at")),
                 name="lease_member_left_after_joined",

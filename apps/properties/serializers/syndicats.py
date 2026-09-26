@@ -36,13 +36,9 @@ class SyndicatSerializer(serializers.ModelSerializer):
 class SyndicatInputSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=200)
     legal_name = serializers.CharField(max_length=255, required=False, allow_blank=True)
-    registration_number = serializers.CharField(
-        max_length=64, required=False, allow_blank=True
-    )
+    registration_number = serializers.CharField(max_length=64, required=False, allow_blank=True)
     contact_email = serializers.EmailField(required=False, allow_blank=True)
-    contact_phone = serializers.CharField(
-        max_length=32, required=False, allow_blank=True
-    )
+    contact_phone = serializers.CharField(max_length=32, required=False, allow_blank=True)
     address = serializers.CharField(required=False, allow_blank=True)
     city = serializers.CharField(max_length=120, required=False, allow_blank=True)
     country = serializers.CharField(max_length=120, required=False, allow_blank=True)

@@ -53,9 +53,7 @@ class LeaseService:
     # ---------------------------------------------------------------- queries
     @staticmethod
     def _base() -> QuerySet[Lease]:
-        return Lease.objects.select_related(
-            "unit__building__property"
-        ).prefetch_related(
+        return Lease.objects.select_related("unit__building__property").prefetch_related(
             Prefetch("members", queryset=LeaseMember.objects.select_related("user"))
         )
 
@@ -67,9 +65,7 @@ class LeaseService:
         unit_id: int | None = None,
         status: str | None = None,
     ) -> QuerySet[Lease]:
-        leases = (
-            LeaseService._base().filter(LeasePolicy.visible_filter(actor)).distinct()
-        )
+        leases = LeaseService._base().filter(LeasePolicy.visible_filter(actor)).distinct()
         leases = leases.filter(unit__building__property_id=property_id)
         if unit_id:
             leases = leases.filter(unit_id=unit_id)
@@ -79,11 +75,7 @@ class LeaseService:
 
     @staticmethod
     def get_visible(*, actor, prop: Property, lease_id: int) -> Lease:
-        lease = (
-            LeaseService._base()
-            .filter(pk=lease_id, unit__building__property=prop)
-            .first()
-        )
+        lease = LeaseService._base().filter(pk=lease_id, unit__building__property=prop).first()
         if lease is None or not LeasePolicy.can_view(actor, lease):
             raise NotFound("Lease not found.")
         return lease
@@ -152,9 +144,7 @@ class LeaseService:
         members: list[MemberInput], *, start_date: dt.date, end_date: dt.date | None
     ) -> None:
         if not members:
-            raise InvalidInput(
-                "An active lease needs at least one member.", field="members"
-            )
+            raise InvalidInput("An active lease needs at least one member.", field="members")
         if not any(m.is_signatory for m in members):
             raise InvalidInput(
                 "At least one member must be a signatory of the lease.", field="members"
@@ -163,9 +153,7 @@ class LeaseService:
         if len(set(user_ids)) != len(user_ids):
             raise InvalidInput("A user is listed twice.", field="members")
         if end_date and end_date < start_date:
-            raise InvalidInput(
-                "The lease cannot end before it starts.", field="end_date"
-            )
+            raise InvalidInput("The lease cannot end before it starts.", field="end_date")
         for member in members:
             check_member_account(member.user)
 
@@ -217,13 +205,9 @@ class LeaseService:
         if "end_date" in changes:
             end_date = changes["end_date"]
             if end_date and end_date < lease.start_date:
-                raise InvalidInput(
-                    "The lease cannot end before it starts.", field="end_date"
-                )
+                raise InvalidInput("The lease cannot end before it starts.", field="end_date")
             if end_date and lease.members.filter(joined_at__gt=end_date).exists():
-                raise InvalidInput(
-                    "A member joins after this end date.", field="end_date"
-                )
+                raise InvalidInput("A member joins after this end date.", field="end_date")
             lease.end_date = end_date
             fields.append("end_date")
         if "contract_reference" in changes:
@@ -346,18 +330,12 @@ class LeaseService:
             return lease
         today = timezones.today(lease.unit.building.property)
         if today < lease.start_date:
-            return LeaseService.cancel(
-                actor=actor, lease=lease, reason="No occupant left."
-            )
+            return LeaseService.cancel(actor=actor, lease=lease, reason="No occupant left.")
         effective = min(today, lease.end_date) if lease.end_date else today
-        return LeaseService.terminate(
-            actor=actor, lease=lease, effective_date=effective
-        )
+        return LeaseService.terminate(actor=actor, lease=lease, effective_date=effective)
 
     @staticmethod
-    def expire_due(
-        *, today: dt.date | None = None, prop: Property | None = None
-    ) -> int:
+    def expire_due(*, today: dt.date | None = None, prop: Property | None = None) -> int:
         """Leases past their end date are terminated at term (all properties, or `prop`).
 
         "Past" is read in the time zone of each property (`today` forces one
@@ -393,9 +371,7 @@ class LeaseService:
         """Permanent removal of a lease and everything recorded under it:
         members, inspections, the short rentals declared under it, their files."""
         if not LeasePolicy.can_delete(actor, lease):
-            raise PermissionDenied(
-                "Only administrators and syndics can delete a lease."
-            )
+            raise PermissionDenied("Only administrators and syndics can delete a lease.")
         AuditService.record(
             actor=actor,
             action=LeaseAudit.DELETED,

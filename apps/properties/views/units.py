@@ -40,25 +40,19 @@ class UnitListView(BaseAPIView):
 class MyUnitsView(ApiMixin, APIView):
     @extend_schema(responses=s.UnitSerializer(many=True))
     def get(self, request):
-        return self.render_page(
-            s.UnitSerializer, UnitService.list_mine(actor=request.user)
-        )
+        return self.render_page(s.UnitSerializer, UnitService.list_mine(actor=request.user))
 
 
 @extend_schema(tags=["Units"])
 class UnitDetailView(BaseAPIView):
     @extend_schema(responses=s.UnitSerializer)
     def get(self, request, unit_id: int):
-        unit = UnitService.get_visible(
-            actor=request.user, prop=self.property, unit_id=unit_id
-        )
+        unit = UnitService.get_visible(actor=request.user, prop=self.property, unit_id=unit_id)
         return self.render(s.UnitSerializer, unit)
 
     @extend_schema(request=s.UnitUpdateSerializer, responses=s.UnitSerializer)
     def patch(self, request, unit_id: int):
-        unit = UnitService.get_visible(
-            actor=request.user, prop=self.property, unit_id=unit_id
-        )
+        unit = UnitService.get_visible(actor=request.user, prop=self.property, unit_id=unit_id)
         data = self.parse(s.UnitUpdateSerializer)
         return self.render(
             s.UnitSerializer,
@@ -70,8 +64,6 @@ class UnitDetailView(BaseAPIView):
         description="Deletes a unit that was never leased nor sold.",
     )
     def delete(self, request, unit_id: int):
-        unit = UnitService.get_visible(
-            actor=request.user, prop=self.property, unit_id=unit_id
-        )
+        unit = UnitService.get_visible(actor=request.user, prop=self.property, unit_id=unit_id)
         UnitService.delete(actor=request.user, unit=unit)
         return Response(status=status.HTTP_204_NO_CONTENT)

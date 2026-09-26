@@ -69,9 +69,9 @@ class ChatService:
     @staticmethod
     def list_rooms(*, actor, property_id: int) -> QuerySet[ChatRoom]:
         visible = ChatPolicy.visible_rooms_filter(actor)
-        marker = ChatReadMarker.objects.filter(
-            chat_room=OuterRef("pk"), user=actor
-        ).values("last_read_at")[:1]
+        marker = ChatReadMarker.objects.filter(chat_room=OuterRef("pk"), user=actor).values(
+            "last_read_at"
+        )[:1]
         qs = (
             ChatService._base_rooms()
             .filter(visible)
@@ -102,9 +102,7 @@ class ChatService:
             .first()
         )
         return (
-            room.messages.exclude(sender=user)
-            .filter(created_at__gt=marker or NEVER_READ)
-            .count()
+            room.messages.exclude(sender=user).filter(created_at__gt=marker or NEVER_READ).count()
         )
 
     @staticmethod
@@ -128,9 +126,7 @@ class ChatService:
         return message
 
     @staticmethod
-    def messages(
-        *, actor, room: ChatRoom, before_id: int | None = None
-    ) -> QuerySet[ChatMessage]:
+    def messages(*, actor, room: ChatRoom, before_id: int | None = None) -> QuerySet[ChatMessage]:
         if not ChatPolicy.can_participate(actor, context_of(room)):
             raise NotFound("Conversation not found.")
         qs = (
@@ -185,9 +181,7 @@ class ChatService:
         if not ChatPolicy.can_edit_message(actor, message):
             raise PermissionDenied("Only the author can edit a message.")
         body = (body or "").strip()
-        if not body and not AttachmentService.count(
-            EntityType.CHAT_MESSAGE, message.pk
-        ):
+        if not body and not AttachmentService.count(EntityType.CHAT_MESSAGE, message.pk):
             raise InvalidInput("A message needs text or a file.", field="body")
         if len(body) > MAX_BODY_LENGTH:
             raise InvalidInput(

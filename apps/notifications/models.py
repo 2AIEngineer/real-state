@@ -113,12 +113,8 @@ class InboxNotification(models.Model):
         related_name="inbox_notifications",
     )
     category = models.CharField(max_length=32, choices=NotificationCategory.choices)
-    notification_type = models.CharField(
-        max_length=80, help_text="e.g. service_request.created"
-    )
-    severity = models.CharField(
-        max_length=10, choices=Severity.choices, default=Severity.INFO
-    )
+    notification_type = models.CharField(max_length=80, help_text="e.g. service_request.created")
+    severity = models.CharField(max_length=10, choices=Severity.choices, default=Severity.INFO)
     title = models.CharField(max_length=200)
     body = models.TextField(blank=True)
     data = models.JSONField(default=dict, blank=True)
@@ -152,14 +148,10 @@ class InboxNotification(models.Model):
 class RecipientSnapshot(models.Model):
     """Frozen list of the users a broadcast was addressed to when published."""
 
-    content_type = models.ForeignKey(
-        ContentType, on_delete=models.CASCADE, related_name="+"
-    )
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, related_name="+")
     object_id = models.PositiveBigIntegerField()
     target = GenericForeignKey("content_type", "object_id")
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="+"
-    )
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="+")
     matched_roles = models.JSONField(
         default=list,
         help_text="The target roles the user had when the snapshot was taken.",

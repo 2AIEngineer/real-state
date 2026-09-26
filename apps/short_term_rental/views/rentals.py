@@ -45,9 +45,7 @@ class ShortTermRentalListView(BaseAPIView):
             primary_index=data["primary_index"],
             notes=data["notes"],
         )
-        return self.render(
-            s.ShortTermRentalSerializer, rental, status=status.HTTP_201_CREATED
-        )
+        return self.render(s.ShortTermRentalSerializer, rental, status=status.HTTP_201_CREATED)
 
 
 @extend_schema(tags=["Short-term rentals"])
@@ -92,18 +90,14 @@ class RescheduleView(BaseAPIView):
         data = self.parse(s.ShortTermRentalRescheduleSerializer)
         return self.render(
             s.ShortTermRentalSerializer,
-            ShortTermRentalService.reschedule(
-                actor=request.user, rental=rental, **data
-            ),
+            ShortTermRentalService.reschedule(actor=request.user, rental=rental, **data),
         )
 
 
 class _TransitionView(BaseAPIView):
     transition = ""
 
-    @extend_schema(
-        tags=["Short-term rentals"], request=None, responses=s.ShortTermRentalSerializer
-    )
+    @extend_schema(tags=["Short-term rentals"], request=None, responses=s.ShortTermRentalSerializer)
     def post(self, request, short_term_rental_id: int):
         rental = ShortTermRentalService.get_visible(
             actor=request.user,
@@ -112,9 +106,7 @@ class _TransitionView(BaseAPIView):
         )
         return self.render(
             s.ShortTermRentalSerializer,
-            getattr(ShortTermRentalService, self.transition)(
-                actor=request.user, rental=rental
-            ),
+            getattr(ShortTermRentalService, self.transition)(actor=request.user, rental=rental),
         )
 
 
@@ -128,9 +120,7 @@ class CompleteView(_TransitionView):
 
 @extend_schema(tags=["Short-term rentals"])
 class CancelView(BaseAPIView):
-    @extend_schema(
-        request=ActionReasonSerializer, responses=s.ShortTermRentalSerializer
-    )
+    @extend_schema(request=ActionReasonSerializer, responses=s.ShortTermRentalSerializer)
     def post(self, request, short_term_rental_id: int):
         rental = ShortTermRentalService.get_visible(
             actor=request.user,
@@ -140,9 +130,7 @@ class CancelView(BaseAPIView):
         data = self.parse(ActionReasonSerializer)
         return self.render(
             s.ShortTermRentalSerializer,
-            ShortTermRentalService.cancel(
-                actor=request.user, rental=rental, reason=data["reason"]
-            ),
+            ShortTermRentalService.cancel(actor=request.user, rental=rental, reason=data["reason"]),
         )
 
 
@@ -154,7 +142,5 @@ class ShortTermRentalCompletePastView(BaseAPIView):
         description="Bulk action (admin, syndic, manager): completes every scheduled or checked-in rental of the selected property whose checkout date has passed.",
     )
     def post(self, request):
-        count = ShortTermRentalService.complete_past_in(
-            actor=request.user, prop=self.property
-        )
+        count = ShortTermRentalService.complete_past_in(actor=request.user, prop=self.property)
         return self.render(BulkActionResultSerializer, {"count": count})

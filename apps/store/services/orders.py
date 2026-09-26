@@ -48,9 +48,7 @@ class OrderService:
     def list_visible(
         *, actor, property_id: int, status: str | None = None, mine: bool = False
     ) -> QuerySet[Order]:
-        qs = Order.objects.select_related(
-            "property", "orderer", "unit"
-        ).prefetch_related("items")
+        qs = Order.objects.select_related("property", "orderer", "unit").prefetch_related("items")
         if mine or not OrderPolicy.can_see_all_orders(actor):
             qs = qs.filter(orderer=actor)
         qs = qs.filter(property_id=property_id)
@@ -87,9 +85,7 @@ class OrderService:
                 "Only owners and tenants of this property can order from its store."
             )
         if unit is not None and not OrderPolicy.can_deliver_to(actor, unit):
-            raise InvalidInput(
-                "You can only deliver to one of your units.", field="unit_id"
-            )
+            raise InvalidInput("You can only deliver to one of your units.", field="unit_id")
         if not lines:
             raise InvalidInput("An order needs at least one item.", field="items")
         if len(lines) > MAX_LINES:
@@ -98,9 +94,7 @@ class OrderService:
         for line in lines:
             if line.quantity < 1:
                 raise InvalidInput("Quantities must be positive.", field="items")
-            quantities[line.product_id] = (
-                quantities.get(line.product_id, 0) + line.quantity
-            )
+            quantities[line.product_id] = quantities.get(line.product_id, 0) + line.quantity
 
         # Lock in primary-key order: concurrent orders never deadlock.
         products = {
@@ -125,9 +119,7 @@ class OrderService:
                     code="insufficient_stock",
                 )
 
-        total = sum(
-            (products[pid].price * qty for pid, qty in quantities.items()), Decimal("0")
-        )
+        total = sum((products[pid].price * qty for pid, qty in quantities.items()), Decimal("0"))
         order = Order.objects.create(
             property=prop,
             orderer=actor,
@@ -252,9 +244,7 @@ class OrderService:
             raise NotFound("Order not found.")
         by_orderer = order.orderer_id == actor.pk
         allowed = (
-            (OrderStatus.PENDING,)
-            if by_orderer
-            else (OrderStatus.PENDING, OrderStatus.CONFIRMED)
+            (OrderStatus.PENDING,) if by_orderer else (OrderStatus.PENDING, OrderStatus.CONFIRMED)
         )
         if order.status not in allowed:
             raise InvalidTransition("This order can no longer be cancelled.")

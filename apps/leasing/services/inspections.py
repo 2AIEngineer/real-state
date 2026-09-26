@@ -24,9 +24,7 @@ from apps.leasing.models import CheckPhase, Lease, LeaseComponentState, LeaseSta
 from apps.leasing.policies import LeaseComponentStatePolicy, LeasePolicy
 
 COMPONENT_FIELDS = ("name", "description", "state", "on_check_date")
-COMPONENT_CONSTRAINTS = {
-    "unique_component_per_inspection": errors.component_already_recorded
-}
+COMPONENT_CONSTRAINTS = {"unique_component_per_inspection": errors.component_already_recorded}
 RECORDERS_ONLY = "Only the property management can record inspections."
 
 
@@ -73,14 +71,10 @@ class LeaseComponentStateService:
         return LeaseComponentState.objects.filter(lease=lease)
 
     @staticmethod
-    def get(
-        *, actor, lease: Lease, lease_component_state_id: int
-    ) -> LeaseComponentState:
+    def get(*, actor, lease: Lease, lease_component_state_id: int) -> LeaseComponentState:
         """An inspection line only exists inside its lease."""
         state = (
-            LeaseComponentState.objects.select_related(
-                "lease__unit__building__property"
-            )
+            LeaseComponentState.objects.select_related("lease__unit__building__property")
             .filter(pk=lease_component_state_id, lease=lease)
             .first()
         )
@@ -135,9 +129,7 @@ class LeaseComponentStateService:
 
     @staticmethod
     @transaction.atomic
-    def update(
-        *, actor, component: LeaseComponentState, changes: dict
-    ) -> LeaseComponentState:
+    def update(*, actor, component: LeaseComponentState, changes: dict) -> LeaseComponentState:
         if not LeaseComponentStatePolicy.can_record(actor, component.lease):
             raise PermissionDenied(RECORDERS_ONLY)
         fields = apply_changes(component, changes, COMPONENT_FIELDS)

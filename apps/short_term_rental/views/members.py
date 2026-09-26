@@ -37,9 +37,7 @@ class MemberListView(BaseAPIView):
         )
         return self.render(
             s.ShortTermRentalMemberSerializer,
-            ShortTermRentalMemberService.list_for_rental(
-                actor=request.user, rental=rental
-            ),
+            ShortTermRentalMemberService.list_for_rental(actor=request.user, rental=rental),
             many=True,
         )
 
@@ -102,9 +100,7 @@ class MemberDetailView(BaseAPIView):
 
 @extend_schema(tags=["Short-term rentals"])
 class MemberIdCardView(BaseAPIView):
-    @extend_schema(
-        request=UploadFileSerializer, responses=s.ShortTermRentalMemberSerializer
-    )
+    @extend_schema(request=UploadFileSerializer, responses=s.ShortTermRentalMemberSerializer)
     def patch(self, request, short_term_rental_member_id: int):
         member = ShortTermRentalMemberService.get_visible(
             actor=request.user,

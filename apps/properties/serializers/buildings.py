@@ -37,9 +37,7 @@ class BuildingSerializer(serializers.ModelSerializer):
 class BuildingInputSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=120)
     address = serializers.CharField(required=False, allow_blank=True)
-    floors_count = serializers.IntegerField(
-        min_value=0, required=False, allow_null=True
-    )
+    floors_count = serializers.IntegerField(min_value=0, required=False, allow_null=True)
     description = serializers.CharField(required=False, allow_blank=True)
 
 
@@ -73,9 +71,7 @@ class UnitSerializer(serializers.ModelSerializer):
 class UnitInputSerializer(serializers.Serializer):
     number = serializers.CharField(max_length=32)
     label = serializers.CharField(max_length=120, required=False, allow_blank=True)
-    floor = serializers.IntegerField(
-        min_value=-20, max_value=300, required=False, allow_null=True
-    )
+    floor = serializers.IntegerField(min_value=-20, max_value=300, required=False, allow_null=True)
     unit_type = serializers.ChoiceField(choices=UnitType.choices, required=False)
     area_sqm = serializers.DecimalField(
         max_digits=8, decimal_places=2, min_value=0, required=False, allow_null=True

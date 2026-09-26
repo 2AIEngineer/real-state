@@ -43,9 +43,7 @@ class InboxNotificationSerializer(serializers.ModelSerializer):
 
 class NotificationsQueryParamsSerializer(serializers.Serializer):
     unread = serializers.BooleanField(required=False, default=False)
-    category = serializers.ChoiceField(
-        choices=NotificationCategory.choices, required=False
-    )
+    category = serializers.ChoiceField(choices=NotificationCategory.choices, required=False)
 
 
 class NotificationPreferenceSerializer(serializers.ModelSerializer):
@@ -57,9 +55,7 @@ class NotificationPreferenceSerializer(serializers.ModelSerializer):
 @extend_schema_serializer(component_name="NotificationPreference")
 class NotificationPreferenceUpdateSerializer(serializers.Serializer):
     def get_fields(self):
-        return {
-            name: serializers.BooleanField(required=False) for name in PREFERENCE_FIELDS
-        }
+        return {name: serializers.BooleanField(required=False) for name in PREFERENCE_FIELDS}
 
 
 class PushTokenSerializer(serializers.ModelSerializer):
@@ -91,6 +87,4 @@ class NotificationUnreadCountSerializer(serializers.Serializer):
 
 
 class NotificationsMarkedReadSerializer(serializers.Serializer):
-    updated = serializers.IntegerField(
-        help_text="Number of notifications marked as read."
-    )
+    updated = serializers.IntegerField(help_text="Number of notifications marked as read.")

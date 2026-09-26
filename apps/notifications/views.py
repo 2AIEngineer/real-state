@@ -36,9 +36,7 @@ class InboxView(ApiMixin, APIView):
             unread_only=query["unread"],
             category=query.get("category"),
         )
-        return self.render_page(
-            InboxNotificationSerializer, qs.select_related("content_type")
-        )
+        return self.render_page(InboxNotificationSerializer, qs.select_related("content_type"))
 
 
 @extend_schema(tags=["Notifications"])

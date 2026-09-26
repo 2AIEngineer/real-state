@@ -47,9 +47,7 @@ class PropertyAssignmentService(AssignmentService):
         return cls._assign(actor=actor, user=user, ids=property_ids)
 
     @classmethod
-    def assign_new_property_to_its_managers(
-        cls, *, prop: Property, actor
-    ) -> list[UserProperty]:
+    def assign_new_property_to_its_managers(cls, *, prop: Property, actor) -> list[UserProperty]:
         """Give a new property to the managers already running a property of its syndicat.
 
         Called by `PropertyService.create`, in the same transaction.

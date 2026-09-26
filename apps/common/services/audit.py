@@ -24,9 +24,7 @@ class AuditService:
             actor=actor if getattr(actor, "pk", None) else None,
             action=action,
             content_type=(
-                ContentType.objects.get_for_model(target)
-                if target is not None
-                else None
+                ContentType.objects.get_for_model(target) if target is not None else None
             ),
             object_id=target.pk if target is not None else None,
             object_repr=str(target)[:255] if target is not None else "",

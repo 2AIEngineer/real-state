@@ -83,13 +83,9 @@ class VisitorService:
         prop = unit.building.property
         FeatureGate.require(prop, Feature.VISITOR)
         if not VisitorPolicy.can_register(actor, unit):
-            raise PermissionDenied(
-                "Only management and security can log visitors for this unit."
-            )
+            raise PermissionDenied("Only management and security can log visitors for this unit.")
         if not admitted and not denial_reason.strip():
-            raise InvalidInput(
-                "A reason is required when entry is denied.", field="denial_reason"
-            )
+            raise InvalidInput("A reason is required when entry is denied.", field="denial_reason")
         now = timezone.now()
         visitor = Visitor(
             unit=unit,
@@ -122,9 +118,7 @@ class VisitorService:
 
     @staticmethod
     @transaction.atomic
-    def mark_left(
-        *, actor, visitor: Visitor, left_at: dt.datetime | None = None
-    ) -> Visitor:
+    def mark_left(*, actor, visitor: Visitor, left_at: dt.datetime | None = None) -> Visitor:
         if not VisitorPolicy.can_update(actor, visitor):
             raise PermissionDenied()
         visitor = Visitor.objects.select_for_update(of=("self",)).get(pk=visitor.pk)
@@ -138,9 +132,7 @@ class VisitorService:
         visitor.status = VisitStatus.LEFT
         visitor.left_at = left_at
         visitor.checked_out_by = actor
-        visitor.save(
-            update_fields=["status", "left_at", "checked_out_by", "updated_at"]
-        )
+        visitor.save(update_fields=["status", "left_at", "checked_out_by", "updated_at"])
         AuditService.record(
             actor=actor,
             action=VisitorAudit.LEFT,

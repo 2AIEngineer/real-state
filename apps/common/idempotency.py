@@ -76,9 +76,7 @@ def claim(request) -> IdempotencyKey | None:
     if not key or request.method != "POST" or not request.user.is_authenticated:
         return None
     if len(key) > 255:
-        raise InvalidInput(
-            f"{HEADER} is too long (255 characters at most).", field=HEADER
-        )
+        raise InvalidInput(f"{HEADER} is too long (255 characters at most).", field=HEADER)
     fingerprint = _fingerprint(request)
     try:
         with transaction.atomic():
@@ -112,9 +110,7 @@ def settle(claimed: IdempotencyKey, response: Response) -> None:
     if 200 <= response.status_code < 300:
         data = response.data
         claimed.status_code = response.status_code
-        claimed.response = (
-            None if data is None else json.loads(JSONRenderer().render(data))
-        )
+        claimed.response = None if data is None else json.loads(JSONRenderer().render(data))
         claimed.save(update_fields=["status_code", "response"])
     else:
         claimed.delete()

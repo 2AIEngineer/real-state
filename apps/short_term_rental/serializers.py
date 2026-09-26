@@ -67,9 +67,7 @@ class ShortTermRentalMemberInputSerializer(serializers.Serializer):
     gender = serializers.ChoiceField(choices=Gender.choices, required=False)
     date_of_birth = serializers.DateField(required=False, allow_null=True)
     nationality = serializers.CharField(max_length=80, required=False, allow_blank=True)
-    id_document_number = serializers.CharField(
-        max_length=64, required=False, allow_blank=True
-    )
+    id_document_number = serializers.CharField(max_length=64, required=False, allow_blank=True)
     phone = serializers.CharField(max_length=32, required=False, allow_blank=True)
     email = serializers.EmailField(required=False, allow_blank=True)
 
@@ -88,9 +86,7 @@ class ShortTermRentalCreateSerializer(serializers.Serializer):
     unit_id = serializers.IntegerField(min_value=1)
     checkin_date = serializers.DateField()
     checkout_date = serializers.DateField()
-    notes = serializers.CharField(
-        required=False, allow_blank=True, default="", max_length=2000
-    )
+    notes = serializers.CharField(required=False, allow_blank=True, default="", max_length=2000)
     members = ShortTermRentalMemberInputSerializer(many=True, allow_empty=False)
     primary_index = serializers.IntegerField(min_value=0, default=0)
 
@@ -102,6 +98,4 @@ class ShortTermRentalRescheduleSerializer(serializers.Serializer):
 
 class ShortTermRentalsQueryParamsSerializer(serializers.Serializer):
     unit_id = serializers.IntegerField(min_value=1, required=False)
-    status = serializers.ChoiceField(
-        choices=ShortTermRentalStatus.choices, required=False
-    )
+    status = serializers.ChoiceField(choices=ShortTermRentalStatus.choices, required=False)

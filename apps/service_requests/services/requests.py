@@ -57,9 +57,7 @@ class ServiceRequestService:
     @staticmethod
     def get_visible(*, actor, prop: Property, request_id: int) -> ServiceRequest:
         sr = (
-            ServiceRequest.objects.select_related(
-                "property", "unit__building", "requester"
-            )
+            ServiceRequest.objects.select_related("property", "unit__building", "requester")
             .filter(pk=request_id, property=prop)
             .first()
         )
@@ -84,13 +82,9 @@ class ServiceRequestService:
         FeatureGate.require(prop, Feature.SERVICE_REQUEST)
         if unit is not None:
             if unit.building.property_id != prop.pk:
-                raise InvalidInput(
-                    "The unit belongs to another property.", field="unit_id"
-                )
+                raise InvalidInput("The unit belongs to another property.", field="unit_id")
         if not ServiceRequestPolicy.can_submit(actor, prop, unit):
-            raise PermissionDenied(
-                "You can only submit requests for your own units or property."
-            )
+            raise PermissionDenied("You can only submit requests for your own units or property.")
         sr = ServiceRequest.objects.create(
             property=prop,
             unit=unit,
@@ -121,9 +115,7 @@ class ServiceRequestService:
         if not ServiceRequestPolicy.can_add_files(actor, sr):
             raise NotFound("Service request not found.")
         if sr.status not in OPEN_STATES:
-            raise InvalidTransition(
-                "Files can only be added while the request is open."
-            )
+            raise InvalidTransition("Files can only be added while the request is open.")
         return AttachmentService.attach(
             entity_type=EntityType.SERVICE_REQUEST,
             entity_id=sr.pk,
@@ -142,9 +134,7 @@ class ServiceRequestService:
             entity_id=sr.pk,
             attachment_id=attachment_id,
         )
-        if not ServiceRequestPolicy.can_remove_file(
-            actor, sr, attachment.uploaded_by_id
-        ):
+        if not ServiceRequestPolicy.can_remove_file(actor, sr, attachment.uploaded_by_id):
             raise PermissionDenied(
                 "Only the uploader or the property management can remove this file."
             )
@@ -156,9 +146,7 @@ class ServiceRequestService:
     def close(*, actor, sr: ServiceRequest) -> ServiceRequest:
         """Management closes a resolved request (e.g. requester never answered)."""
         if not ServiceRequestPolicy.can_close(actor, sr):
-            raise PermissionDenied(
-                "Only the property management can close service requests."
-            )
+            raise PermissionDenied("Only the property management can close service requests.")
         sr = lock(sr)
         if sr.status != ServiceRequestStatus.RESOLVED:
             raise InvalidTransition("Only resolved requests can be closed.")
@@ -202,9 +190,7 @@ class ServiceRequestService:
             target=sr,
             property_id=sr.property_id,
         )
-        notices.cancelled(
-            sr, actor=actor, resolvers=current_resolvers(sr), reason=reason
-        )
+        notices.cancelled(sr, actor=actor, resolvers=current_resolvers(sr), reason=reason)
         return sr
 
     @staticmethod
@@ -212,9 +198,7 @@ class ServiceRequestService:
     def delete(*, actor, sr: ServiceRequest) -> None:
         """Permanent removal of a request, its rounds and its conversation."""
         if not ServiceRequestPolicy.can_delete(actor, sr):
-            raise PermissionDenied(
-                "Only the property management can delete service requests."
-            )
+            raise PermissionDenied("Only the property management can delete service requests.")
         AuditService.record(
             actor=actor,
             action=ServiceRequestAudit.DELETED,

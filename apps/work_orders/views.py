@@ -32,9 +32,7 @@ class WorkOrderListView(BaseAPIView):
             ),
         )
 
-    @extend_schema(
-        request=s.WorkOrderCreateSerializer, responses={201: s.WorkOrderSerializer}
-    )
+    @extend_schema(request=s.WorkOrderCreateSerializer, responses={201: s.WorkOrderSerializer})
     def post(self, request):
         data = dict(self.parse(s.WorkOrderCreateSerializer))
         actor = request.user
@@ -55,16 +53,12 @@ class WorkOrderListView(BaseAPIView):
                 else None
             ),
             unit=(
-                UnitService.get_visible(
-                    actor=actor, prop=self.property, unit_id=unit_id
-                )
+                UnitService.get_visible(actor=actor, prop=self.property, unit_id=unit_id)
                 if unit_id
                 else None
             ),
             service_request=(
-                ServiceRequestService.get_visible(
-                    actor=actor, prop=self.property, request_id=sr_id
-                )
+                ServiceRequestService.get_visible(actor=actor, prop=self.property, request_id=sr_id)
                 if sr_id
                 else None
             ),
@@ -113,9 +107,7 @@ class WorkOrderDetailView(BaseAPIView):
 
 @extend_schema(tags=["Work orders"])
 class WorkOrderTransitionView(BaseAPIView):
-    @extend_schema(
-        request=s.WorkOrderTransitionSerializer, responses=s.WorkOrderSerializer
-    )
+    @extend_schema(request=s.WorkOrderTransitionSerializer, responses=s.WorkOrderSerializer)
     def post(self, request, work_order_id: int):
         wo = WorkOrderService.get_visible(
             actor=request.user, prop=self.property, work_order_id=work_order_id
@@ -129,9 +121,7 @@ class WorkOrderTransitionView(BaseAPIView):
 
 @extend_schema(tags=["Work orders"])
 class WorkOrderFilesView(BaseAPIView):
-    @extend_schema(
-        request=UploadFilesSerializer, responses={201: s.WorkOrderSerializer}
-    )
+    @extend_schema(request=UploadFilesSerializer, responses={201: s.WorkOrderSerializer})
     def post(self, request, work_order_id: int):
         wo = WorkOrderService.get_visible(
             actor=request.user, prop=self.property, work_order_id=work_order_id

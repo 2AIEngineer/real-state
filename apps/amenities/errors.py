@@ -8,6 +8,4 @@ def amenity_name_taken() -> InvalidInput:
 
 
 def slot_taken() -> BusinessRuleViolation:
-    return BusinessRuleViolation(
-        "This time slot is already booked.", code="slot_unavailable"
-    )
+    return BusinessRuleViolation("This time slot is already booked.", code="slot_unavailable")

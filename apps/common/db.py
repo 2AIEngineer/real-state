@@ -27,9 +27,7 @@ class DateTimeRange(Func):
     output_field = DateTimeRangeField()
 
 
-def apply_changes(
-    instance: Model, changes: Mapping[str, Any], allowed: Iterable[str]
-) -> list[str]:
+def apply_changes(instance: Model, changes: Mapping[str, Any], allowed: Iterable[str]) -> list[str]:
     """Set on `instance` the `allowed` fields present in `changes`; return their names.
 
     The whitelist is what makes a partial update safe: a field outside `allowed`
@@ -65,9 +63,7 @@ def translate_integrity_errors(
     """
     for target in mapping.values():
         if isinstance(target, DomainError):
-            raise TypeError(
-                "Map constraints to error factories, not to exception instances."
-            )
+            raise TypeError("Map constraints to error factories, not to exception instances.")
     try:
         with transaction.atomic():
             yield
@@ -102,9 +98,7 @@ def deleting(what: str, *, hint: str = "") -> Generator[None]:
             yield
     except ProtectedError as exc:
         blockers = describe_protected(exc)
-        detail = ", ".join(
-            f"{label} ({count})" for label, count in sorted(blockers.items())
-        )
+        detail = ", ".join(f"{label} ({count})" for label, count in sorted(blockers.items()))
         raise BusinessRuleViolation(
             f"This {what} is still used by: {detail}." + (f" {hint}" if hint else ""),
             code="resource_in_use",

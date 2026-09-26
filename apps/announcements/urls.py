@@ -3,9 +3,7 @@ from django.urls import path
 from apps.announcements import views
 
 urlpatterns = [
-    path(
-        "announcements/", views.AnnouncementListView.as_view(), name="announcement-list"
-    ),
+    path("announcements/", views.AnnouncementListView.as_view(), name="announcement-list"),
     path(
         "announcements/<int:announcement_id>/",
         views.AnnouncementDetailView.as_view(),

@@ -38,9 +38,9 @@ def _management(ctx: RoomContext) -> list:
 def _management_and_resolvers(ctx: RoomContext) -> list:
     staff = {user.pk: user for user in _management(ctx)}
     sr = ctx.obj
-    for assignment in sr.assignments.filter(
-        resolution_round=sr.current_round
-    ).select_related("resolver"):
+    for assignment in sr.assignments.filter(resolution_round=sr.current_round).select_related(
+        "resolver"
+    ):
         staff.setdefault(assignment.resolver_id, assignment.resolver)
     return list(staff.values())
 
@@ -85,12 +85,8 @@ CONTEXTS: dict[str, ContextSpec] = {
             "demande",
             _management_and_resolvers,
         ),
-        ContextSpec(
-            "booking", Booking, "booker", "amenity.property", "réservation", _management
-        ),
-        ContextSpec(
-            "order", Order, "orderer", "property", "commande", _platform_admins
-        ),
+        ContextSpec("booking", Booking, "booker", "amenity.property", "réservation", _management),
+        ContextSpec("order", Order, "orderer", "property", "commande", _platform_admins),
     )
 }
 CONTEXT_KINDS = tuple(CONTEXTS)

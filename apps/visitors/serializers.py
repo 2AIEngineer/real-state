@@ -37,12 +37,8 @@ class VisitorSerializer(serializers.ModelSerializer):
 @extend_schema_serializer(component_name="Visitor")
 class VisitorUpdateSerializer(serializers.Serializer):
     phone = serializers.CharField(max_length=32, required=False, allow_blank=True)
-    visit_reason = serializers.CharField(
-        max_length=200, required=False, allow_blank=True
-    )
-    vehicle_plate = serializers.CharField(
-        max_length=32, required=False, allow_blank=True
-    )
+    visit_reason = serializers.CharField(max_length=200, required=False, allow_blank=True)
+    vehicle_plate = serializers.CharField(max_length=32, required=False, allow_blank=True)
     notes = serializers.CharField(required=False, allow_blank=True)
 
 

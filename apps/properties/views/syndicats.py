@@ -19,9 +19,7 @@ class SyndicatListView(ApiMixin, APIView):
             s.SyndicatSerializer, SyndicatService.list_visible(actor=request.user)
         )
 
-    @extend_schema(
-        request=s.SyndicatInputSerializer, responses={201: s.SyndicatSerializer}
-    )
+    @extend_schema(request=s.SyndicatInputSerializer, responses={201: s.SyndicatSerializer})
     def post(self, request):
         data = self.parse(s.SyndicatInputSerializer)
         return self.render(
@@ -42,9 +40,7 @@ class SyndicatDetailView(ApiMixin, APIView):
 
     @extend_schema(request=s.SyndicatUpdateSerializer, responses=s.SyndicatSerializer)
     def patch(self, request, syndicat_id: int):
-        syndicat = SyndicatService.get_visible(
-            actor=request.user, syndicat_id=syndicat_id
-        )
+        syndicat = SyndicatService.get_visible(actor=request.user, syndicat_id=syndicat_id)
         data = self.parse(s.SyndicatUpdateSerializer)
         return self.render(
             s.SyndicatSerializer,
@@ -56,9 +52,7 @@ class SyndicatDetailView(ApiMixin, APIView):
         description="Deletes an empty syndicat (409 while it still holds properties).",
     )
     def delete(self, request, syndicat_id: int):
-        syndicat = SyndicatService.get_visible(
-            actor=request.user, syndicat_id=syndicat_id
-        )
+        syndicat = SyndicatService.get_visible(actor=request.user, syndicat_id=syndicat_id)
         SyndicatService.delete(actor=request.user, syndicat=syndicat)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -67,11 +61,7 @@ class SyndicatDetailView(ApiMixin, APIView):
 class SyndicatLogoView(ApiMixin, APIView):
     @extend_schema(request=UploadFileSerializer, responses=s.SyndicatSerializer)
     def patch(self, request, syndicat_id: int):
-        syndicat = SyndicatService.get_visible(
-            actor=request.user, syndicat_id=syndicat_id
-        )
+        syndicat = SyndicatService.get_visible(actor=request.user, syndicat_id=syndicat_id)
         data = self.parse(UploadFileSerializer)
-        SyndicatService.set_logo(
-            actor=request.user, syndicat=syndicat, upload=data["file"]
-        )
+        SyndicatService.set_logo(actor=request.user, syndicat=syndicat, upload=data["file"])
         return self.render(s.SyndicatSerializer, syndicat)

@@ -87,16 +87,10 @@ class AccountCreateSerializer(serializers.Serializer):
     email = serializers.EmailField()
     first_name = serializers.CharField(max_length=150)
     last_name = serializers.CharField(max_length=150)
-    phone = serializers.CharField(
-        max_length=32, required=False, allow_blank=True, default=""
-    )
+    phone = serializers.CharField(max_length=32, required=False, allow_blank=True, default="")
     gender = serializers.ChoiceField(choices=Gender.choices, default=Gender.UNDISCLOSED)
-    preferred_language = serializers.ChoiceField(
-        choices=Language.choices, default=Language.FRENCH
-    )
-    role = serializers.ChoiceField(
-        choices=StructuralRole.choices, default=StructuralRole.STANDARD
-    )
+    preferred_language = serializers.ChoiceField(choices=Language.choices, default=Language.FRENCH)
+    role = serializers.ChoiceField(choices=StructuralRole.choices, default=StructuralRole.STANDARD)
     building_ids = serializers.ListField(
         child=serializers.IntegerField(min_value=1),
         required=False,
@@ -123,16 +117,12 @@ class UserProfileUpdateSerializer(serializers.Serializer):
     last_name = serializers.CharField(max_length=150, required=False)
     phone = serializers.CharField(max_length=32, required=False, allow_blank=True)
     gender = serializers.ChoiceField(choices=Gender.choices, required=False)
-    preferred_language = serializers.ChoiceField(
-        choices=Language.choices, required=False
-    )
+    preferred_language = serializers.ChoiceField(choices=Language.choices, required=False)
 
 
 class EmailChangeSerializer(serializers.Serializer):
     email = serializers.EmailField()
-    current_password = serializers.CharField(
-        required=False, write_only=True, trim_whitespace=False
-    )
+    current_password = serializers.CharField(required=False, write_only=True, trim_whitespace=False)
 
 
 class PasswordChangeSerializer(serializers.Serializer):
@@ -141,9 +131,7 @@ class PasswordChangeSerializer(serializers.Serializer):
 
 
 class AccountDeactivationSerializer(serializers.Serializer):
-    reason = serializers.CharField(
-        required=False, allow_blank=True, default="", max_length=500
-    )
+    reason = serializers.CharField(required=False, allow_blank=True, default="", max_length=500)
 
 
 class UserSearchQueryParamsSerializer(serializers.Serializer):
@@ -169,18 +157,10 @@ class ProviderProfileSerializer(serializers.ModelSerializer):
 
 @extend_schema_serializer(component_name="ProviderProfile")
 class ProviderProfileUpdateSerializer(serializers.Serializer):
-    company_name = serializers.CharField(
-        max_length=200, required=False, allow_blank=True
-    )
-    service_type = serializers.ChoiceField(
-        choices=ProviderServiceType.choices, required=False
-    )
+    company_name = serializers.CharField(max_length=200, required=False, allow_blank=True)
+    service_type = serializers.ChoiceField(choices=ProviderServiceType.choices, required=False)
     service_description = serializers.CharField(required=False, allow_blank=True)
     address = serializers.CharField(required=False, allow_blank=True)
-    business_phone = serializers.CharField(
-        max_length=32, required=False, allow_blank=True
-    )
+    business_phone = serializers.CharField(max_length=32, required=False, allow_blank=True)
     website = serializers.URLField(required=False, allow_blank=True)
-    registration_number = serializers.CharField(
-        max_length=64, required=False, allow_blank=True
-    )
+    registration_number = serializers.CharField(max_length=64, required=False, allow_blank=True)

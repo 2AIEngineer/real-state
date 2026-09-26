@@ -48,9 +48,7 @@ class Announcement(TimeStampedModel, ArchivableModel):
         choices=AnnouncementPriority.choices,
         default=AnnouncementPriority.NORMAL,
     )
-    target_roles = ArrayField(
-        models.CharField(max_length=16, choices=PropertyRole.choices)
-    )
+    target_roles = ArrayField(models.CharField(max_length=16, choices=PropertyRole.choices))
     published_at = models.DateTimeField()
     expires_at = models.DateTimeField(null=True, blank=True)
     created_by = models.ForeignKey(
@@ -69,8 +67,7 @@ class Announcement(TimeStampedModel, ArchivableModel):
                 name="announcement_has_target_roles",
             ),
             models.CheckConstraint(
-                condition=Q(expires_at__isnull=True)
-                | Q(expires_at__gt=F("published_at")),
+                condition=Q(expires_at__isnull=True) | Q(expires_at__gt=F("published_at")),
                 name="announcement_expires_after_publication",
             ),
         ]

@@ -30,13 +30,9 @@ urlpatterns = [
         auth.PasswordResetRequestView.as_view(),
         name="auth-password-reset",
     ),
-    path(
-        "auth/password/set/", auth.PasswordSetView.as_view(), name="auth-password-set"
-    ),
+    path("auth/password/set/", auth.PasswordSetView.as_view(), name="auth-password-set"),
     path("users/", users.UserListView.as_view(), name="user-list"),
-    path(
-        "users/<account:user_id>/", users.UserDetailView.as_view(), name="user-detail"
-    ),
+    path("users/<account:user_id>/", users.UserDetailView.as_view(), name="user-detail"),
     path(
         "users/<account:user_id>/email/",
         users.UserEmailView.as_view(),

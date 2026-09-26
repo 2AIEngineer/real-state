@@ -89,18 +89,11 @@ class BookingService:
         amenity: Amenity, start: dt.datetime, end: dt.datetime, now: dt.datetime
     ) -> None:
         if end <= start:
-            raise InvalidInput(
-                "The booking must end after it starts.", field="end_datetime"
-            )
+            raise InvalidInput("The booking must end after it starts.", field="end_datetime")
         if start < now:
-            raise InvalidInput(
-                "A booking cannot start in the past.", field="start_datetime"
-            )
+            raise InvalidInput("A booking cannot start in the past.", field="start_datetime")
         minutes = (end - start).total_seconds() / 60
-        if (
-            minutes < amenity.min_duration_minutes
-            or minutes > amenity.max_duration_minutes
-        ):
+        if minutes < amenity.min_duration_minutes or minutes > amenity.max_duration_minutes:
             raise InvalidInput(
                 f"Duration must be between {amenity.min_duration_minutes} and {amenity.max_duration_minutes} minutes.",
                 field="end_datetime",
@@ -137,9 +130,7 @@ class BookingService:
         prop = amenity.property
         FeatureGate.require(prop, Feature.AMENITIES)
         if not BookingPolicy.can_book(actor, prop):
-            raise PermissionDenied(
-                "Only owners, tenants and management can book amenities."
-            )
+            raise PermissionDenied("Only owners, tenants and management can book amenities.")
         # Serialise bookings of one amenity; also freezes its rules for this check.
         amenity = (
             Amenity.objects.select_for_update(of=("self",))
@@ -172,11 +163,7 @@ class BookingService:
                     f"Only {max(amenity.capacity - used, 0)} place(s) left on this slot.",
                     code="capacity_exceeded",
                 )
-        status = (
-            BookingStatus.PENDING
-            if amenity.requires_approval
-            else BookingStatus.CONFIRMED
-        )
+        status = BookingStatus.PENDING if amenity.requires_approval else BookingStatus.CONFIRMED
         with translate_integrity_errors(BOOKING_CONSTRAINTS):
             booking = Booking.objects.create(
                 amenity=amenity,
@@ -224,14 +211,10 @@ class BookingService:
     @transaction.atomic
     def decide(*, actor, booking: Booking, approve: bool, note: str = "") -> Booking:
         if not BookingPolicy.can_decide(actor, booking):
-            raise PermissionDenied(
-                "Only the property management can approve or reject bookings."
-            )
+            raise PermissionDenied("Only the property management can approve or reject bookings.")
         booking = BookingService._lock(booking)
         if booking.status != BookingStatus.PENDING:
-            raise InvalidTransition(
-                "Only pending bookings can be approved or rejected."
-            )
+            raise InvalidTransition("Only pending bookings can be approved or rejected.")
         if approve and booking.end_datetime <= timezone.now():
             raise InvalidTransition("This booking slot is already over.")
         booking.status = BookingStatus.CONFIRMED if approve else BookingStatus.REJECTED
@@ -297,9 +280,7 @@ class BookingService:
 
     # ----------------------------------------------------------- housekeeping
     @staticmethod
-    def complete_past(
-        *, now: dt.datetime | None = None, prop: Property | None = None
-    ) -> int:
+    def complete_past(*, now: dt.datetime | None = None, prop: Property | None = None) -> int:
         """Bookings whose slot has ended (all properties, or `prop`).
 
         A confirmed booking becomes COMPLETED. One still waiting for approval can
@@ -307,9 +288,7 @@ class BookingService:
         `run_scheduled_jobs`, and on demand by `complete_past_in`.
         """
         now = now or timezone.now()
-        due = Booking.objects.filter(
-            end_datetime__lt=now, status__in=BLOCKING_BOOKING_STATUSES
-        )
+        due = Booking.objects.filter(end_datetime__lt=now, status__in=BLOCKING_BOOKING_STATUSES)
         if prop is not None:
             due = due.filter(amenity__property=prop)
         handled = 0
@@ -339,9 +318,7 @@ class BookingService:
                             "updated_at",
                         ]
                     )
-                    notices.cancelled(
-                        booking, actor=None, reason=EXPIRED_BEFORE_APPROVAL
-                    )
+                    notices.cancelled(booking, actor=None, reason=EXPIRED_BEFORE_APPROVAL)
                 handled += 1
         return handled
 

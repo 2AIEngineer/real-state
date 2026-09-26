@@ -31,9 +31,7 @@ class RoomDetailView(BaseAPIView):
     def get(self, request, room_id: int):
         return self.render(
             s.ChatRoomSerializer,
-            ChatService.get_room(
-                actor=request.user, prop=self.property, room_id=room_id
-            ),
+            ChatService.get_room(actor=request.user, prop=self.property, room_id=room_id),
         )
 
 
@@ -44,51 +42,35 @@ class MessageListView(BaseAPIView):
         responses=s.ChatMessageSerializer(many=True),
     )
     def get(self, request, room_id: int):
-        room = ChatService.get_room(
-            actor=request.user, prop=self.property, room_id=room_id
-        )
+        room = ChatService.get_room(actor=request.user, prop=self.property, room_id=room_id)
         query = self.parse_query_params(s.ChatMessagesQueryParamsSerializer)
         return self.render_page(
             s.ChatMessageSerializer,
             ChatService.messages(actor=request.user, room=room, **query),
         )
 
-    @extend_schema(
-        request=s.ChatMessageCreateSerializer, responses={201: s.ChatMessageSerializer}
-    )
+    @extend_schema(request=s.ChatMessageCreateSerializer, responses={201: s.ChatMessageSerializer})
     def post(self, request, room_id: int):
-        room = ChatService.get_room(
-            actor=request.user, prop=self.property, room_id=room_id
-        )
+        room = ChatService.get_room(actor=request.user, prop=self.property, room_id=room_id)
         data = self.parse(s.ChatMessageCreateSerializer)
         message = ChatService.post(
             actor=request.user, room=room, body=data["body"], media=data["media"]
         )
-        return self.render(
-            s.ChatMessageSerializer, message, status=status.HTTP_201_CREATED
-        )
+        return self.render(s.ChatMessageSerializer, message, status=status.HTTP_201_CREATED)
 
 
 @extend_schema(tags=["Chat"])
 class MessageDetailView(BaseAPIView):
     """Edit or delete one message of the conversation."""
 
-    @extend_schema(
-        request=s.ChatMessageEditSerializer, responses=s.ChatMessageSerializer
-    )
+    @extend_schema(request=s.ChatMessageEditSerializer, responses=s.ChatMessageSerializer)
     def patch(self, request, room_id: int, message_id: int):
-        room = ChatService.get_room(
-            actor=request.user, prop=self.property, room_id=room_id
-        )
-        message = ChatService.get_message(
-            actor=request.user, room=room, message_id=message_id
-        )
+        room = ChatService.get_room(actor=request.user, prop=self.property, room_id=room_id)
+        message = ChatService.get_message(actor=request.user, room=room, message_id=message_id)
         data = self.parse(s.ChatMessageEditSerializer)
         return self.render(
             s.ChatMessageSerializer,
-            ChatService.edit_message(
-                actor=request.user, message=message, body=data["body"]
-            ),
+            ChatService.edit_message(actor=request.user, message=message, body=data["body"]),
         )
 
     @extend_schema(
@@ -96,12 +78,8 @@ class MessageDetailView(BaseAPIView):
         description="Deletes the message and its media (author, or property management).",
     )
     def delete(self, request, room_id: int, message_id: int):
-        room = ChatService.get_room(
-            actor=request.user, prop=self.property, room_id=room_id
-        )
-        message = ChatService.get_message(
-            actor=request.user, room=room, message_id=message_id
-        )
+        room = ChatService.get_room(actor=request.user, prop=self.property, room_id=room_id)
+        message = ChatService.get_message(actor=request.user, room=room, message_id=message_id)
         ChatService.delete_message(actor=request.user, message=message)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -110,8 +88,6 @@ class MessageDetailView(BaseAPIView):
 class RoomReadView(BaseAPIView):
     @extend_schema(request=None, responses={204: None})
     def post(self, request, room_id: int):
-        room = ChatService.get_room(
-            actor=request.user, prop=self.property, room_id=room_id
-        )
+        room = ChatService.get_room(actor=request.user, prop=self.property, room_id=room_id)
         ChatService.mark_read(actor=request.user, room=room)
         return Response(status=status.HTTP_204_NO_CONTENT)

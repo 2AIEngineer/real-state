@@ -67,9 +67,7 @@ class Amenity(TimeStampedModel):
         verbose_name_plural = "amenities"
         ordering = ["property_id", "name", "id"]
         constraints = [
-            models.CheckConstraint(
-                condition=Q(capacity__gte=1), name="amenity_capacity_positive"
-            ),
+            models.CheckConstraint(condition=Q(capacity__gte=1), name="amenity_capacity_positive"),
             models.CheckConstraint(
                 condition=Q(max_duration_minutes__gte=F("min_duration_minutes")),
                 name="amenity_duration_bounds",
@@ -89,9 +87,7 @@ class Amenity(TimeStampedModel):
                 name="amenity_name_per_property",
             ),
             models.CheckConstraint(
-                condition=Q(fee__gte=0)
-                & Q(security_fee__gte=0)
-                & Q(hourly_price__gte=0),
+                condition=Q(fee__gte=0) & Q(security_fee__gte=0) & Q(hourly_price__gte=0),
                 name="amenity_prices_non_negative",
             ),
         ]
@@ -112,9 +108,7 @@ BLOCKING_BOOKING_STATUSES = (BookingStatus.PENDING, BookingStatus.CONFIRMED)
 
 
 class Booking(TimeStampedModel):
-    amenity = models.ForeignKey(
-        Amenity, on_delete=models.CASCADE, related_name="bookings"
-    )
+    amenity = models.ForeignKey(Amenity, on_delete=models.CASCADE, related_name="bookings")
     booker = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="bookings"
     )
@@ -162,9 +156,7 @@ class Booking(TimeStampedModel):
                 name="booking_no_overlap_on_exclusive_amenity",
                 expressions=[
                     (
-                        DateTimeRange(
-                            "start_datetime", "end_datetime", RangeBoundary()
-                        ),
+                        DateTimeRange("start_datetime", "end_datetime", RangeBoundary()),
                         RangeOperators.OVERLAPS,
                     ),
                     ("amenity", RangeOperators.EQUAL),
@@ -178,6 +170,4 @@ class Booking(TimeStampedModel):
         ]
 
     def __str__(self) -> str:
-        return (
-            f"Booking #{self.pk} {self.amenity_id} {self.start_datetime:%Y-%m-%d %H:%M}"
-        )
+        return f"Booking #{self.pk} {self.amenity_id} {self.start_datetime:%Y-%m-%d %H:%M}"

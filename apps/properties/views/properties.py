@@ -21,9 +21,7 @@ class PropertyListView(ApiMixin, APIView):
             s.PropertySerializer, PropertyService.list_visible(actor=request.user)
         )
 
-    @extend_schema(
-        request=s.PropertyInputSerializer, responses={201: s.PropertySerializer}
-    )
+    @extend_schema(request=s.PropertyInputSerializer, responses={201: s.PropertySerializer})
     def post(self, request):
         data = dict(self.parse(s.PropertyInputSerializer))
         syndicat = SyndicatService.get_visible(
@@ -87,9 +85,7 @@ class PropertyPromoterView(BaseAPIView):
     def post(self, request, property_id: int):
         prop = self.selected_property(property_id)
         data = self.parse(s.PromoterChangeSerializer)
-        promoter = PromoterService.get_visible(
-            actor=request.user, promoter_id=data["promoter_id"]
-        )
+        promoter = PromoterService.get_visible(actor=request.user, promoter_id=data["promoter_id"])
         prop = PropertyService.change_promoter(
             actor=request.user,
             prop=prop,

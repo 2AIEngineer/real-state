@@ -32,7 +32,5 @@ def is_valid(user, token: str) -> bool:
     if not default_token_generator.check_token(user, token):
         return False
     issued_at = base36_to_int(token.split("-")[0])
-    age = (
-        default_token_generator._num_seconds(default_token_generator._now()) - issued_at
-    )
+    age = default_token_generator._num_seconds(default_token_generator._now()) - issued_at
     return age <= lifetime_seconds(user)

@@ -12,9 +12,7 @@ class VisitStatus(models.TextChoices):
 
 
 class Visitor(TimeStampedModel):
-    unit = models.ForeignKey(
-        "properties.Unit", on_delete=models.CASCADE, related_name="visitors"
-    )
+    unit = models.ForeignKey("properties.Unit", on_delete=models.CASCADE, related_name="visitors")
     property = models.ForeignKey(
         "properties.Property", on_delete=models.CASCADE, related_name="visitors"
     )

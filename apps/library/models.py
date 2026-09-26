@@ -60,9 +60,7 @@ class Folder(TimeStampedModel):
 class LibraryDocument(TimeStampedModel):
     """A published document; its file is an attachment of type `library_document`."""
 
-    folder = models.ForeignKey(
-        Folder, on_delete=models.CASCADE, related_name="documents"
-    )
+    folder = models.ForeignKey(Folder, on_delete=models.CASCADE, related_name="documents")
     property = models.ForeignKey(
         "properties.Property",
         on_delete=models.CASCADE,
@@ -70,9 +68,7 @@ class LibraryDocument(TimeStampedModel):
     )
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
-    target_roles = ArrayField(
-        models.CharField(max_length=16, choices=PropertyRole.choices)
-    )
+    target_roles = ArrayField(models.CharField(max_length=16, choices=PropertyRole.choices))
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,

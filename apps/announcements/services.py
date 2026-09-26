@@ -83,9 +83,7 @@ class AnnouncementService:
             .filter(pk=announcement_id, property=prop)
             .first()
         )
-        if announcement is None or not AnnouncementPolicy.can_update(
-            actor, announcement
-        ):
+        if announcement is None or not AnnouncementPolicy.can_update(actor, announcement):
             raise NotFound("Announcement not found.")
         return announcement
 
@@ -106,20 +104,14 @@ class AnnouncementService:
         files=(),
     ) -> Announcement:
         if not AnnouncementPolicy.can_publish(actor, prop):
-            raise PermissionDenied(
-                "Only the property management can publish announcements."
-            )
+            raise PermissionDenied("Only the property management can publish announcements.")
         FeatureGate.require(prop, Feature.ANNOUNCEMENTS)
         roles = SnapshotService.validate_target_roles(target_roles)
         if building is not None and building.property_id != prop.pk:
-            raise InvalidInput(
-                "The building belongs to another property.", field="building_id"
-            )
+            raise InvalidInput("The building belongs to another property.", field="building_id")
         published_at = published_at or timezone.now()
         if expires_at and expires_at <= published_at:
-            raise InvalidInput(
-                "The expiry must follow the publication.", field="expires_at"
-            )
+            raise InvalidInput("The expiry must follow the publication.", field="expires_at")
         announcement = Announcement.objects.create(
             property=prop,
             building=building,
@@ -155,22 +147,15 @@ class AnnouncementService:
     def update(*, actor, announcement: Announcement, changes: dict) -> Announcement:
         """Editorial corrections only: the target roles are frozen at publication."""
         if not AnnouncementPolicy.can_update(actor, announcement):
-            raise PermissionDenied(
-                "Only the property management can edit announcements."
-            )
+            raise PermissionDenied("Only the property management can edit announcements.")
         if "target_roles" in changes or "building" in changes:
             raise InvalidInput(
                 "The target roles of a published announcement cannot change.",
                 field="target_roles",
             )
         fields = apply_changes(announcement, changes, EDITABLE_FIELDS)
-        if (
-            announcement.expires_at
-            and announcement.expires_at <= announcement.published_at
-        ):
-            raise InvalidInput(
-                "The expiry must follow the publication.", field="expires_at"
-            )
+        if announcement.expires_at and announcement.expires_at <= announcement.published_at:
+            raise InvalidInput("The expiry must follow the publication.", field="expires_at")
         if fields:
             announcement.save(update_fields=[*fields, "updated_at"])
             AuditService.record(
@@ -186,9 +171,7 @@ class AnnouncementService:
     @transaction.atomic
     def add_files(*, actor, announcement: Announcement, files) -> list:
         if not AnnouncementPolicy.can_update(actor, announcement):
-            raise PermissionDenied(
-                "Only the property management can edit announcements."
-            )
+            raise PermissionDenied("Only the property management can edit announcements.")
         return AttachmentService.attach(
             entity_type=EntityType.ANNOUNCEMENT,
             entity_id=announcement.pk,
@@ -200,9 +183,7 @@ class AnnouncementService:
     @transaction.atomic
     def remove_file(*, actor, announcement: Announcement, attachment_id: int) -> None:
         if not AnnouncementPolicy.can_update(actor, announcement):
-            raise PermissionDenied(
-                "Only the property management can edit announcements."
-            )
+            raise PermissionDenied("Only the property management can edit announcements.")
         AttachmentService.delete(
             attachment=AttachmentService.get(
                 entity_type=EntityType.ANNOUNCEMENT,
@@ -236,9 +217,7 @@ class AnnouncementService:
     @transaction.atomic
     def archive(*, actor, announcement: Announcement) -> None:
         if not AnnouncementPolicy.can_archive(actor, announcement):
-            raise PermissionDenied(
-                "Only the property management can archive announcements."
-            )
+            raise PermissionDenied("Only the property management can archive announcements.")
         announcement.archived_at = timezone.now()
         announcement.archived_by = actor
         announcement.save(update_fields=["archived_at", "archived_by", "updated_at"])

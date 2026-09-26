@@ -76,12 +76,8 @@ def _feature_allowed(pref: NotificationPreference, category: str) -> bool:
     return True if flag is None else bool(getattr(pref, flag))
 
 
-def _render_email(
-    intent: NotificationIntent, greeting_name: str | None
-) -> dict[str, str]:
-    action_url = (
-        f"{settings.SITE_URL}{intent.action_path}" if intent.action_path else None
-    )
+def _render_email(intent: NotificationIntent, greeting_name: str | None) -> dict[str, str]:
+    action_url = f"{settings.SITE_URL}{intent.action_path}" if intent.action_path else None
     context = {
         "title": intent.title,
         "body": intent.body,
@@ -127,11 +123,7 @@ class _Audience:
 def _audience(intent: NotificationIntent) -> _Audience:
     excluded = {getattr(u, "pk", u) for u in intent.exclude}
     to = {u.pk: u for u in intent.to if u.pk not in excluded and u.is_active}
-    bcc = {
-        u.pk: u
-        for u in intent.bcc
-        if u.pk not in excluded and u.is_active and u.pk not in to
-    }
+    bcc = {u.pk: u for u in intent.bcc if u.pk not in excluded and u.is_active and u.pk not in to}
     if intent.include_platform_admins:
         for admin in UserDirectory.platform_admins():
             if admin.pk not in excluded and admin.pk not in to:
@@ -149,9 +141,7 @@ def _audience(intent: NotificationIntent) -> _Audience:
     )
 
 
-def _outbox_message(
-    intent: NotificationIntent, channel: str, payload: dict
-) -> OutboxMessage:
+def _outbox_message(intent: NotificationIntent, channel: str, payload: dict) -> OutboxMessage:
     return OutboxMessage(
         channel=channel,
         notification_type=intent.event_type,
@@ -164,9 +154,7 @@ def _raw_address_emails(intent: NotificationIntent) -> list[OutboxMessage]:
     """E-mails to addresses bound to no account (transactional only)."""
     addresses = sorted(set(intent.to_addresses))
     if addresses and not intent.transactional:
-        raise ValueError(
-            "Raw e-mail addresses are reserved for transactional notifications."
-        )
+        raise ValueError("Raw e-mail addresses are reserved for transactional notifications.")
     if not addresses or "email" not in intent.channels:
         return []
     if not settings.NOTIFICATIONS["EMAIL_ENABLED"]:
@@ -186,9 +174,7 @@ def _inbox_rows(intent: NotificationIntent, audience: _Audience) -> dict[int, in
     if "inbox" not in intent.channels:
         return {}
     target = intent.target
-    content_type = (
-        ContentType.objects.get_for_model(target) if target is not None else None
-    )
+    content_type = ContentType.objects.get_for_model(target) if target is not None else None
     rows = InboxNotification.objects.bulk_create(
         [
             InboxNotification(
@@ -216,9 +202,7 @@ def _push_messages(
     if "push" not in intent.channels or not settings.NOTIFICATIONS["PUSH_ENABLED"]:
         return []
     user_ids = [
-        uid
-        for uid in audience.everyone
-        if intent.transactional or audience.prefs[uid].enabled_push
+        uid for uid in audience.everyone if intent.transactional or audience.prefs[uid].enabled_push
     ]
     data = {**intent.data, "type": intent.event_type, "category": intent.category}
     return [
@@ -237,9 +221,7 @@ def _push_messages(
     ]
 
 
-def _email_messages(
-    intent: NotificationIntent, audience: _Audience
-) -> list[OutboxMessage]:
+def _email_messages(intent: NotificationIntent, audience: _Audience) -> list[OutboxMessage]:
     """A personal e-mail per nominative recipient, and BCC batches for the others."""
     if "email" not in intent.channels or not settings.NOTIFICATIONS["EMAIL_ENABLED"]:
         return []
@@ -256,15 +238,11 @@ def _email_messages(
         for uid, user in audience.to.items()
         if wants_email(uid)
     ]
-    bcc_emails = sorted(
-        user.email for uid, user in audience.bcc.items() if wants_email(uid)
-    )
+    bcc_emails = sorted(user.email for uid, user in audience.bcc.items() if wants_email(uid))
     if bcc_emails:
         rendered = _render_email(intent, None)
         messages += [
-            _outbox_message(
-                intent, OutboxChannel.EMAIL, {"to": [], "bcc": batch, **rendered}
-            )
+            _outbox_message(intent, OutboxChannel.EMAIL, {"to": [], "bcc": batch, **rendered})
             for batch in _batches(bcc_emails, BCC_CHUNK_SIZE)
         ]
     return messages
@@ -275,9 +253,7 @@ def _batches(items: list, size: int) -> list[list]:
 
 
 def _enqueue(messages: list[OutboxMessage]) -> list[int]:
-    ids = (
-        [m.pk for m in OutboxMessage.objects.bulk_create(messages)] if messages else []
-    )
+    ids = [m.pk for m in OutboxMessage.objects.bulk_create(messages)] if messages else []
     _schedule_relay(ids)
     return ids
 
@@ -296,7 +272,6 @@ class NotificationService:
         with transaction.atomic():
             inbox_ids = _inbox_rows(intent, audience)
             outbox_ids = _enqueue(
-                _push_messages(intent, audience, inbox_ids)
-                + _email_messages(intent, audience)
+                _push_messages(intent, audience, inbox_ids) + _email_messages(intent, audience)
             )
         return DispatchResult(len(inbox_ids), tuple(outbox_ids))

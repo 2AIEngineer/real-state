@@ -57,9 +57,7 @@ class ProductService:
     @staticmethod
     def get_visible(*, actor, prop: Property, product_id: int) -> Product:
         product = (
-            Product.objects.select_related("property")
-            .filter(pk=product_id, property=prop)
-            .first()
+            Product.objects.select_related("property").filter(pk=product_id, property=prop).first()
         )
         if product is None or not ProductPolicy.can_view(actor, product):
             raise NotFound("Product not found.")

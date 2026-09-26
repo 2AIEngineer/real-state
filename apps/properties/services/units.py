@@ -43,9 +43,7 @@ class UnitService:
 
     @staticmethod
     def list_mine(*, actor) -> QuerySet[Unit]:
-        return UnitService._base().filter(
-            pk__in=AccessService.owned_or_rented_unit_ids(actor)
-        )
+        return UnitService._base().filter(pk__in=AccessService.owned_or_rented_unit_ids(actor))
 
     @staticmethod
     def get_visible(*, actor, prop: Property | None, unit_id: int) -> Unit:
