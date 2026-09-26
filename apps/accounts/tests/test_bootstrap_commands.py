@@ -17,12 +17,9 @@ def test_create_default_superuser_sets_up_preferences(monkeypatch):
     assert prefs.user.role == StructuralRole.ADMIN and prefs.store_enabled is True
 
 
-def test_create_platform_admin_sets_up_preferences():
-    call_command(
-        "create_platform_admin",
-        email="ops@example.test",
-        password="A-very-long-passw0rd",
-        stdout=io.StringIO(),
-    )
+def test_create_default_platform_admin_sets_up_preferences(monkeypatch):
+    monkeypatch.setenv("DJANGO_PLATFORM_ADMIN_EMAIL", "ops@example.test")
+    monkeypatch.setenv("DJANGO_PLATFORM_ADMIN_PASSWORD", "A-very-long-passw0rd")
+    call_command("create_default_platform_admin", stdout=io.StringIO())
     prefs = NotificationPreference.objects.get(user__email="ops@example.test")
     assert prefs.user.role == StructuralRole.ADMIN and prefs.store_enabled is True

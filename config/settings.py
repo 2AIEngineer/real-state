@@ -6,6 +6,8 @@ that differs between environments is read from the process environment (see
 cannot run safely without is missing.
 """
 
+import base64
+import json
 from datetime import timedelta
 from pathlib import Path
 
@@ -30,10 +32,10 @@ ENVIRONMENT = environment()
 IS_PRODUCTION = ENVIRONMENT == "production"
 IS_TEST = ENVIRONMENT == "test"
 
-SECRET_KEY = required_secret("SECRET_KEY", production=IS_PRODUCTION, min_length=50) or (
+SECRET_KEY = required_secret("SECRET_KEY", production=IS_PRODUCTION) or (
     "insecure-development-key-" + "x" * 32
 )
-DEBUG = env_bool("DEBUG", default=not IS_PRODUCTION)
+DEBUG = not IS_PRODUCTION
 ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", "" if IS_PRODUCTION else "*")
 CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS")
 
@@ -51,25 +53,31 @@ BRAND = {
 
 # --- Applications ------------------------------------------------------------
 INSTALLED_APPS = [
+    # Django built-ins
+    "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
     "django.contrib.postgres",
     "django.contrib.staticfiles",
+    "django.contrib.sites",
+    # Django REST Framework
     "rest_framework",
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
     "drf_spectacular",
+    # Third-party
     "corsheaders",
-    # Shared kernel: base models, attachments, audit journal
+    "storages",
+    "django_extensions",
+    "whitenoise.runserver_nostatic",
+    # Domain apps
     "apps.common",
-    # Identity & authorization
     "apps.accounts",
-    # Real-estate referential
     "apps.properties",
     "apps.leasing",
-    # Cross-cutting infrastructure
     "apps.notifications",
-    # Feature modules
     "apps.announcements",
     "apps.service_requests",
     "apps.work_orders",
@@ -89,8 +97,13 @@ if not IS_PRODUCTION:
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
@@ -103,7 +116,14 @@ TEMPLATES = [
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
-        "OPTIONS": {"context_processors": []},
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+            ],
+        },
     }
 ]
 
@@ -136,14 +156,14 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
-# An invitation waits days for its first use; a reset of an account in use does not.
-PASSWORD_RESET_TIMEOUT = env_int("PASSWORD_RESET_TIMEOUT", 60 * 60 * 72)
-PASSWORD_RESET_LINK_TIMEOUT = env_int("PASSWORD_RESET_LINK_TIMEOUT", 60 * 60 * 2)
+
+PASSWORD_RESET_TIMEOUT = 60 * 60 * 72  # 3 days for new account
+PASSWORD_RESET_LINK_TIMEOUT = 60 * 60 * 2  # 2 hours for reset of an existing account
 
 # --- Language and time -------------------------------------------------------
 LANGUAGE_CODE = "fr"
 LANGUAGES = [("fr", "Français"), ("en", "English")]
-TIME_ZONE = env("TIME_ZONE", "UTC")
+TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
@@ -153,11 +173,6 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = Path(env("MEDIA_ROOT", str(BASE_DIR / "media")))
 
-# Where files are stored follows the environment, never the presence of
-# credentials: Azure Blob in production (served from their plain URL, the
-# container is readable), the local disk in development and test (served by the
-# development route of `config/urls.py`), whatever the `.env` holds.
-static_storage = {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"}
 if IS_PRODUCTION:
     STORAGES = {
         "default": {
@@ -173,12 +188,14 @@ if IS_PRODUCTION:
                 "overwrite_files": False,
             },
         },
-        "staticfiles": static_storage,
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
     }
 else:
     STORAGES = {
         "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
-        "staticfiles": static_storage,
+        "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
     }
 
 # A request body other than files (JSON, form fields) is read in memory: keep it
@@ -188,13 +205,13 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
 
 # --- API ---------------------------------------------------------------------
 CORS_ALLOWED_ORIGINS = env_list("CORS_ALLOWED_ORIGINS", "http://localhost:5173")
-# A browser only sends the headers the API declares: the selection and idempotency ones too.
 CORS_ALLOW_HEADERS = (
     *default_headers,
     "x-syndicat-id",
     "x-property-id",
     "x-ui-config-step",
     "idempotency-key",
+    "x-webhook-secret",
 )
 CORS_EXPOSE_HEADERS = ("idempotent-replayed",)
 
@@ -216,14 +233,14 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_CLASSES": [],
     "DEFAULT_THROTTLE_RATES": {
         # Per client address, on every authentication endpoint.
-        "auth": env("AUTH_THROTTLE_RATE", "20/min"),
+        "auth": "20/min",
         # Per account, on login: slows password guessing spread over addresses.
-        "login": env("LOGIN_THROTTLE_RATE", "10/min"),
+        "login": "10/min",
     },
     # Proxies in front of the app that append to X-Forwarded-For (the platform
     # ingress). The client address is read that many hops from the right, so
     # a client cannot pick its own address by sending the header itself.
-    "NUM_PROXIES": env_int("NUM_PROXIES", 1 if IS_PRODUCTION else 0),
+    "NUM_PROXIES": 1 if IS_PRODUCTION else 0,
     "TEST_REQUEST_DEFAULT_FORMAT": "json",
 }
 if DEBUG:
@@ -235,18 +252,14 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=env_int("JWT_ACCESS_MINUTES", 30)),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=env_int("JWT_REFRESH_DAYS", 14)),
     "ROTATE_REFRESH_TOKENS": True,
-    # A rotated refresh token cannot be used twice (see apps.accounts.services.tokens).
     "BLACKLIST_AFTER_ROTATION": True,
-    # Access tokens die with the password they were issued under.
     "CHECK_REVOKE_TOKEN": True,
     "UPDATE_LAST_LOGIN": True,
     "AUTH_HEADER_TYPES": ("Bearer",),
-    "SIGNING_KEY": required_secret("JWT_SIGNING_KEY", production=IS_PRODUCTION) or SECRET_KEY,
+    "SIGNING_KEY": SECRET_KEY,
 }
 
 # --- Cache -------------------------------------------------------------------
-# Throttling counts live in the cache, so every process and replica must share
-# it. A table of the PostgreSQL database does that at no extra cost: only the
 # authentication endpoints write to it (see REST_FRAMEWORK below).
 CACHES = {
     "default": {
@@ -278,14 +291,10 @@ NOTIFICATIONS = {
     "EMAIL_ENABLED": env_bool("ENABLED_EMAIL_NOTIFICATION", True),
     "PUSH_ENABLED": env_bool("ENABLED_PUSH_NOTIFICATION", True),
     "EXPO_PUSH_URL": env("EXPO_PUSH_URL", "https://exp.host/--/api/v2/push/send"),
-    "EXPO_ACCESS_TOKEN": env("EXPO_ACCESS_TOKEN", ""),
     "OUTBOX_MAX_ATTEMPTS": env_int("OUTBOX_MAX_ATTEMPTS", 6),
     "OUTBOX_BATCH_SIZE": env_int("OUTBOX_BATCH_SIZE", 50),
     # How long delivered and abandoned messages are kept before being purged.
     "OUTBOX_RETENTION_DAYS": env_int("OUTBOX_RETENTION_DAYS", 30),
-    # When true, outbox messages are relayed right after the business
-    # transaction commits (in-process). The `outbox_worker` command remains
-    # the guaranteed delivery path (retries, crash recovery).
     "DELIVER_ON_COMMIT": env_bool("NOTIFICATIONS_DELIVER_ON_COMMIT", False),
 }
 
@@ -303,7 +312,6 @@ LOGGING = {
 if IS_PRODUCTION:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SECURE_SSL_REDIRECT = env_bool("SECURE_SSL_REDIRECT", True)
-    # Platform probes call the container directly, over plain HTTP.
     SECURE_REDIRECT_EXEMPT = [r"^healthz/$", r"^readyz/$"]
     SECURE_HSTS_SECONDS = 31536000
     SESSION_COOKIE_SECURE = True
@@ -313,5 +321,43 @@ if IS_PRODUCTION:
 if IS_TEST:
     PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
     EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
-    MEDIA_ROOT = Path(env("TEST_MEDIA_ROOT", "/tmp/residential-test-media"))
+    MEDIA_ROOT = Path(env("TEST_MEDIA_ROOT", "/tmp/urbis-test-media"))
     NOTIFICATIONS["DELIVER_ON_COMMIT"] = False
+
+
+# ---------------------------------------------------------------------------
+# Firebase
+# ---------------------------------------------------------------------------
+FIREBASE_SERVICE_ACCOUNT_BASE64 = env("FIREBASE_SERVICE_ACCOUNT_BASE64", "")
+FIREBASE_WEB_CONFIG_BASE64 = env("FIREBASE_WEB_CONFIG_BASE64", "")
+if FIREBASE_SERVICE_ACCOUNT_BASE64 and FIREBASE_WEB_CONFIG_BASE64:
+    _sa_raw: dict = json.loads(base64.b64decode(FIREBASE_SERVICE_ACCOUNT_BASE64).decode("utf-8"))
+    _wc_raw: dict = json.loads(base64.b64decode(FIREBASE_WEB_CONFIG_BASE64).decode("utf-8"))
+
+    FIREBASE_SERVICE_ACCOUNT_KEY = {
+        "type": _sa_raw["type"],
+        "project_id": _sa_raw["project_id"],
+        "private_key_id": _sa_raw["private_key_id"],
+        "private_key": _sa_raw["private_key"],
+        "client_email": _sa_raw["client_email"],
+        "client_id": _sa_raw["client_id"],
+        "auth_uri": _sa_raw["auth_uri"],
+        "token_uri": _sa_raw["token_uri"],
+        "auth_provider_x509_cert_url": _sa_raw["auth_provider_x509_cert_url"],
+        "client_x509_cert_url": _sa_raw["client_x509_cert_url"],
+        "universe_domain": _sa_raw["universe_domain"],
+    }
+    FIREBASE_WEB_CONFIG = {
+        "apiKey": _wc_raw["apiKey"],
+        "authDomain": _wc_raw["authDomain"],
+        "projectId": _wc_raw["projectId"],
+        "storageBucket": _wc_raw["storageBucket"],
+        "messagingSenderId": _wc_raw["messagingSenderId"],
+        "appId": _wc_raw["appId"],
+        "measurementId": _wc_raw["measurementId"],
+    }
+
+    FIREBASE_API_KEY = FIREBASE_WEB_CONFIG["apiKey"]
+    FIREBASE_STORAGE_BUCKET = FIREBASE_WEB_CONFIG["storageBucket"]
+    FIREBASE_PROJECT_ID = FIREBASE_WEB_CONFIG["projectId"]
+    FIREBASE_ENV_PREFIX = "prod" if IS_PRODUCTION else "dev"

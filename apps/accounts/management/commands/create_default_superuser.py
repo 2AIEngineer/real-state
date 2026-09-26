@@ -29,26 +29,26 @@ class Command(BaseCommand):
         if not email:
             self.stdout.write("DJANGO_SUPERUSER_EMAIL not set: skipping.")
             return
+        if not password:
+            self.stderr.write("DJANGO_SUPERUSER_PASSWORD not set: cannot create the administrator.")
+            return
         user = User.objects.filter(email__iexact=email).first()
-        if user is None:
-            if not password:
-                self.stderr.write(
-                    "DJANGO_SUPERUSER_PASSWORD not set: cannot create the administrator."
-                )
-                return
-            user = User.objects.create_superuser(
-                email=email,
-                first_name=os.environ.get("DJANGO_SUPERUSER_FIRST_NAME", "Platform"),
-                last_name=os.environ.get("DJANGO_SUPERUSER_LAST_NAME", "Admin"),
-            )
-            try:
-                PasswordService.apply_new_password(user, password)
-            except DomainError as exc:
-                # Never block the container start: log and roll back.
-                transaction.set_rollback(True)
-                self.stderr.write(f"Administrator not created: {exc.message}")
-                return
-            self.stdout.write(f"Created administrator {email}.")
+        if user and user.is_active:
+            self.stdout.write(f"{email} is already a superuser.")
+            return
+        user = User.objects.create_superuser(
+            email=email,
+            first_name="Super",
+            last_name="User",
+        )
+        try:
+            PasswordService.apply_new_password(user, password)
+        except DomainError as exc:
+            # Never block the container start: log and roll back.
+            transaction.set_rollback(True)
+            self.stderr.write(f"Administrator not created: {exc.message}")
+            return
+        self.stdout.write(f"Created administrator {email}.")
         RoleService.bootstrap_platform_admin(user=user)
         PreferenceService.auto_setup(user)
         self.stdout.write(f"{email} holds the platform admin role.")

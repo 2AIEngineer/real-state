@@ -76,8 +76,6 @@ class ExpoPushTransport:
         ]
         conf = settings.NOTIFICATIONS
         headers = {"Content-Type": "application/json", "Accept": "application/json"}
-        if conf["EXPO_ACCESS_TOKEN"]:
-            headers["Authorization"] = f"Bearer {conf['EXPO_ACCESS_TOKEN']}"
         for start in range(0, len(messages), EXPO_CHUNK_SIZE):
             chunk = messages[start : start + EXPO_CHUNK_SIZE]
             try:
