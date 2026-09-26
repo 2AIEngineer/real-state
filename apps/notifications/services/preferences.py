@@ -37,8 +37,8 @@ def defaults_for(role: str) -> dict[str, bool]:
 
 class PreferenceService:
     @staticmethod
-    def create_for(user) -> NotificationPreference:
-        """The preferences of a new account, following its role (no-op if they exist)."""
+    def auto_setup(user) -> NotificationPreference:
+        """Sets up the preferences of a new account from its role (kept if they exist)."""
         preference, _ = NotificationPreference.objects.get_or_create(
             user=user, defaults=defaults_for(user.role)
         )

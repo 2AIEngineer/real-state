@@ -114,9 +114,8 @@ class TestDispatch:
             (StructuralRole.PROVIDER, set(FEATURE_FIELDS)),
         ],
     )
-    def test_new_account_is_born_with_role_preferences(self, role, disabled):
-        user = f.make_user(role=role)
-        prefs = NotificationPreference.objects.get(user=user)
+    def test_auto_setup_follows_the_role(self, role, disabled):
+        prefs = PreferenceService.auto_setup(f.make_user(role=role))
         assert {name for name in FEATURE_FIELDS if not getattr(prefs, name)} == disabled
         assert prefs.enabled_push is True and prefs.enabled_email is True
 

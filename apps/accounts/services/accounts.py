@@ -37,6 +37,7 @@ from apps.common.exceptions import (
     PermissionDenied,
 )
 from apps.common.services.audit import AuditService
+from apps.notifications.services import PreferenceService
 
 User = get_user_model()
 
@@ -152,6 +153,7 @@ class AccountService:
         AuditService.record(
             actor=actor, action=AccountAudit.CREATED, target=user, metadata={"role": role}
         )
+        PreferenceService.auto_setup(user)
         if ownerships:
             registration.register_ownerships(actor=actor, user=user, ownerships=ownerships)
         if tenancy is not None:
